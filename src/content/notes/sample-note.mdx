@@ -1,0 +1,37 @@
+---
+title: "Bí kíp tổ chức Code Vanilla JS mượt mà"
+date: 2026-03-23T10:00:00Z
+topic: "Vanilla JS"
+---
+
+Bài viết này chứa đựng lý thuyết và giải thích những tính năng tự động vừa được triển khai trên chính nền tảng Portfolio này (như Scroll-to-top, LocalStorage Sidebar, và Mobile Menu)!
+
+<Callout title="Ghi chú quan trọng cho Mobile Drawer" type="warning">
+  Viết Drawer Menu bằng Vanilla JS hoàn toàn có thể hiệu quả như React Drawer nếu ta hiểu nguyên lý DOM.
+</Callout>
+
+### 1. Tại sao không dùng thư viện React cho Menu đóng mở?
+
+- Web framework hiện tại là **Astro SSG**. Nghĩa là ưu tiên nén JS và tạo ra file tĩnh (Zero-JS).
+- Nếu ta làm 1 Menu chạy bằng file React (`useState`), thì khung HTML phải tải theo cả cục thư viện React 40KB. 
+- Nhưng với Vanilla JS, chỉ mất 10 dòng mã (`classList.toggle`) kèm logic TailwindCSS là đủ sức kéo đẩy toàn bộ UX trượt tự do!
+
+### 2. Cách Local Storage "Nhớ" Trạng Thái Thu Gọn (Collapse)
+
+```javascript
+// Ghi dữ liệu dạng String vào Window Browser
+localStorage.setItem('notes-sidebar-collapsed', 'true');
+
+// Lấy ra dùng ở lần khởi động sau
+const isStored = localStorage.getItem('notes-sidebar-collapsed');
+if(isStored === 'true') { setCollapsed(true); }
+```
+
+- Tính năng Thu gọn ở góc trái làm theo tư duy trên. Nó lấy `document.getElementById` và vứt bỏ thuộc tính `md:w-64`, sau đó đắp vào class `md:w-0`. Lập tức layout Flexbox đẩy nội dung chính rộng ngoác ra 100%.
+
+### 3. Giải Cấu Phẫu Tính Năng Mobile Sidebar
+
+Trượt ngang menu ở Mobi: Cốt lõi là một cái thẻ `div` cố định (`fixed`) bị giấu ra tít mù khơi bên trái khung hình bằng toạ độ `transform: -translate-x-full`.
+Khi người dùng bấm nút ☰ **Mục Lục Ghi Chú** (Sticky Top), JS sẽ gọi `classList.toggle` đá văng chữ `translate-x` đi. Cái thẻ `div` nhảy lại vô khung nhìn chính giữa ngay lập tức, đè lên nền mờ Overlay mà không bị giật lác nhờ có class `transition-transform duration-300`.
+
+*Tất cả những comments này tôi cũng đã chú giải đầy đủ ở file Layout.astro bằng tiếng Việt để cho bạn có thể vào theo dõi và áp dụng sau này!*

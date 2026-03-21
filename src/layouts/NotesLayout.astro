@@ -1,0 +1,164 @@
+---
+import Layout from './Layout.astro';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  title: string;
+  currentSlug?: string;
+}
+
+const { title, currentSlug } = Astro.props;
+
+// Fetch and group notes
+const allNotes = await getCollection('notes');
+const notes = allNotes.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const topics = [...new Set(notes.map((n) => n.data.topic))];
+---
+
+<Layout title={title}>
+  <!-- Layout có Sidebar và Nội dung chính -->
+  <div class="w-full flex flex-col md:flex-row gap-6 items-start relative px-4 sm:px-0">
+    
+    <!-- Nút Mở Sidebar trên Mobile (Nằm dính ở góc khi cuộn) -->
+    <button id="mobile-notes-btn" class="md:hidden sticky top-[76px] z-30 bg-indigo-600 text-white px-4 py-2 rounded-r-2xl shadow-lg flex items-center gap-2 -ml-4 mt-6 transition-transform hover:bg-indigo-700 border border-indigo-500">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+      <span class="text-sm font-bold tracking-wide">Mục Lục Ghi Chú</span>
+    </button>
+
+    <!-- Tấm Màn Đen (Overlay) che background cho Mobile khi mở menu -->
+    <div id="mobile-notes-overlay" class="md:hidden fixed inset-0 bg-gray-900/40 z-40 hidden opacity-0 backdrop-blur-sm transition-opacity duration-300"></div>
+
+    <!-- Sidebar Trái (Cây Danh Mục) -->
+    <!-- Trên Mobile: Bị giấu bên trái (-translate-x-full), khi mở sẽ trượt ra (fixed). -->
+    <!-- Trên Desktop: Luôn hiển thị (translate-x-0), hoạt động kiểu thu nhỏ/phóng to nhờ Flexbox. -->
+    <aside id="notes-sidebar" class="fixed inset-y-0 left-0 z-50 w-[280px] bg-white transform -translate-x-full transition-transform duration-300 shadow-2xl overflow-y-auto max-h-screen md:relative md:translate-x-0 md:w-64 lg:w-72 md:flex-shrink-0 md:sticky md:top-24 md:shadow-none md:bg-transparent md:max-h-[85vh] md:overflow-y-auto">
+      <div class="bg-white p-6 md:rounded-2xl md:shadow-sm md:border md:border-gray-100 min-h-screen md:min-h-[250px]">
+        
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            Chủ đề học tập
+          </h3>
+          
+          <!-- Nút Đóng (Mobile) -->
+          <button id="mobile-notes-close" class="md:hidden text-gray-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+
+          <!-- Nút thu nhỏ trên desktop (nằm trong sidebar khi đang mở) -->
+          <button id="sidebar-close-btn" class="hidden md:block text-gray-400 hover:text-indigo-600 p-1 rounded-md bg-gray-50 border border-gray-100" title="Thu nhỏ Menu">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+          </button>
+        </div>
+        
+        <nav class="space-y-6 text-sm">
+          {topics.length === 0 ? (
+            <p class="text-gray-500 italic">Chưa có bài viết.</p>
+          ) : topics.map(topic => (
+            <div>
+              <!-- Menu góc (Topic) -->
+              <h4 class="font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-1">
+                {topic}
+              </h4>
+              <!-- Menu nhánh (Sub-menu bài viết) -->
+              <ul class="space-y-3 border-l-2 border-indigo-50 ml-2 pl-4">
+                {notes.filter(note => note.data.topic === topic).map(note => {
+                  const isActive = currentSlug === note.slug;
+                  return (
+                    <li>
+                      <a 
+                        href={`/notes/${note.slug}`} 
+                        class={`block transition-colors leading-snug hover:text-indigo-600 ${isActive ? 'text-indigo-600 font-bold' : 'text-gray-600'}`}
+                      >
+                        {note.data.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Khu vực Nội dung phải (Main Content) -->
+    <main class="flex-grow min-w-0 md:mt-0 transition-all duration-300 relative">
+      <!-- Nút mở rộng trên desktop (nằm nổi bên cạnh khi sidebar bị ẩn) -->
+      <button id="sidebar-open-btn" class="hidden md:flex absolute -left-4 top-2 z-10 bg-white border border-gray-200 rounded-full p-1.5 text-gray-400 hover:text-indigo-600 shadow-sm opacity-0 pointer-events-none transition-opacity" title="Mở rộng Menu">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+      </button>
+
+      <slot />
+    </main>
+    
+  </div>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. CHỨC NĂNG: GẬP TẮT / MỞ RỘNG SIDEBAR (DÀNH CHO DESKTOP)
+      const sidebar = document.getElementById('notes-sidebar');
+      const closeBtn = document.getElementById('sidebar-close-btn');
+      const openBtn = document.getElementById('sidebar-open-btn');
+      
+      const setCollapsed = (collapsed) => {
+        if (!sidebar) return; // Bảo vệ lỗi null object
+        if (collapsed) {
+          // Khi gập: Xoá class quy định chiều rộng (w-64), tự tạo ra chiều rộng bằng 0
+          sidebar.classList.add('md:w-0', 'md:opacity-0', 'md:-ml-4');
+          sidebar.classList.remove('md:w-64', 'lg:w-72');
+          openBtn.classList.remove('opacity-0', 'pointer-events-none');
+        } else {
+          // Khi mở: Khôi phục lại kích thước 64 chuẩn của menu trái
+          sidebar.classList.remove('md:w-0', 'md:opacity-0', 'md:-ml-4');
+          sidebar.classList.add('md:w-64', 'lg:w-72');
+          openBtn.classList.add('opacity-0', 'pointer-events-none');
+        }
+      };
+
+      // Đọc trạng thái đã gập hay chưa từ bộ nhớ trình duyệt LocalStorage
+      const stored = localStorage.getItem('notes-sidebar-collapsed');
+      if (stored === 'true') {
+        setCollapsed(true);
+      }
+
+      // Xử lý sự kiện khi ấn nút Thu nhỏ (Desktop)
+      if (closeBtn && openBtn) {
+        closeBtn.addEventListener('click', () => {
+          localStorage.setItem('notes-sidebar-collapsed', 'true');
+          setCollapsed(true);
+        });
+        openBtn.addEventListener('click', () => {
+          localStorage.setItem('notes-sidebar-collapsed', 'false');
+          setCollapsed(false);
+        });
+      }
+
+      // 2. CHỨC NĂNG: MENU TRƯỢT NGANG (OFFCANVAS DÀNH CHO MOBILE)
+      const mobileBtn = document.getElementById('mobile-notes-btn');
+      const mobileClose = document.getElementById('mobile-notes-close');
+      const overlay = document.getElementById('mobile-notes-overlay');
+
+      const toggleMobileMenu = () => {
+        // Trượt sidebar từ trái sang phải (-translate-x-full --> translate-x-0)
+        sidebar.classList.toggle('-translate-x-full');
+        // Kích hoạt tấm nền mờ
+        if (overlay.classList.contains('hidden')) {
+          overlay.classList.remove('hidden');
+          setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        } else {
+          overlay.classList.add('opacity-0');
+          setTimeout(() => overlay.classList.add('hidden'), 300); // Đợi CSS Transition xong mới giấu
+        }
+        // Khoá không cho màn hình dưới cuộn được khi Sidebar Mobile được mở
+        document.body.classList.toggle('overflow-hidden');
+      };
+
+      if (mobileBtn && mobileClose && overlay) {
+        mobileBtn.addEventListener('click', toggleMobileMenu);
+        mobileClose.addEventListener('click', toggleMobileMenu);
+        overlay.addEventListener('click', toggleMobileMenu);
+      }
+    });
+  </script>
+</Layout>

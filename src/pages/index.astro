@@ -1,23 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import client from '../../tina/__generated__/client';
+import { getCollection } from 'astro:content';
+import { Typewriter } from '../components/react/Typewriter';
 
 // Fetch max 3 recent projects
-const projectsRes = await client.queries.projectsConnection({ first: 3 });
-const projects = projectsRes.data?.projectsConnection?.edges?.map(e => e?.node) || [];
+const allProjects = await getCollection('projects');
+const projects = allProjects.slice(0, 3);
 
 // Fetch max 3 recent blogs
-const blogsRes = await client.queries.blogConnection({ first: 3, sort: 'date' });
-const blogs = blogsRes.data?.blogConnection?.edges?.map(e => e?.node) || [];
+const allBlogs = await getCollection('blog');
+const blogs = allBlogs.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
 ---
 
 <Layout title="Trang Chủ">
   <section class="text-center py-20 px-4">
-    <h1 class="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl mb-6">
-      Xin chào, tôi là <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Hòa</span>
+    <h1 class="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl md:text-7xl mb-6">
+      Xin chào, tôi là <br class="md:hidden" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 animate-gradient pb-2 inline-block">Nguyễn Văn Hoàng</span>
     </h1>
-    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-      Web Developer đam mê xây dựng các sản phẩm thực tế, đẹp mắt và tốc độ cao. Dưới đây là những dự án tôi đã làm và kiến thức tôi chắt lọc được.
+    
+    <div class="text-2xl font-medium text-gray-600 mb-6 h-10">
+      Tôi là <Typewriter strings={['Web Developer 💻', 'UI/UX Enthusiast 🎨', 'Gamer 🎮', 'Tech Blogger ✍️']} client:load />
+    </div>
+
+    <p class="mt-4 w-full mx-auto text-xl text-gray-500 leading-relaxed">
+      Khởi tạo các dự án tuyệt vời với công nghệ hiện đại. Dưới đây là những dự án tôi đã làm và kiến thức tôi chắt lọc được trong quá trình học tập.
     </p>
     <div class="mt-10 flex justify-center gap-4">
       <a href="/projects" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
@@ -41,13 +47,13 @@ const blogs = blogsRes.data?.blogConnection?.edges?.map(e => e?.node) || [];
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((project) => (
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-            {project?.coverImage && (
-              <img src={project.coverImage} alt={project.title} class="w-full h-48 object-cover" />
+            {project.data.coverImage && (
+              <img src={project.data.coverImage} alt={project.data.title} class="w-full h-48 object-cover" />
             )}
             <div class="p-6">
-              <h3 class="text-xl font-bold text-gray-900 mb-2">{project?.title}</h3>
-              <p class="text-gray-500 line-clamp-3 mb-4">{project?.description}</p>
-              <a href={`/projects/${project?._sys.filename}`} class="text-indigo-600 font-medium hover:underline">Chi tiết</a>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">{project.data.title}</h3>
+              <p class="text-gray-500 line-clamp-3 mb-4">{project.data.description}</p>
+              <a href={`/projects/${project.slug}`} class="text-indigo-600 font-medium hover:underline">Chi tiết</a>
             </div>
           </div>
         ))}
@@ -68,10 +74,10 @@ const blogs = blogsRes.data?.blogConnection?.edges?.map(e => e?.node) || [];
         {blogs.map((post) => (
           <article class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-100 transition-colors">
             <h3 class="text-2xl font-bold text-gray-900 mb-2">
-              <a href={`/blog/${post?._sys.filename}`} class="hover:text-indigo-600 transition-colors">{post?.title}</a>
+              <a href={`/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">{post.data.title}</a>
             </h3>
-            {post?.date && <time class="text-sm text-gray-500 block mb-3">{new Date(post.date).toLocaleDateString('vi-VN')}</time>}
-            <p class="text-gray-600">{post?.excerpt}</p>
+            {post.data.date && <time class="text-sm text-gray-500 block mb-3">{post.data.date.toLocaleDateString('vi-VN')}</time>}
+            <p class="text-gray-600">{post.data.excerpt}</p>
           </article>
         ))}
       </div>

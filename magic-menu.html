@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Curved Navigation Menu</title>
+    <!-- Nhúng Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            /* Đẩy menu xuống dưới cùng */
+            min-height: 100vh;
+            background: #222327;
+            /* Màu nền web (Cần match với màu viền indicator) */
+        }
+
+        .navigation {
+            position: absolute;
+            bottom: 0px;
+            width: 100%;
+            height: 70px;
+            /* Nền Gradient sinh động */
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .navigation ul {
+            display: flex;
+            width: 100%;
+            /* Phục hồi lại co dãn 100% màn hình */
+            position: relative;
+            justify-content: space-around;
+            /* Phục hồi tự động chia đều khoảng cách */
+        }
+
+        .navigation ul li {
+            position: relative;
+            list-style: none;
+            width: 70px;
+            height: 70px;
+            z-index: 10;
+        }
+
+        .navigation ul li a {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .navigation ul li a .icon {
+            position: relative;
+            display: block;
+            line-height: 75px;
+            font-size: 1.5em;
+            text-align: center;
+            transition: 0.5s;
+            color: #222327;
+        }
+
+        .navigation ul li.active a .icon {
+            transform: translateY(-32px);
+            color: var(--active-color, #222327);
+            /* Màu icon bên trong */
+        }
+
+        .navigation ul li a .text {
+            position: absolute;
+            color: #222327;
+            font-weight: 400;
+            font-size: 0.75em;
+            letter-spacing: 0.05em;
+            transition: 0.5s;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .navigation ul li.active a .text {
+            opacity: 1;
+            transform: translateY(10px);
+            /* Đổi màu chữ theo Tab động */
+            color: var(--active-color, #222327);
+        }
+
+        .indicator {
+            position: absolute;
+            top: -50%;
+            left: 0;
+            /* JS Alignment Fix */
+            width: 70px;
+            height: 70px;
+            /* Nền nhạt bên trong viên nang */
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border-radius: 50%;
+            /* QUAN TRỌNG: Màu border phải KHỚP 100% với màu nền BODY để tạo độ lõm vô hình */
+            border: 6px solid #222327;
+            /* Hiệu ứng cánh: Viền cùng màu động */
+            /* border: 6px solid var(--active-color, #29fd53); */
+            /* Dịch chuyển bằng Transition cho cả Transform (nếu xài JS) và Left (nếu CSS) */
+            transition: 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55);
+        }
+
+        /* Bo góc hõm bên trái */
+        .indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -22px;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border-top-right-radius: 20px;
+            /* Box Shadow màu động ôm theo viền */
+            box-shadow: 1px -10px 0 0#222327
+        }
+
+        /* Bo góc hõm bên phải */
+        .indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -22px;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border-top-left-radius: 20px;
+            /* Box Shadow màu động ôm theo viền */
+            box-shadow: -1px -10px 0 0 #222327
+        }
+
+        /* Cài đặt vị trí trượt bằng CSS THUẦN co dãn theo % (thay thế JS) */
+        /* Toán học Flexbox Space-around phân bổ 5 cột, điểm giữa các cột sẽ lần lượt là 10%, 30%, 50%, 70%, 90% */
+        .navigation ul li:nth-child(1).active~.indicator {
+            left: calc(10% - 35px);
+            transform: none;
+        }
+
+        .navigation ul li:nth-child(2).active~.indicator {
+            left: calc(30% - 35px);
+            transform: none;
+        }
+
+        .navigation ul li:nth-child(3).active~.indicator {
+            left: calc(50% - 35px);
+            transform: none;
+        }
+
+        .navigation ul li:nth-child(4).active~.indicator {
+            left: calc(70% - 35px);
+            transform: none;
+        }
+
+        .navigation ul li:nth-child(5).active~.indicator {
+            left: calc(90% - 35px);
+            transform: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navigation">
+        <ul>
+            <li class="list active" onclick="activateLink(this)">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="home-outline"></ion-icon>
+                    </span>
+                    <span class="text">Home</span>
+                </a>
+            </li>
+            <li class="list" onclick="activateLink(this)">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="person-outline"></ion-icon>
+                    </span>
+                    <span class="text">Profile</span>
+                </a>
+            </li>
+            <li class="list" onclick="activateLink(this)">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="chatbubble-outline"></ion-icon>
+                    </span>
+                    <span class="text">Messages</span>
+                </a>
+            </li>
+            <li class="list" onclick="activateLink(this)">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="camera-outline"></ion-icon>
+                    </span>
+                    <span class="text">Photos</span>
+                </a>
+            </li>
+            <li class="list" onclick="activateLink(this)">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="settings-outline"></ion-icon>
+                    </span>
+                    <span class="text">Settings</span>
+                </a>
+            </li>
+            <div class="indicator"></div>
+        </ul>
+    </div>
+
+    <script>
+        const list = document.querySelectorAll('.list');
+        const nav = document.querySelector('.navigation');
+        const indicator = document.querySelector('.indicator');
+        const ul = document.querySelector('.navigation ul');
+        const colors = ['#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
+
+        function activateLink(element) {
+            list.forEach((item) =>
+                item.classList.remove('active'));
+            element.classList.add('active');
+
+            // Đổi màu sinh động dựa trên Tab đã chọn
+            const index = Array.from(list).indexOf(element);
+            nav.style.setProperty('--active-color', colors[index]);
+
+            // Dịch chuyển Indicator (ĐÃ ĐƯỢC ẨN ĐI VÌ SỬ DỤNG CSS THUẦN)
+            // const itemRect = element.getBoundingClientRect();
+            // const parentRect = ul.getBoundingClientRect();
+            // indicator.style.transform = `translateX(${itemRect.left - parentRect.left}px)`;
+        }
+
+        // Cài màu mặc định và dịch chuyển về Tab 1
+        nav.style.setProperty('--active-color', colors[0]);
+        setTimeout(() => activateLink(list[0]), 50);
+    </script>
+</body>
+
+</html>

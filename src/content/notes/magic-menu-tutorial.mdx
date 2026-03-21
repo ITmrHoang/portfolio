@@ -1,0 +1,55 @@
+---
+title: "Bí kíp Tái tạo Menu Magic Curved Navigation xịn sò như Mobile App"
+date: 2026-03-24T12:00:00Z
+topic: "Vanilla JS"
+---
+
+Bạn vừa thấy thanh Menu Bo Tròn uốn lượn dưới đáy trang tự động trượt theo tab hoạt động rất uyển chuyển đúng không? Đặc biệt là **mỗi khi chuyển Tab, nó lại tự động phát sáng một dải màu nền động (Dynamic Color)** khác nhau!
+
+<Callout title="Download Source Code Gốc" type="success">
+  Tôi có trích xuất mã nguồn HTML/CSS/JS thuần không lai tạp (tuyệt đối không cần Tailwind hay React) vào thư mục gốc của website. Trong File này đã bao gồm cả thuật toán đổi màu Động.
+  **Tải / Copy Code tại đây:** 👉 [magic-menu.html](/magic-menu.html)
+</Callout>
+
+### 1. Bí quyết tạo "Cánh Vòm" (Glowing Wing Effect)
+
+Đa số dân lập trình sẽ nghĩ cái đường khuyết khoét lõm vào thanh màu trắng bên dưới được làm bằng hình ảnh SVG Mask. Nhưng không, nó được làm **100% bằng thủ thuật Box Shadow CSS kết hợp Viền Động**!
+
+1. Quả cầu bay lướt phía trên tên là class `.indicator`. Nó là một hình tròn hoàn toàn bình thường được đổ màu trắng nhạt mờ ảo `linear-gradient`.
+2. Để cho cảm giác nó "ăn lõm" vào dòng chữ nhật và mọc ra 2 chiếc cánh sặc sỡ, chúng ta đắp cho quả cầu một cái `border` viền cực dày CÓ MÀU ĐỘNG đồng điệu với Tab đang mở `var(--active-color)`.
+3. Bí kíp lớn nhất: Dùng công cụ phần tử giả `::before` và `::after` kết hợp `box-shadow: 1px -10px 0 0 var(--active-color)` để "đúc" ra khối bo tròn nối giữa thanh ngang và viên nang.
+
+Vì cục Indicator có viền và box-shadow tiệp màu nhau, nó tạo nên một hiệu ứng chiếc nhẫn được nâng đỡ bởi đôi cánh phát sáng trồi lên từ thanh Navigation! Quá đẹp!
+
+### 2. Sự "Vi Diệu" của Indicator trượt (`Transform TranslateX`)
+
+Với một menu có độ rộng các Tab bằng nhau, ta dùng hàm API `getBoundingClientRect()` để tóm lấy Toạ độ mép trái (`left`) của Icon hiện hành để trượt viên nang đến.
+
+```js
+const rect = item.getBoundingClientRect(); // Lấy vị trí Toạ độ của Icon hiện tại
+indicator.style.transform = `translateX(${rect.left - parentLeft}px)`; // Đẩy Indicator chạy đúng tới toạ độ đó.
+```
+
+Nhờ có `transition: 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55);`, viên lướt sẽ có cảm giác "căng nảy đà bật" rồi mới đi, y hệt các UI tinh xảo trên iOS.
+
+### 3. Thuật toán "Tắc kè hoa" Đổi màu Động (Dynamic Active Colors)
+
+Để mỗi một Tab phát ra một màu khác nhau (Trang chủ màu Hồng, Dự án màu Tím...), thay vì phải code cứng class CSS `li:nth-child(n)`, ta dùng tuyệt chiêu **Biến Tự Chọn CSS (CSS Variables)**.
+
+Chỉ cần một dòng JS khi người dùng Click:
+```js
+// Lấy chỉ mục thứ tự Tab đang bấm
+const index = Array.from(list).indexOf(element);
+
+// Đẩy màu từ bảng Array vào hệ thống Biến gốc của Menu
+nav.style.setProperty('--active-color', colors[index]);
+```
+
+Thì trên CSS, cục tròn phát sáng và Font chữ lập tức sẽ tự đổi màu nương theo biến đó!
+```css
+.indicator {
+  background: var(--active-color); /* Lắng nghe biến truyền từ JS */
+}
+```
+
+Sức mạnh của Javascript kết hợp với Vanilla CSS thực sự là vũ khí huỷ diệt có thể làm bất cứ Graphic Layout rườm rà nào bạn nghĩ ra! Mời bạn tải file `/magic-menu.html` về để tự do vọc phá nhé.

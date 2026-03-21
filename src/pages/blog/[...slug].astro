@@ -1,31 +1,33 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { RichTextRenderer } from '../../components/react/RichTextRenderer';
-import client from '../../../tina/__generated__/client';
+import { getCollection } from 'astro:content';
+import { Callout } from '../../components/react/Callout';
 
 export async function getStaticPaths() {
-  const postsRes = await client.queries.blogConnection();
-  const edges = postsRes.data.blogConnection.edges || [];
-  
-  return edges.map((edge) => ({
-    params: { slug: edge?.node?._sys.filename },
-    props: { post: edge?.node },
+  const entries = await getCollection('blog');
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
   }));
 }
 
-const { post } = Astro.props;
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Mapping cho phép dùng <Callout> bên trong Markdown Editor
+const components = { Callout };
 ---
 
-<Layout title={post?.title || 'Bài viết'}>
-  <article class="max-w-3xl mx-auto py-12">
+<Layout title={entry.data.title}>
+  <article class="max-w-3xl mx-auto py-12 px-4 sm:px-6">
     <header class="mb-10 text-center">
-      <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{post?.title}</h1>
-      {post?.date && <time class="text-gray-500">{new Date(post.date).toLocaleDateString('vi-VN')}</time>}
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{entry.data.title}</h1>
+      {entry.data.date && <time class="text-gray-500">{entry.data.date.toLocaleDateString('vi-VN')}</time>}
     </header>
 
-    <div class="mt-8 border-t border-gray-100 pt-8">
-      <!-- Mấu chốt: Render nội dung MDX qua React wrapper bằng client:idle hoặc không cần vì static -->
-      <RichTextRenderer content={post?.body} client:idle />
+    <div class="mt-8 border-t border-gray-100 pt-8 prose prose-lg prose-indigo mx-auto text-gray-800">
+      <!-- Astro's built-in MDX renderer -->
+      <Content components={components} />
     </div>
 
     <div class="mt-16 text-center border-t border-gray-100 pt-8">

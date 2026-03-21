@@ -1,0 +1,49 @@
+backend:
+  # config cho local proxy để không cần kết nối Github lúc đang code
+  name: git-gateway
+  branch: main
+local_backend: true
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "projects"
+    label: "Dự án (Projects)"
+    folder: "src/content/projects"
+    create: true
+    slug: "{{slug}}"
+    extension: "mdx"
+    format: "frontmatter"
+    fields:
+      - {label: "Tiêu đề", name: "title", widget: "string"}
+      - {label: "Mô tả ngắn", name: "description", widget: "text", required: false}
+      - {label: "Ảnh bìa", name: "coverImage", widget: "image", required: false}
+      - {label: "Công nghệ sử dụng", name: "technologies", widget: "list", required: false}
+      - {label: "Nội dung chi tiết", name: "body", widget: "markdown"}
+
+  - name: "blog"
+    label: "Bài viết (Blog)"
+    folder: "src/content/blog"
+    create: true
+    slug: "{{slug}}"
+    extension: "mdx"
+    format: "frontmatter"
+    fields:
+      - {label: "Tiêu đề", name: "title", widget: "string"}
+      - {label: "Ngày đăng", name: "date", widget: "datetime"}
+      - {label: "Đoạn trích", name: "excerpt", widget: "text", required: false}
+      - {label: "Nội dung", name: "body", widget: "markdown"}
+
+  - name: "notes"
+    label: "Ghi chú (Notes)"
+    folder: "src/content/notes"
+    create: true
+    slug: "{{slug}}"
+    extension: "mdx"
+    format: "frontmatter"
+    fields:
+      - {label: "Tiêu đề", name: "title", widget: "string"}
+      - {label: "Ngày viết", name: "date", widget: "datetime"}
+      - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "Khác"]}
+      - {label: "Nội dung", name: "body", widget: "markdown"}
