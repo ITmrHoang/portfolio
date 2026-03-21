@@ -1,0 +1,16 @@
+fragment ProjectsParts on Projects {
+  __typename
+  title
+  description
+  coverImage
+  technologies
+  body
+}
+
+fragment BlogParts on Blog {
+  __typename
+  title
+  date
+  excerpt
+  body
+}

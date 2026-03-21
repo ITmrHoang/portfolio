@@ -1,0 +1,35 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { RichTextRenderer } from '../../components/react/RichTextRenderer';
+import client from '../../../tina/__generated__/client';
+
+export async function getStaticPaths() {
+  const postsRes = await client.queries.blogConnection();
+  const edges = postsRes.data.blogConnection.edges || [];
+  
+  return edges.map((edge) => ({
+    params: { slug: edge?.node?._sys.filename },
+    props: { post: edge?.node },
+  }));
+}
+
+const { post } = Astro.props;
+---
+
+<Layout title={post?.title || 'Bài viết'}>
+  <article class="max-w-3xl mx-auto py-12">
+    <header class="mb-10 text-center">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{post?.title}</h1>
+      {post?.date && <time class="text-gray-500">{new Date(post.date).toLocaleDateString('vi-VN')}</time>}
+    </header>
+
+    <div class="mt-8 border-t border-gray-100 pt-8">
+      <!-- Mấu chốt: Render nội dung MDX qua React wrapper bằng client:idle hoặc không cần vì static -->
+      <RichTextRenderer content={post?.body} client:idle />
+    </div>
+
+    <div class="mt-16 text-center border-t border-gray-100 pt-8">
+      <a href="/blog" class="text-indigo-600 hover:underline font-medium">← Quay lại danh sách bài viết</a>
+    </div>
+  </article>
+</Layout>

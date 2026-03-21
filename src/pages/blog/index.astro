@@ -1,0 +1,35 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import client from '../../../tina/__generated__/client';
+
+const postsRes = await client.queries.blogConnection({ sort: 'date' });
+const posts = postsRes.data?.blogConnection?.edges?.map(e => e?.node) || [];
+---
+
+<Layout title="Kiến thức lập trình">
+  <div class="max-w-4xl mx-auto py-12">
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight">Blog & Ghi chú</h1>
+    
+    <div class="space-y-8">
+      {posts.length === 0 ? (
+        <p class="text-gray-500">Chưa có bài viết nào.</p>
+      ) : (
+        posts.map((post) => (
+          <article class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <h2 class="text-2xl font-bold text-gray-900 mb-3">
+              <a href={`/blog/${post?._sys.filename}`} class="hover:text-indigo-600 transition-colors">
+                {post?.title}
+              </a>
+            </h2>
+            {post?.date && <time class="text-sm text-gray-500 block mb-4">{new Date(post.date).toLocaleDateString('vi-VN')}</time>}
+            <p class="text-gray-600 mb-4">{post?.excerpt}</p>
+            <a href={`/blog/${post?._sys.filename}`} class="inline-flex items-center text-indigo-600 font-semibold group">
+              Đọc tiếp
+              <span class="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+          </article>
+        ))
+      )}
+    </div>
+  </div>
+</Layout>
