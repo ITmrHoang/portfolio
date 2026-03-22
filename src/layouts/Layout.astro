@@ -21,9 +21,12 @@ const { title } = Astro.props;
       <div class="max-w-[1600px] mx-auto px-4 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex-shrink-0 flex items-center pr-4">
-            <a href="/" class="flex items-center gap-2 group">
+            <a href="/" class="flex items-center gap-3 group">
               <img src="/logo-himo.png" alt="HiMo Logo" class="h-10 w-auto rounded-lg shadow-neon group-hover:scale-110 transition-transform duration-300" />
-              <span class="text-xl font-bold tracking-tighter text-white group-hover:text-indigo-400 transition-colors">HiMo</span>
+              <div class="flex flex-col leading-none">
+                <span class="text-xl font-bold tracking-tighter text-white group-hover:text-indigo-400 transition-colors">HiMo</span>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-indigo-300/70 font-medium whitespace-nowrap">Nguyễn Văn Hoàng</span>
+              </div>
             </a>
           </div>
           <!-- Desktop Navigation -->
