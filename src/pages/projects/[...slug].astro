@@ -13,7 +13,6 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const components = { Callout };
 ---
@@ -46,7 +45,7 @@ const components = { Callout };
     </div>
 
     <div class="mt-16 text-center border-t border-gray-100 pt-8">
-      <a href={`${base}/projects`} class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center">
+      <a href="/projects" class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center">
         ← Quay lại danh sách dự án
       </a>
     </div>

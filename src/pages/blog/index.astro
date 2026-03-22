@@ -4,7 +4,6 @@ import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog');
 const posts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <Layout title="Kiến thức lập trình">
@@ -18,13 +17,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         posts.map((post) => (
           <article class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <h2 class="text-2xl font-bold text-gray-900 mb-3">
-              <a href={`${base}/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">
+              <a href={`/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">
                 {post.data.title}
               </a>
             </h2>
             {post.data.date && <time class="text-sm text-gray-500 block mb-4">{post.data.date.toLocaleDateString('vi-VN')}</time>}
             <p class="text-gray-600 mb-4">{post.data.excerpt}</p>
-            <a href={`${base}/blog/${post.slug}`} class="inline-flex items-center text-indigo-600 font-semibold group">
+            <a href={`/blog/${post.slug}`} class="inline-flex items-center text-indigo-600 font-semibold group">
               Đọc tiếp
               <span class="ml-1 group-hover:translate-x-1 transition-transform">→</span>
             </a>

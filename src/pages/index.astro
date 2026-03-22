@@ -10,7 +10,6 @@ const projects = allProjects.slice(0, 3);
 // Fetch max 3 recent blogs
 const allBlogs = await getCollection('blog');
 const blogs = allBlogs.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <Layout title="Trang Chủ">
@@ -27,10 +26,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       Khởi tạo các dự án tuyệt vời với công nghệ hiện đại. Dưới đây là những dự án tôi đã làm và kiến thức tôi chắt lọc được trong quá trình học tập.
     </p>
     <div class="mt-10 flex justify-center gap-4">
-      <a href={`${base}/projects`} class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
+      <a href="/projects" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
         Xem Dự Án
       </a>
-      <a href={`${base}/blog`} class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition">
+      <a href="/blog" class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition">
         Đọc Blog
       </a>
     </div>
@@ -41,7 +40,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <section class="py-12 border-t border-gray-200">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-3xl font-bold text-gray-900">Dự án nổi bật</h2>
-        <a href={`${base}/projects`} class="text-indigo-600 hover:text-indigo-800 font-medium group flex items-center">
+        <a href="/projects" class="text-indigo-600 hover:text-indigo-800 font-medium group flex items-center">
           Xem tất cả <span class="ml-1 group-hover:translate-x-1 transition-transform">→</span>
         </a>
       </div>
@@ -54,7 +53,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             <div class="p-6">
               <h3 class="text-xl font-bold text-gray-900 mb-2">{project.data.title}</h3>
               <p class="text-gray-500 line-clamp-3 mb-4">{project.data.description}</p>
-              <a href={`${base}/projects/${project.slug}`} class="text-indigo-600 font-medium hover:underline">Chi tiết</a>
+              <a href={`/projects/${project.slug}`} class="text-indigo-600 font-medium hover:underline">Chi tiết</a>
             </div>
           </div>
         ))}
@@ -67,7 +66,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <section class="py-12 border-t border-gray-200">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-3xl font-bold text-gray-900">Bài viết mới nhất</h2>
-        <a href={`${base}/blog`} class="text-indigo-600 hover:text-indigo-800 font-medium group flex items-center">
+        <a href="/blog" class="text-indigo-600 hover:text-indigo-800 font-medium group flex items-center">
           Xem tất cả <span class="ml-1 group-hover:translate-x-1 transition-transform">→</span>
         </a>
       </div>
@@ -75,7 +74,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         {blogs.map((post) => (
           <article class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-100 transition-colors">
             <h3 class="text-2xl font-bold text-gray-900 mb-2">
-              <a href={`${base}/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">{post.data.title}</a>
+              <a href={`/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">{post.data.title}</a>
             </h3>
             {post.data.date && <time class="text-sm text-gray-500 block mb-3">{post.data.date.toLocaleDateString('vi-VN')}</time>}
             <p class="text-gray-600">{post.data.excerpt}</p>
