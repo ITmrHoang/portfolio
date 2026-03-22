@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { title, currentSlug } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // Fetch and group notes
 const allNotes = await getCollection('notes');
@@ -67,7 +68,7 @@ const topics = [...new Set(notes.map((n) => n.data.topic))];
                   return (
                     <li>
                       <a 
-                        href={`/notes/${note.slug}`} 
+                        href={`${base}/notes/${note.slug}`} 
                         class={`block transition-colors leading-snug hover:text-indigo-600 ${isActive ? 'text-indigo-600 font-bold' : 'text-gray-600'}`}
                       >
                         {note.data.title}
