@@ -1,0 +1,176 @@
+---
+title: "Deep Dive: Các Nguyên Lý Coding Cơ Bản (Kèm Code Thực Tế)"
+date: 2026-04-01T08:00:00Z
+excerpt: "DRY, KISS, YAGNI, SoC... Không chỉ là khẩu hiệu bề nổi. Hãy cùng mổ xẻ chúng với những dòng code JavaScript/TypeScript cụ thể."
+---
+
+Khi xây dựng các ứng dụng lớn, việc hiểu và thực hành theo các **Coding Principles** sẽ giúp bạn tránh được thảm họa "Mì Ý" (Spaghetti Code).
+
+*(Đọc bản tóm tắt tại: [Tổng Hợp Các Nguyên Lý & Mô Hình Lập Trình](/notes/best-practices-overview))*
+
+Dưới đây là mổ xẻ cực kì chi tiết bằng code thực thi:
+
+---
+
+## 1. DRY — Don't Repeat Yourself
+
+**Vấn đề:** Trong ứng dụng E-commerce, lúc Render Giá Tiền ra màn hình, bạn thấy ở Trang Sản Phẩm (`Product.js`), Giỏ Hàng (`Cart.js`), Hóa Đơn (`Checkout.js`) đều có hàm format giống hệt nhau:
+
+```javascript
+// ❌ Cart.js
+const formattedPrice = (price * 1000).toLocaleString('vi-VN') + ' đ';
+
+// ❌ Product.js 
+const formattedPrice = (price * 1000).toLocaleString('vi-VN') + ' đ';
+```
+Bỗng một ngày sếp bảo: *"Đổi 'đ' thành 'VNĐ' cho anh!"*. Bạn phải chạy đi tìm hàm file `Cart`, `Product`, `Checkout` để đổi. Rất mệt!
+
+**✅ Giải pháp (Tạo Utils):**
+Tạo file `utils/currencyFormat.js` và Tái sử dụng:
+```javascript
+// utils/currencyFormat.js
+export const formatVND = (price) => {
+    return (price * 1000).toLocaleString('vi-VN') + ' VNĐ';
+}
+
+// ✅ Mọi nơi:
+import { formatVND } from '../utils/currencyFormat';
+const price = formatVND(150);
+```
+
+---
+
+## 2. KISS — Keep It Simple, Stupid
+
+**Vấn đề:** 1 đồng nghiệp thiên tài khoe đoạn code Filter danh sách mảng dựa vào ID. Đỉnh cao 1 dòng siêu phức tạp (One-liner).
+
+```javascript
+// ❌ Rất khó hiểu, ai nhào nặn ra cái này?!
+const activeUsers = users.filter(u => !!~[1,2,3].indexOf(u.id) && u.isActive === !0);
+```
+
+**✅ Giải pháp:** Viết code cho Con người đọc, rồi Máy tính hãy xử lý.
+```javascript
+// Dễ đọc, sạch sẽ, ai bảo trì cũng thương:
+const activeUsers = users.filter(user => {
+    const isTargetId = [1, 2, 3].includes(user.id);
+    return isTargetId && user.isActive === true;
+});
+```
+
+---
+
+## 3. SoC — Separation of Concerns
+
+**Vấn đề:** Một file React Component bự khổng lồ, bao thầu mọi thứ từ HTML, Fetch API, tính toán Logisic.
+
+```jsx
+// ❌ Vi phạm SoC: 1 file ôm rơm
+function Dashboard() {
+    const [data, setData] = useState([]);
+    useEffect(() => {
+        // Fetch trực tiếp tại View
+        fetch('/api/sales').then(r=>r.json()).then(res => {
+           // Mapping, Tính toán cực hình ngay bên trong render
+           const processed = res.map(i => i.price * 1.1); 
+           setData(processed);
+        })
+    }, []);
+
+    return <div>{/* Render 10,000 dòng */}</div>
+}
+```
+
+**✅ Giải pháp:** Tách rõ ràng (Custom Hook xử lý Data, Component xử lý UI)
+```javascript
+// file: \hooks\useSalesData.js
+export function useSalesData() {
+    const [data, setData] = useState([]);
+    useEffect(() => {
+        api.getSales().then(res => setData(calculateTax(res)));
+    }, []);
+    return data;
+}
+
+// file: \components\Dashboard.jsx (Rất nhẹ và sạch!)
+function Dashboard() {
+    const data = useSalesData();
+    return <SaleTable data={data} />;
+}
+```
+
+---
+
+## 4. Composition over Inheritance (CoI)
+
+Cái này cực kì quan trọng nếu xài OOP (Hướng đối tượng) trong TypeScript hoạc Java.
+
+**❌ Kế thừa 7 đời (Bad Inheritance):**
+Bạn muốn làm Nhân vật Bắn cung lén lút trong Game. Bạn cho nó extend từ `SneakPlayer` > `RangedPlayer` > `Player`... Khổ sở khi sếp bắt làm Nhân vật *Vừa Đấm Vừa Phép*. Đa kế thừa sẽ sinh ra Kim Cương Lỗi (Diamond Problem).
+
+```typescript
+class Character {}
+class MeleeCharacter extends Character {}
+class MagicCharacter extends Character {}
+// Làm sao tạo MelleMagicCharacter ?? Extends cả 2 -> Error.
+```
+
+**✅ Lắp Bánh Xe Năng Lực (Composition):**
+Thay vì thiết kế "Is-A" (Nó là... Pháp Sư), hãy thiết kế "Has-A" (Nó Sở hữu... Chiêu Phép).
+```typescript
+interface Ability { use(): void; }
+
+class MeleeAttack implements Ability {
+    use() { console.log("Slash sword!"); }
+}
+
+class MagicSpell implements Ability {
+    use() { console.log("Fireball!"); }
+}
+
+class Hero {
+    abilities: Ability[] = [];
+    
+    addAbility(ab: Ability) { this.abilities.push(ab); }
+    attack() { this.abilities.forEach(a => a.use()); }
+}
+
+// Lắp Ráp!! Vị tướng Đấm-Phép ra đời ngay lập tức
+const hybridHero = new Hero();
+hybridHero.addAbility(new MeleeAttack());
+hybridHero.addAbility(new MagicSpell());
+hybridHero.attack(); 
+// Ra màn hình: "Slash sword!", "Fireball!"
+```
+
+---
+
+## 5. Fail Fast
+
+**Nguyên lý:** Khi có sai phạm logic, báo Lỗi Cứng (Throw Exception) ngay lập tức chứ đừng ỉm đi hoặc trả về `null/undefined/0` cho chạy rề rề tiếp. Nó sẽ gây ra chuỗi sụp đổ gián tiếp rất khó TÌM (Stack Trace mờ nhạt).
+
+**❌ Nuốt Lỗi (Silently fail):**
+```javascript
+function sendMoney(amount) {
+    if (amount <= 0) {
+        console.warn("Nhập số tiền dị quá!");
+        return false; // Trả false rồi cho App chạy tiếp.
+    }
+    // API chuyển tiền...
+}
+```
+Ở hàm `handleButton()` bên ngoài không thèm kiểm tra `if(sendMoney(amount))`, báo rút thành công cho khách, chết cái App!!
+
+**✅ Bắn ngoại lệ dứt điểm (Fail Fast):**
+```javascript
+function sendMoney(amount) {
+    if (amount <= 0) {
+        throw new Error("InvalidAmountException: Số tiền phải > 0"); 
+        // App sụp đổ, Dev bay vào sửa lỗi ngay khi Unit Test chạy.
+    }
+}
+```
+
+---
+
+*← Trở lại bảng điều khiển: [Overview Tóm Tắt Các Nguyên Lý](/notes/best-practices-overview)*

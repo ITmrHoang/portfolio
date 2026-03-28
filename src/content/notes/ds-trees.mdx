@@ -88,6 +88,33 @@ BST là Binary Tree đặc biệt với **quy tắc sắp xếp**:
 
 > ⚠️ BST không cân bằng → giống Linked List → O(n)! Vì vậy cần giữ cây **balanced**.
 
+### ⚖️ AVL Tree (Cây nhị phân Cân Bằng Hoàn Hảo)
+Để khắc phục điểm yếu O(n) chết người của BST phía trên, 2 nhà khoa học (Adelson-Velsky và Landis) đã tạo ra **AVL Tree**. 
+- Đặc tính: Tại BẤT KỲ node nào, độ cao nhánh Trái và nhánh Phải lệch nhau **KHÔNG QUÁ 1 ĐƠN VỊ** $[-1, 0, 1]$.
+- Cách hoạt động: Mỗi khi Insert/Delete một node mà làm mất đi độ cân bằng, cây sẽ lập tức tiến hành **Phục Hồi Xoay (Rotations)**.
+- **4 Kiểu Xoay:** Quay Trái Đơn (LL), Quay Phải Đơn (RR), Quay Trái-Phải (LR), Quay Phải-Trái (RL).
+- **Kết quả:** Vì cực kỳ khắt khe trong việc giữ cân bằng, Tree Depth luôn duy trì ở mức $\approx \log N$. Mọi thao tác Search/Insert/Delete ĐẢM BẢO TUYỆT ĐỐI $O(\log n)$. Thường dung trong Database nơi dữ liệu Đọc/Tìm Kiếm diễn ra thường xuyên hơn Ghi.
+
+**Minh họa thuật toán Xoay Trái (Left-Rotate) trên AVL Tree:**
+```javascript
+// Node B (bên phải Node A) do quá nặng nên kéo Cây lệch hẳn sang phải. 
+// Ta Xóa Ngôi Node A, Đưa Node B lên làm Root mới cứu vãn sự cân bằng!
+function rotateLeft(nodeA) {
+    let newRootB = nodeA.right;
+    
+    // Nhánh Trái của B sẽ được đem gắn tạm sang nhánh Phải của người tiền nhiệm (A)
+    nodeA.right = newRootB.left;
+    // B ngồi xổm lên đầu A, biến A thành nút con Trái
+    newRootB.left = nodeA;
+    
+    // Yêu cầu Cập nhật lại thuộc tính Chiều Cao (Height) cho A và B
+    nodeA.height = Math.max(getHeight(nodeA.left), getHeight(nodeA.right)) + 1;
+    newRootB.height = Math.max(getHeight(newRootB.left), getHeight(newRootB.right)) + 1;
+    
+    return newRootB; // Node B Giờ Oai Phong Lẫm Liệt ở Đỉnh
+}
+```
+
 ---
 
 ## 🔄 Tree Traversal (Duyệt cây)

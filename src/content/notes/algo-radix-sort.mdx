@@ -1,0 +1,120 @@
+---
+title: "Radix Sort & Counting Sort: Khi Sắp Xếp Chọc Thủng Giới Hạn O(N log N)"
+date: 2026-03-05T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Sorting Tuyến tính (Linear Sorting) là gì?
+
+Nếu bạn từng học `Merge Sort` hay `Quick Sort`, bạn sẽ biết giới hạn tối cao của việc **Sắp xếp bằng cách So Sánh** (Comparison Sorting) là $O(N \log N)$. Không thể nào có thuật toán so sánh nào chạy nhanh hơn mức đó!
+
+Nhưng, nếu chúng ta **KHÔNG SAO SÁNH** hai phần tử với nhau thì sao?
+Đó là lúc **Counting Sort** và **Radix Sort** xuất hiện. Nhờ việc đếm số lượng sự xuất hiện của các chữ số, chúng mất độ phức tạp là $O(N)$ (Tuyệt đối nhanh nếu dữ liệu phù hợp).
+
+---
+
+## 🧮 1. Counting Sort (Sắp Xếp Đếm)
+
+### 🕵️‍♂️ Cách hoạt động
+Nếu bạn có một mảng các học sinh có điểm từ 0 đến 10. Tại sao phải so sánh xếp hạng phiền phức? Bạn chỉ việc tạo 1 cái Mảng đếm từ `0...10`.
+Ai được 9 điểm, quăng vào ô số 9. Quét hết 1 vòng mảng chừng vài giây là xong bảng điểm.
+
+1. Tìm giá trị lớn nhất trong mảng là $K$.
+2. Xây dựng một mảng đếm (Count Array) kích thước $K+1$.
+3. Nếu gặp số `X`, ta tăng `Count[X]++`.
+4. Trải lại mảng Count ra mảng ban đầu.
+
+### ⏱️ Phân tích
+
+- **Time Complexity:** $O(N + K)$ với $K$ là khoảng giá trị Max.
+- **Space Complexity:** $O(K)$. Rất khủng khiếp nếu $K$ là 1 tỷ (mảng 1 tỷ số 0).
+- **Trường hợp khuyên dùng:** Khi phân phối các số gom nhóm lại rất hẹp, ví dụ: Tính độ tuổi con người (chỉ từ 1 - 150). KHÔNG dùng cho số cực lớn hoặc số âm.
+
+---
+
+## 🚀 2. Radix Sort (Sắp Xếp Cơ Số)
+
+Khắc phục được yếu điểm chí mạng của Counting Sort (Phạm vi $K$ lớn gây tràn RAM). **Radix Sort** hoạt động bằng cách **Thực hiện Counting Sort nhiều lần**, từ hàng Đơn Vị, lên hàng Chục, lên hàng Trăm...
+
+*(Lưu ý: Radix Sort bản chất thường kết hợp với thuật toán sắp xếp BẢO TOÀN THỨ TỰ (Stable Sort) như Counting Sort ở các tầng nhỏ).*
+
+### 🕵️‍♂️ Cách hoạt động (Ví dụ mảng `[170, 45, 75, 90, 802, 2, 24, 66]`)
+1. **Quét Hàng Đơn Vị:**
+   Xếp theo đuôi:
+   `170, 90` (đuôi 0) -> `802, 2` (đuôi 2) -> `24` -> `45, 75` -> `66`.
+   *(Mảng tạm: 170, 90, 802, 2, 24, 45, 75, 66)*
+2. **Quét Hàng Chục:**
+   Xếp tiếp vào các Buckets mười:
+   `802, 2` (không có hàng chục) -> `24` -> `45` -> `66` -> `170, 75` -> `90`.
+   *(Mảng tạm: 802, 2, 24, 45, 66, 170, 75, 90)*
+3. **Quét Hàng Trăm:**
+   `2, 24, 45, 66, 75, 90` (trăm = 0) -> `170` (trăm = 1) -> `802` (trăm = 8).
+   *(Mảng Cuối: 2, 24, 45, 66, 75, 90, 170, 802)* -> ĐÃ XONG! Mọi thủ tục không 1 giọt mồ hôi so sánh nào.
+
+### ⏱️ Phân tích
+- **Độ phức tạp Thời Gian:** $O(d \times (N + b))$.
+  - $N$: độ dài mảng nguyên bản.
+  - $d$: Số lượng chữ số của con số Max (Max có 3 chữ số d=3 vòng lặp).
+  - $b$: Cơ số (Base - Hệ thập phân bằng 10).
+- **Trường hợp khuyên dùng:** Số nguyên rất lớn ở các bài toán đặc thù của đồ họa C++, Sắp xếp tiền tệ, hoặc bài rác String (Sắp chữ cái từ cuối lên đầu).
+
+---
+
+## 💻 Code Mẫu C++ (Radix Sort với Hỗ Trợ Đếm)
+
+Biểu diễn Counting Sort con bọc trong thân Radix Sort mẹ:
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// Hàm Counting Sort chuyên trị 1 hàng cơ số "exp" (1, 10, 100...)
+void countSort(vector<int>& arr, int exp) {
+    int n = arr.size();
+    vector<int> output(n);
+    int count[10] = {0}; // Lỗ chứa chữ số từ 0 - 9
+
+    // Cất tạm biến đếm sự xuất hiện của chữ số (Ví dụ 170 / 1 % 10 = 0)
+    for (int i = 0; i < n; i++)
+        count[(arr[i] / exp) % 10]++;
+
+    // Accumulate đếm (Đếm tích lũy để tìm vị trí thật)
+    for (int i = 1; i < 10; i++)
+        count[i] += count[i - 1];
+
+    // Xây dựng Build mảng Output TRÁI NGƯỢC (Bắt đầu từ đuôi lên để Stable!)
+    for (int i = n - 1; i >= 0; i--) {
+        int loc = (arr[i] / exp) % 10;
+        output[count[loc] - 1] = arr[i];
+        count[loc]--;
+    }
+
+    // Đổ mẻ mảng ra chậu
+    for (int i = 0; i < n; i++)
+        arr[i] = output[i];
+}
+
+void radixSort(vector<int>& arr) {
+    // 1. Tìm Trùm Cuối Khủng Bố Nhất
+    int max_val = *max_element(arr.begin(), arr.end());
+
+    // 2. Chạy CountSort đếm dần các cột số (Đơn vị, Chục, Trăm...)
+    for (int exp = 1; max_val / exp > 0; exp *= 10)
+        countSort(arr, exp);
+}
+
+int main() {
+    vector<int> arr = {170, 45, 75, 90, 802, 2, 24, 66};
+    radixSort(arr);
+    for(int x : arr) cout << x << " "; 
+    // In ra: 2 24 45 66 75 90 170 802
+    return 0;
+}
+```
+
+---
+
+*← Quay lại [Sorting](/notes/algo-searching) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Kho lưu trữ Dữ liệu Băm](/notes/ds-hash-tables) →*

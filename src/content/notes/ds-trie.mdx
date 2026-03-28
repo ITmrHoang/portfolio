@@ -305,6 +305,30 @@ fn main() {
 
 ---
 
+## 🌟 Radix Tree (Patricia Trie) - Bước Nén Hoàn Hảo
+Nhược điểm lớn nhất của Trie gốc là **tốn quá nhiều bộ nhớ**. Ví dụ bạn lưu `[romane, romanus, romulus, rubens]`, những chữ `r`, `o`, `m` mọc ra 1 cây thẳng đuột mà mỗi node chỉ có 1 con.
+-> **Radix Tree** nén các node dọc 1 nấc (những node chỉ có 1 node con) ghép vảo thành 1 Node Lớn.
+Ví dụ thay vì 3 nodes bọc 3 chữ `r - o - m`, Radix Tree gom lại thành 1 cạnh chứa chuỗi `"rom"`. Tiết kiệm dung lượng lưu trữ cực kỳ kinh khủng. Core định tuyến Routing của Linux Network, Nginx và React-Router bên dưới dùng Radix Tree (Patricia Trie)!
+
+**Cấu trúc Lõi nén Trie siêu Việt:**
+```javascript
+// Lưu cả Chuỗi, thay vì chỉ 1 kí tự hẹp hòi!
+class RadixNode {
+    constructor(prefix = "") {
+        this.prefix = prefix;      // Chứa nguyên cụm "rom" (Thay vì tách "r","o","m")
+        this.children = {}; 
+        this.isEndOfWord = false;
+    }
+}
+// Ví dụ: Nhét "romane" và "romulus"
+// Root: ""
+//  └── Node: "rom"
+//        ├── Node: "ane" (Kết thúc - romane)
+//        └── Node: "ulus" (Kết thúc - romulus)
+```
+
+---
+
 ## 🧩 Suffix Tree & Suffix Automaton (Nâng cao)
 
 Nếu **Trie** dùng để tìm kiếm các **Tiền tố (Prefix)** của nhiều chuỗi khác nhau, thì **Suffix Tree (Cây Hậu Tố)** dùng để lưu **Tất cả các Hậu tố (Suffix)** của MỘT chuỗi duy nhất!

@@ -1,0 +1,240 @@
+---
+title: "Deep Dive: SOLID Principles qua những dòng code thực tế"
+date: 2026-04-02T08:00:00Z
+excerpt: "Bóc tách sự phức tạp của 5 nguyên lý Hướng Đối Tượng SOLID. Ví dụ Typecript cực kỳ trực quan giúp bạn hiểu thấu bản chất thay vì học thuộc lòng."
+---
+
+*(Đọc bản tóm tắt tại: [Tổng Hợp Các Nguyên Lý & Mô Hình Lập Trình](/notes/best-practices-overview))*
+
+SOLID là viết tắt 5 chữ cái tượng trưng cho 5 Nguyên lý thần thánh cứu rỗi hàng nghìn Cấu trúc Dự Án Hướng Đối Tượng khỏi thảm họa bảo trì. Không chỉ dành riêng cho Java/C#, mà Frontend xài TypeScript/React cũng cần áp dụng nghiêm túc.
+
+---
+
+## 1. [S] Single Responsibility Principle (SRP)
+**"Một Class sinh ra chỉ có 1 lý do duy nhất để nó thay đổi"** - Tức là nó chỉ nên lãnh 1 Trách Nhiệm.
+
+**❌ Vi phạm SRP (Một tay che trời):**
+Class `Order` chứa Data của Đơn Hàng nhưng lại đi gánh thêm việc Kết Nối Database và Xuất file PDF. 
+
+```typescript
+class Order {
+  constructor(public products: [], public total: number) {}
+
+  // Trách nhiệm 1: Tính toán nghiệp vụ
+  calculateTotal() { /* tính toán... */ }
+
+  // Trách nhiệm 2: Kết nối DB
+  saveToMongo() { 
+    MongoClient.connect("mongodb://...").save(this) 
+  }
+
+  // Trách nhiệm 3: Tạo Giao Diện/File
+  exportInvoicePDF() { /* logic vẽ bảng PDF 100 dòng */ }
+}
+```
+*Tác hại:* Ông sửa code Database, vô tình quẹt đứt phím Xóa mất hàm xuất PDF. Quá nhiều logic nằm dồn trong `Order.ts`.
+
+**✅ Giải pháp (Tách biệt Trách nhiệm):**
+Mỗi class chỉ ôm 1 việc dứt khoát!
+```typescript
+class Order { // Chỉ nắm Logic Data
+  constructor(public products: [], public total: number) {}
+}
+
+class OrderRepository { // Chỉ nắm Database
+  save(order: Order) { MongoClient.save(order); }
+}
+
+class InvoicePrinter { // Chỉ nắm Việc Xuất File
+  printPDF(order: Order) { /* code vẽ PDF */ }
+}
+```
+
+---
+
+## 2. [O] Open/Closed Principle (OCP)
+**"Mở cho Mở Rộng, Nhắm Đóng cho Chỉnh Sửa"**
+
+Khi Sếp yêu cầu thêm 1 tính năng mới (Thanh toán qua ZaloPay), hãy CẤM việc nhảy vào sửa file có sẵn (`Payment.ts`), mà thay vào đó Tạo thêm 1 class Mới Kế Thừa (hoặc implement Interface) để MỞ RỘNG kĩ năng.
+
+**❌ Vi phạm OCP (If-else dài thòng):**
+```typescript
+class OrderProcessor {
+  process(order: Order, paymentType: string) {
+    if (paymentType === "MOMO") {
+      console.log("Thanh toán MoMo");
+    } else if (paymentType === "CREDIT_CARD") {
+      console.log("Thanh toán Thẻ Tín Dụng");
+    } 
+    // Nếu thêm ZaloPay, ta PHẢI SỬA BÊN TRONG HÀM NÀY (Vi phạm OCP Cực độ!)
+  }
+}
+```
+
+**✅ Chữa bệnh OCP bằng DI và Interface:**
+```typescript
+interface IPaymentMethod { pay(amount: number): void; }
+
+class MoMoPayment implements IPaymentMethod {
+  pay(amount: number) { console.log("MoMo paid: ", amount); }
+}
+
+class CreditCardPayment implements IPaymentMethod {
+  pay(amount: number) { console.log("Credit Card paid: ", amount); }
+}
+
+/* KHI THÊM ZaloPay: Chỉ việc tạo Class mới không cần đụng vô code cũ */
+class ZaloPayPayment implements IPaymentMethod {
+  pay(amount: number) { console.log("ZaloPaid: ", amount); }
+}
+
+// Hàm Process "ĐÓNG LẠI" không bao giờ cần sửa nữa.
+class OrderProcessor {
+  process(order: Order, paymentMethod: IPaymentMethod) {
+    paymentMethod.pay(order.total); // Trừ tiền bằng mọi phương thức
+  }
+}
+```
+
+---
+
+## 3. [L] Liskov Substitution Principle (LSP)
+**"Class con phải thay thế được Class cha mà không làm bùng nổ cái App"**
+
+Đừng cho Class Trẻ em học bằng lái của Class Người lớn nếu nó không biết lái ô tô.
+
+**❌ Chim 🐧 đòi bay:**
+```typescript
+class Bird { 
+  fly() { console.log("Vỗ cánh bay"); } 
+}
+
+class Eagle extends Bird { /* Đại Bàng Bay Ngon */ }
+
+class Penguin extends Bird {
+  fly() {
+    throw new Error("Lỗi Chết Chóc! Cánh cụt không biết bay!"); 
+  }
+}
+
+// Trong hàm thực hiện trò chơi...
+function letBirdsFly(birds: Bird[]) {
+  birds.forEach(b => b.fly()); // Tới con cánh cụt nó văng lỗi SẬP APP LUÔN.
+}
+```
+
+**✅ Sửa bằng cách Lập Hệ Sinh Thái đúng (Composition/Interface):**
+Chia Interface cho rành mạch.
+```typescript
+interface IFlyingBird { fly(): void; }
+interface ISwimmingBird { swim(): void; }
+
+class Eagle implements IFlyingBird {
+  fly() { console.log("Bay lượn trên trời"); }
+}
+
+class Penguin implements ISwimmingBird {
+  swim() { console.log("Bơi dưới Bắc Cực"); }
+}
+
+function letBirdsFly(birds: IFlyingBird[]) {
+  birds.forEach(b => b.fly()); // Lọc cánh cụt ngay từ khâu Type-Check của TypeScript
+}
+```
+
+---
+
+## 4. [I] Interface Segregation Principle (ISP)
+**"Đừng bắt ai đó ký hợp đồng với những thứ họ không làm"**
+
+Interface càng TO BÉO (Fat Interface) càng độc hại. Hãy chia thành nhiều Interface SIÊU NHỎ.
+
+**❌ Hợp đồng ép buộc:**
+```typescript
+interface SmartDevice {
+  print(): void;
+  fax(): void;
+  scan(): void;
+}
+
+// Bắt rùa mua nhà mua xe mới được cõng thỏ: Máy in bèo bọt chỉ có mỗi nút Print
+class CheapPrinter implements SmartDevice {
+  print() { console.log("Đang in..."); }
+  fax() { throw new Error("Chịu, không có đồ quét"); }
+  scan() { throw new Error("Chịu, không quét được"); }
+}
+```
+
+**✅ Cắt nhỏ hợp đồng:**
+```typescript
+interface IPrinter { print(): void; }
+interface IScanner { scan(): void; }
+interface IFax { fax(): void; }
+
+// Máy In Rẻ nhận đúng 1 chức năng:
+class CheapPrinter implements IPrinter {
+  print() { console.log("Đang in..."); }
+}
+
+// Máy In Đa Năng nhận trọn bộ combo:
+class FancyCopier implements IPrinter, IScanner, IFax {
+  print() { /* ... */ }
+  scan() { /* ... */ }
+  fax() { /* ... */ }
+}
+```
+
+---
+
+## 5. [D] Dependency Inversion Principle (DIP)
+**"Tuyệt đối Đừng Đút Code Cứng vào Nhau"**
+
+Cấp cao (Logic Tổng) KO DỰA VÀO Cấp thấp (Logic Chi Tiết). Rút chìa khóa điện ra, tất cả thiết kế dựa trên một Bản Vẽ Khái Niệm - Abstraction.
+
+**❌ Dây dưa trực tiếp (Hard coupling):**
+```typescript
+class SmtpMailer {
+  sendEmail(msg: string) { /* ... */ }
+}
+
+class UserRegister {
+  private mailer = new SmtpMailer(); // Cứng ngắc. Dính chết với SMTP.
+  
+  register() {
+    // ...
+    this.mailer.sendEmail("Welcome!");
+  }
+}
+```
+*Tác hại:* Ngày mai đổi SMTP sang Mailgun (API), bạn phải bới hàm `UserRegister` ra sửa `new Mailgun()`, chưa kể hàm sendMail của Mailgun nó khác tham số.
+
+**✅ Sửa Đảo Ngược Phụ Thuộc ngập tràn Interface:**
+```typescript
+interface IMailer { send(msg: string): void; }
+
+// Người làm SMTP làm đúng bổn phận
+class SmtpMailer implements IMailer {
+  send(msg: string) { console.log("SMTP: " + msg); }
+}
+
+// Người làm dịch vụ Mailgun chạy API
+class MailgunMailer implements IMailer {
+  send(msg: string) { console.log("Mailgun API: " + msg); }
+}
+
+class UserRegister {
+  // Ko cần tự new() nữa, ĐỢI AI ĐÓ "CHUYỀN" VÀO CHO MÌNH. (Dependency Injection)
+  constructor(private mailer: IMailer) {} 
+  
+  register() {
+    this.mailer.send("Welcome!");
+  }
+}
+
+// Giám đốc (App khởi động): Thích nhét cái gì vào thì nhét!
+const appUsingSMTP = new UserRegister(new SmtpMailer());
+const appUsingMailgun = new UserRegister(new MailgunMailer());
+```
+
+---
+*← Trở lại bảng điều khiển: [Overview Tóm Tắt Các Nguyên Lý](/notes/best-practices-overview)*

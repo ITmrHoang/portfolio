@@ -14,7 +14,10 @@ Thuật toán BFS, DFS và Dijkstra là những công cụ tuyệt vời, nhưng
 
 **Bài toán:** Bạn có danh sách các môn học Đại học, môn này là môn tiên quyết của môn kia (VD: Phải học Cấu trúc Dữ liệu trước khi học AI). Làm sao xếp lịch học hợp lý?
 
-Đồ thị này gọi là **DAG (Directed Acyclic Graph)** — Đồ thị có hướng, không chu trình.
+Đồ thị này gọi là **DAG (Directed Acyclic Graph)** — Một ma trận tối cao trong khoa học đồ thị: **Đồ thị Trực Tích Không Chu Trình** (Có Hướng & Không Vòng Lặp).
+- Nếu Đồ thị có Cycle (A -> B -> C -> A): Deadlock (khóa vĩnh viễn), không ai học được bài nào trước.
+- Vì là DAG, chắc chắn có thể gỡ rối và duỗi thẳng các node ra 1 đường thẳng sao cho mũi tên chỉ hướng về 1 phía. 
+- **Ứng dụng của DAG:** Biểu diễn Git Commit flow, Dòng luồng xử lý Data (Apache Airflow), hệ thống Build-deps (NPM), Game Skill Trees.
 
 **Sắp xếp Topo** sẽ xếp các đỉnh thành một đường thẳng sao cho: Nếu có cạnh $U \rightarrow V$, thì $U$ phải đứng trước $V$.
 
@@ -26,6 +29,49 @@ Thuật toán BFS, DFS và Dijkstra là những công cụ tuyệt vời, nhưng
 5. Nếu $V$ có `in-degree == 0`, nhét $V$ vào Queue. Lặp lại!
 
 *(Ứng dụng: Build hệ thống (Makefiles), Resolve dependencies (NPM package), Lên lịch thi công).*
+
+**Code Giải mã Bí kíp Kahn:**
+```javascript
+// numCourses: Tổng số môn học
+// prerequisites: [[Học V, Sau Môn U], ...]
+function canFinishAndOrder(numCourses, prerequisites) {
+    let inDegree = Array(numCourses).fill(0);
+    let graph = Array.from({ length: numCourses }, () => []);
+
+    // 1. Vẽ mũi tên U -> V, Tăng nợ môn V lên 1
+    for (let [v, u] of prerequisites) {
+        graph[u].push(v);
+        inDegree[v]++;
+    }
+
+    // 2. Những môn Nền tảng (Bậc bằng 0) Không nợ ai, đưa hết vô Queue để xơi trước
+    let queue = [];
+    for (let i = 0; i < numCourses; i++) {
+        if (inDegree[i] === 0) queue.push(i);
+    }
+
+    let order = []; // Lưu danh sách thứ tự học
+    
+    // 3. Vắt kiệt Queue
+    while (queue.length > 0) {
+        let u = queue.shift();
+        order.push(u);
+
+        // Đã học xong U, trả nợ mũi tên cho những thằng nối sau nó
+        for (let v of graph[u]) {
+            inDegree[v]--;
+            // Rút trúng môn đã xóa sạch nợ, vô Queue ngồi rình
+            if (inDegree[v] === 0) {
+                queue.push(v);
+            }
+        }
+    }
+
+    // 4. Báo cáo chốt hạ
+    if (order.length === numCourses) return order; // Phát bằng Đại học (Xếp lịch ok)
+    return []; // Deadlock Chu trình 1 Cặp Bánh Xe (Bắt học AI trước Web, và Mắt Web trước AI -> Cook)
+}
+```
 
 ---
 

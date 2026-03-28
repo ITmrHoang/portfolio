@@ -248,6 +248,42 @@ Trong thư viện chuẩn:
 
 ---
 
+## 🛡️ Thêm Nữa: Set (Tập Hợp)
+
+Bản chất của **Set** (Tập hợp) bên dưới cũng sử dụng cấu trúc tương tự như Hash Table (HashSet) hoặc Balanced Tree (TreeSet).
+Đặc điểm độc nhất của Set: **Các phần tử trong Set KHÔNG BAO GIỜ trùng lặp.**
+
+- Nếu bạn `insert(5)` vào Set 3 lần, trong Set vẫn chỉ có một số `5`.
+- Rất phù hợp cho bài toán: Lọc dữ liệu trùng lặp (Remove duplicates), kiểm tra phần tử đã có chưa (`contains/has` trong O(1)).
+- Ví dụ: Sinh viên lấy tín chỉ nộp danh sách mã môn, nếu dùng Mảng `[CS1, CS2, CS1]` bị lặp môn, thả vào Set sẽ auto tự biến thành `{CS1, CS2}`.
+
+**Code minh họa Set cơ bản:**
+```javascript
+// === JAVASCRIPT SET ===
+const mySet = new Set();
+mySet.add("CS1");
+mySet.add("CS2");
+mySet.add("CS1"); // Bị từ chối im lặng vì lặp
+
+console.log(mySet.has("CS2")); // true (Thời gian O(1) Siêu nhanh)
+console.log([...mySet]);       // ['CS1', 'CS2']
+
+// Xóa mảng trùng lập với 1 dòng
+const uniqueArr = [...new Set([1, 1, 2, 3, 3])]; // [1, 2, 3]
+```
+
+```python
+# === PYTHON SET ===
+my_set = set()
+my_set.add(10)
+my_set.add(10)
+
+print(10 in my_set) # True (Siêu nhanh)
+print(list(set([1, 1, 2, 3, 3]))) # [1, 2, 3]
+```
+
+---
+
 ## 🔄 Hash Table vs Array
 
 | Tiêu chí | Array | Hash Table |

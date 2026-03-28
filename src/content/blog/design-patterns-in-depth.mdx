@@ -1,0 +1,728 @@
+---
+title: "Ví Dụ Cụ Thể Từng Design Pattern Bằng Code TypeScript"
+date: 2026-04-03T08:00:00Z
+excerpt: "Khám phá các Design Patterns thực tế hay dùng nhất đi kèm với code mô phỏng, dễ hình dung và áp dụng ngay."
+---
+
+*(Đọc bản tóm tắt tại: [Tổng Hợp Các Nguyên Lý & Mô Hình Lập Trình](/notes/best-practices-overview))*
+
+Bài viết này đi sâu vào các mẫu thiết kế kinh điển bằng **code minh họa thực tiễn** dễ hiểu.
+
+---
+
+## 🏗️ 1. Mẫu Khởi Tạo (Creational Patterns)
+
+### 👑 Singleton (Duy nhât 1 Instance)
+**Khi nào dùng?** App chỉ cần 1 Logger, 1 Cấu hình Database. Dùng đi dùng lại khắp mọi file.
+```typescript
+class Database {
+  private static instance: Database;
+  
+  // Khóa constructor lại không cho thằng khác xài từ khóa `new`
+  private constructor() { console.log("Connect to DB..."); }
+  
+  // Cửa duy nhất lấy ra xài cục CSDL này
+  static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database(); // Chỉ new đúng 1 lần
+    }
+    return Database.instance;
+  }
+  
+  query(sql: string) { console.log(`Executing: ${sql}`); }
+}
+
+const db1 = Database.getInstance(); // Hiện "Connect to DB..."
+const db2 = Database.getInstance(); // Im ru (Đã lấy sẵn instance cũ)
+```
+
+### 🏭 Factory Method (Xưởng Sản Xuất)
+**Khi nào dùng?** Khi bạn muốn khởi tạo object phức tạp bằng 1 dòng lệnh siêu gọn.
+```typescript
+interface Button { render(): void; }
+class WindowsButton implements Button { render() { console.log("Hộp thoại Windows"); } }
+class WebButton implements Button { render() { console.log("Nút HTML Canvas"); } }
+
+// Abstract Factory: Thằng sếp, đưa ra chỉ thị "hãy làm nút"
+abstract class Dialog {
+  abstract createButton(): Button; // Chi tiết tạo nút để cấp dưới lo
+  
+  renderBtn() {
+    const btn = this.createButton();
+    btn.render();
+  }
+}
+
+class WindowsDialog extends Dialog {
+  createButton(): Button { return new WindowsButton(); }
+}
+class WebDialog extends Dialog {
+  createButton(): Button { return new WebButton(); }
+}
+
+// Chạy:
+new WebDialog().renderBtn(); // Nút HTML Canvas
+```
+
+### 🏢 Abstract Factory (Xưởng Đúc Đồng Bộ)
+**Khi nào dùng?** Khách hàng mua bàn phải đi kèm ghế, mua Tủ phong cách Zen phải đi kèm Giường Zen. Tránh tình trạng nhét ghế Phục Hưng vào Bàn phong cách Alien. Mẫu này gom Đám Factory Method lại đẻ ra 1 bộ sậu chuẩn chỉ!
+```typescript
+// Các món đồ (Ghế & Bàn tròn dài tùy ý)
+interface Chair { hasLegs(): boolean; }
+interface Sofa { sitOnIt(): void; }
+
+// Các Dòng Sản Phẩm (Gỗ xịn ngọc am vs Nhựa chợ lớn)
+class VictorianChair implements Chair { hasLegs() { return true; } }
+class VictorianSofa implements Sofa { sitOnIt() { console.log('Ngồi Êm Ru Kiểu Quý Tộc'); } }
+
+class PlasticChair implements Chair { hasLegs() { return false; } }
+class PlasticSofa implements Sofa { sitOnIt() { console.log('Ngồi gãy xương chậu'); } }
+
+// ÔNG VUA XƯỞNG (Abstract Factory): Bắt buộc đẻ ra 1 cặp!
+interface FurnitureFactory {
+  createChair(): Chair;
+  createSofa(): Sofa;
+}
+
+// Xưởng chuyên mài Đồ Cổ
+class VictorianFactory implements FurnitureFactory {
+  createChair() { return new VictorianChair(); }
+  createSofa() { return new VictorianSofa(); }
+}
+
+// Dùng thật: Chốt đơn 1 Cặp Quý Tộc
+const xuyenViet = new VictorianFactory();
+const ghe = xuyenViet.createChair();
+const sofa = xuyenViet.createSofa();
+sofa.sitOnIt(); // Ngồi Êm Ru Kiểu Quý Tộc
+```
+
+### 🧱 Builder (Gã Thợ Lắp Ráp)
+**Khi nào dùng?** Construct 1 object mà nó có tới 10 tham số. Nhìn dòng `new House(true, false, true, 4, 2, "gỗ")` là rùng mình. Trực giác méo biết tham số thứ 3 `true` là bể bơi hay là chó giữ nhà?? Có Thợ Lắp Ráp thì ta xây từng khối theo tên đàng hoàng.
+```typescript
+class House {
+  public walls = 0;
+  public doors = 0;
+  public hasPool = false;
+  public hasGarage = false;
+}
+
+// Thằng Thợ Hồ (Chỉ tuân lệnh, làm xong nhả Nhà ra)
+class HouseBuilder {
+  private house = new House();
+  
+  buildWalls(n: number) { this.house.walls = n; return this; }
+  buildDoors(n: number) { this.house.doors = n; return this; }
+  buildPool() { this.house.hasPool = true; return this; }
+  buildGarage() { this.house.hasGarage = true; return this; }
+  
+  getResult() { return this.house; }
+}
+
+// Triệu hồi Thợ:
+const myLuxuryVilla = new HouseBuilder()
+  .buildDoors(5)
+  .buildWalls(20)
+  .buildPool()
+  // Không thích Garage thì méo gọi buildGarage, chả chết ai
+  .getResult();
+  
+console.log(myLuxuryVilla); // { walls: 20, doors: 5, hasPool: true, hasGarage: false }
+```
+
+### 🐑 Prototype (Nhân Bản Cừu Dolly)
+**Khi nào dùng?** Lấy Data từ Database tạo ra con Quái Vật Level 99 siêu to khổng lồ mất 5s Load RAM. Bạn muốn đẻ ra 1 vạn con quái giống hệt như vậy mà méo màng vào Database lấy nữa. Gọi thuật phân thân Chi Bóng Cừu Dolly!
+```typescript
+class Monster {
+  constructor(public name: string, public hp: number, public secretWeapon: string) {
+    // Siêu nặng, load ngầm API database DB mất 5s...
+  }
+  
+  // Hàm nhân bản Vĩ Đại
+  clone(): Monster {
+    // Copy luôn bộ nhớ RAM không tốn công chọc lại Database
+    return new Monster(this.name + " (Clone Thừa Kế)", this.hp, this.secretWeapon);
+  }
+}
+
+const bossGiua = new Monster("Diablo", 9999, "Lửa Địa Ngục");
+const deCuaBoss = bossGiua.clone(); // Load 0 giây
+console.log(deCuaBoss.name); // Diablo (Clone Thừa Kế)
+```
+
+---
+
+## 2. Mẫu Cấu Trúc (Structural Patterns)
+
+### 🔌 Adapter (Kẻ chuyển đổi)
+**Khi nào dùng?** API cũ trả về chuỗi XML, nhưng Chart Library UI mới lại chỉ xài mảng JSON. Ta chế một cái Adapter cắm vào giữa.
+
+```typescript
+// Món rởm
+class XmlApi { getXml() { return "<user>Hoa</user>"; } }
+// Đồ xịn cần dùng JSON
+class JsonChartUI { render(jsonObj: any) { console.log("Vẽ mượt", jsonObj.name); } }
+
+// 📌 Adapter cứu rỗi đời lập trình viên
+class XmlToJsonAdapter {
+  constructor(private xmlApi: XmlApi) {}
+  
+  getJson() {
+    const rawXml = this.xmlApi.getXml();
+    // (Logic Fake Regex) Cắt chuỗi để giả vờ chuyển XML -> JSON
+    return { name: "Hoa" };
+  }
+}
+
+// Xài thôi:
+const oldSystem = new XmlApi();
+const adapter = new XmlToJsonAdapter(oldSystem);
+
+const ui = new JsonChartUI();
+ui.render(adapter.getJson()); // Vẽ mượt Hoa
+```
+
+### 👘 Decorator (Bọc Thêm Năng Lực)
+**Khi nào dùng?** Bạn có class `Cafe`, người ta muốn mua `Cafe + Sữa`, người khác mua `Cafe + Bọt`, người dị dợm mua `Cafe + Sữa + Bọt x2`. Mẫu này giúp tính giá xịn xò.
+
+```typescript
+interface Coffee { cost(): number; }
+class BlackCoffee implements Coffee { cost() { return 20; } }
+
+// Bộ Bọc Trang Trí
+class CoffeeDecorator implements Coffee {
+  constructor(protected coffee: Coffee) {} // Chứa li cafe gốc bên trong
+  cost() { return this.coffee.cost(); }
+}
+
+class MilkDecorator extends CoffeeDecorator {
+  cost() { return super.cost() + 5; } // Thêm 5k tiền sữa
+}
+
+class WhipDecorator extends CoffeeDecorator {
+  cost() { return super.cost() + 10; } // Thêm 10k tiền bọt
+}
+
+// Trải nghiệm khách hàng:
+let myCup: Coffee = new BlackCoffee();
+myCup = new MilkDecorator(myCup); // Chế sữa vào ly
+myCup = new WhipDecorator(myCup); // Thêm bọt
+console.log(myCup.cost()); // Ra lò: 20 + 5 + 10 = 35k
+```
+
+### 🎭 Facade (Mặt Nạ Đơn Giản Hóa)
+**Khi nào dùng?** Bộ đồ lòng Máy Giặt bạn soi thấy là 1 đống Motor Xoay, Van Bơm Nước, Phễu xả... Khách lạ chỉ muốn "Bấm đúng 1 nút thì Áo Nhả Ra Giặt Ngon", méo màng quan tâm trong ruột cồng kềnh cỡ nào. Facade đi may cái Nút Giao Diện ảo ma che đi cái mớ bòng bong hắc ám ở sau đó.
+```typescript
+// Các thành phần ruột rà hỗn độn vứt tóe loe
+class VanNuoc { moVan() { console.log('Nước chảy rào rào'); } }
+class MotorTruc { quay(vang: number) { console.log(`Quay tốc độ ${vang} vòng`); } }
+class CuaMayGiat { dongCua() { console.log('Chốt cửa cách ly cực ngặt!'); } }
+
+// GÃ MẶT NẠ (Facade) Gánh Nợ Tội Lỗi
+class MayGiatFacade {
+  private van = new VanNuoc();
+  private motor = new MotorTruc();
+  private cua = new CuaMayGiat();
+
+  giatSachQuanAo() {
+    this.cua.dongCua();
+    this.van.moVan();
+    this.motor.quay(1000);
+    console.log('Ting Ting! Đem phơi đi thằng lười!');
+  }
+}
+
+// Bọn nghiệp dư móc ra xài húp trọn
+const mayGiat = new MayGiatFacade();
+mayGiat.giatSachQuanAo(); // 1 nút Bấm cân mọi thế giới
+```
+
+### 🚪 Proxy (Người Gác Cổng / Chặn Lỗ Hổng)
+**Khi nào dùng?** App bạn có Class `Youtube` tải Video tốn 1 GB mạng. User Click Spam 20 chục phát nút Tải, server bị thắt cổ hốc máu. Lập 1 thằng Người Giới Đứng Trước, gõ kẻng: "Mày tải rôì, t tống cái Cache ra nhét vô mặt mày chứ không cấp Tải thực tế nữa".
+```typescript
+interface Downloader { download(videoUrl: string): string; }
+
+// Cục API Thật (Nặng Chảy Chết mẹ)
+class RealYoutube implements Downloader {
+  download(videoUrl: string) {
+    console.log(`Đang cút tận xuống Server Đáy Biển tải cục: ${videoUrl}`);
+    return "Phim_Hanh_Dong.mp4";
+  }
+}
+
+// Người Gác Cổng Kế Toán Xanh Chín
+class ProxyYoutube implements Downloader {
+  private realVideo = new RealYoutube();
+  private cachedVideo: Record<string, string> = {}; // Tủ lạnh chứa đồ ăn thừa Cắm 1 Gb
+
+  download(videoUrl: string) {
+    if (!this.cachedVideo[videoUrl]) {
+      // Non trẻ gọi lần đầu, Cho Đi Xúc đất làm đồ thật
+      this.cachedVideo[videoUrl] = this.realVideo.download(videoUrl);
+    } else {
+      console.log(`[Ủa mải tải rồi mà?] - Quạt cái rầm Cache vào mặt: ${videoUrl}`);
+    }
+    return this.cachedVideo[videoUrl];
+  }
+}
+
+// Demo Spam Kinh Hoàng Lũ Trẻ:
+const bouncer = new ProxyYoutube();
+bouncer.download("link_phim"); // Đi tải thật 1 phút
+bouncer.download("link_phim"); // Rét! Nhè Cache 0ms 
+bouncer.download("link_phim"); // Rét! Nhè Cache 0ms
+```
+
+### 🌉 Bridge (Chiếc Cầu Bẻ Vuông Tròn Tách Việc)
+**Khi nào dùng?** Khi Code Cứng 2 nhánh Răng Cưa: Cấp Lớp "Cái Nút Đỏ", "Cái Nút Xanh" xong rồi khách bảo cho thêm Nút Cam t thành "Nút Cam", "Nút Lõm Xanh"?? Cấp độ Lai Nhân Bản bành trướng sập RAM (Combinatorial Explosion). Bridge đập cái búa Chia 2 vế rõ Ràng: Hình Đi Đằng Hình; Chó đi đằng Màu Mẻ.
+```typescript
+interface Color { fill(): string; }
+class Red implements Color { fill() { return "Đỏ khè máu"; } }
+class Blue implements Color { fill() { return "Xanh tái mét"; } }
+
+// Cầu nối (Bridge) Cắm màu Rời Nuôi Băng Hình Tổ Tông
+abstract class Shape {
+  constructor(protected color: Color) {} // Cái Cán lỗ cắm cọ vẩy Tông Màu tùy chỉnh
+  abstract draw(): void;
+}
+
+class Circle extends Shape {
+  draw() { console.log(`Trổ hình Vòng Tròn màu: ${this.color.fill()}`); }
+}
+class Square extends Shape {
+  draw() { console.log(`Đục Lỗ Vuông màu: ${this.color.fill()}`); }
+}
+
+// Nêm Nếm Quẩy:
+const blueCircle = new Circle(new Blue());
+blueCircle.draw(); // Vòng Hình Tròn Màu Xanh tái mét (Chia Rạch Lược Hoàn Mỹ)
+```
+
+### 🌳 Composite (Dây Thìa Canh Rễ Trùm / Búp Bê Nga)
+**Khi nào dùng?** Lái Đóng Gói Một Thùng Hàng trong đó có 2 Gói Bưu Phẩm Bọc Trong. Trong Góc 1 Gói lại lấp Liếm 3 Hộp Gói Nhỏ lồng chéo. Tính Tổng Bill Lô Lô Hàng ra Bao Nhiêu Tiền Kg Vận Đơn? Buộc Đối Tượng Đơn Lẻ Mảnh (Khăn Tắm Đồng Giá) và Nhóm Ngấu Nghiến (Sọt Tôm Càng) vào Cùng Chung 1 Quy Tắc Get Tiền.
+```typescript
+interface Component { getPrice(): number; }
+
+// Điểm Lót Đáy Cùng Hộp - Chấp Mọi Ngang Khía
+class ProductItem implements Component {
+  constructor(private name: string, private price: number) {}
+  getPrice() { return this.price; }
+}
+
+// Túi Bọc Ngoại Diện (Chứa Con Nhỏ Trùm)
+class BoxComposite implements Component {
+  private boxChildren: Component[] = [];
+  
+  add(child: Component) { this.boxChildren.push(child); }
+  
+  // Ma thuật Đệ Quy (Cứ có Thằng Lỏi Con thì bọc cổ xâu lôi tiền lên Tổng)
+  getPrice() {
+    return this.boxChildren.reduce((sum, child) => sum + child.getPrice(), 0);
+  }
+}
+
+// Cố Chốt Lô:
+const hoTo = new BoxComposite(); // Rương Ngoài Cùng Bự Tổ Bố
+
+const hopNho = new BoxComposite(); // Hộp nhét góc Thêm
+hopNho.add(new ProductItem("Sạc Mac Trâu Bò", 1500));
+hopNho.add(new ProductItem("Tai Nghe Rẻ Rách", 100));
+
+hoTo.add(hopNho); // Hộp lại quăng Thủng Rương Hộp Bự
+hoTo.add(new ProductItem("Sách Design Pattern Chân Kinh", 400)); // Lẻ tẻ Mắc cạn ngoài bìa rương
+
+console.log(hoTo.getPrice()); // Tổng 2000 (Chạm tay là Tính hết Dòng Cọp Cuộn)
+```
+
+### 🪰 Flyweight (Hạt Cát Bay Tỏa Hồn RAM)
+**Khi nào dùng?** Team Rừng Game đẻ ra 1 Triệu Cây Cổ Thụ. Nét Bể Texture Lá mỗi Cây Size tống 5MB. Tràn Đom Đóm Máy Người Chơi Bắt Lóe (5 Triệu MB - 5TB Rớt Nhịp). Cất tủ Mảng Xinh Đẻ ra Chỉ Đúng 1 Ảnh Lá Xanh Vẽ 5MB dùng Chăn Trâu Dùng Chung! Cây Chơi Toàn Map Chỉ Khác Nút Tọa Độ Cắm Đất (X,Y) Trắng Bóc Thôi.
+```typescript
+// Trạng Thái Nồi Sinh Nội Độc (Cục Kẽm Khổng Lồ Chia Chia Chung)
+class TreeType {
+  constructor(public modelName: string, public textureTonsOfMegabytes: string) {}
+  render(x: number, y: number) { console.log(`Cắm Mọc Cây ${this.modelName} Tại Map Điểm (X: ${x}, Y: ${y})`); }
+}
+
+// Khố Chứa Chung Tối Giản Cache Factory (Đỉnh Cao Trừ Bì)
+class TreeFactory {
+  static treeTypes: Record<string, TreeType> = {};
+  
+  static getTreeType(name: string, tx: string) {
+    if (!this.treeTypes[name]) {
+      this.treeTypes[name] = new TreeType(name, tx); // Thiếu mới Build Hình Nấm
+    }
+    return this.treeTypes[name]; // Trả Cache Xanh Chín Trơn Láng
+  }
+}
+
+// Cây Giấy Con Con Trên Đất Tốn Đúng 1KB Bộ Nhớ Trí Khôn
+class Tree {
+  constructor(private x: number, private y: number, private type: TreeType) {}
+  draw() { this.type.render(this.x, this.y); }
+}
+
+// Rải 10 Vạn Triệu Hạt Cây Map Không Rớt 1 Lỗ Đen FPS Nào!
+const loamSoi = TreeFactory.getTreeType("Cây Sồi Trăm Tuổi", "img_soi_nang_tram_mb.png");
+const cay1 = new Tree(10, 20, loamSoi);
+const cay2 = new Tree(99, 50, loamSoi); 
+cay1.draw(); cay2.draw();
+```
+
+---
+
+## 3. Mẫu Hành Vi (Behavioral Patterns)
+
+### 📰 Observer (Chuông báo Event)
+**Khi nào dùng?** Hệ thống Event lừng danh trong Javascript `(addEventListener)`.
+
+```typescript
+// Kênh Youtube
+class Channel {
+  private subs: ((video: string) => void)[] = [];
+  
+  subscribe(sub: (video: string) => void) { this.subs.push(sub); }
+  
+  uploadVideo(title: string) {
+    console.log(`Đã ra mắt clip: ${title}`);
+    this.subs.forEach(s => s(title)); // Bắn tin báo cho triệu con chim lợn
+  }
+}
+
+// Người theo dõi (Observer)
+const userLam = (vid: string) => console.log(`Lâm Đã vô xem ${vid} cmt đầu!`);
+const userHoa = (vid: string) => console.log(`Hoa để mai coi ${vid}`);
+
+const mixi = new Channel();
+mixi.subscribe(userLam);
+mixi.subscribe(userHoa);
+
+mixi.uploadVideo("Review Bàn Phím");
+// Kết quả (tự động 100%):
+// Lâm Đã vô xem Review Bàn Phím cmt đầu!
+// Hoa để mai coi Review Bàn Phím
+```
+
+### 🕹️ Strategy (Bỏ 5 món võ vào 1 cái túi)
+**Khi nào dùng?** 1 game quái vật lúc bình thường đánh Melee, xuống 20% máu xài skill Fireball, sắp chết dùng skill Cắn lén. Thay vì check if-else máu, đổi luôn chiến thuật.
+
+```typescript
+// Các chiến thuật độc lập hoàn toàn với nhau
+interface AttackStrategy { attack(): void; }
+class MeleeAttack implements AttackStrategy { attack() { console.log('Vuốt móng vuốt!'); } }
+class FireAttack implements AttackStrategy { attack() { console.log('Phun lửa!'); } }
+class RunAway implements AttackStrategy { attack() { console.log('Chạy sút quần!'); } }
+
+// Con quái chứa chiến thuật
+class Boss {
+  constructor(private strategy: AttackStrategy) {}
+  
+  // Đóng nóng (Hotswap) chiến thuật ngay giữa trận đấu!
+  setStrategy(st: AttackStrategy) { this.strategy = st; }
+  
+  doAction() { this.strategy.attack(); }
+}
+
+const dragon = new Boss(new MeleeAttack());
+dragon.doAction(); // Vuốt móng vuốt!
+
+dragon.setStrategy(new FireAttack()); 
+dragon.doAction(); // Sang Phase 2 đấm lửa rát mặt.
+
+dragon.setStrategy(new RunAway());
+dragon.doAction(); // Thấy nhân vật chính buff quá, lượn cho nước nó trong.
+```
+
+### 📜 Command (Lưu Lệnh Thành 1 Tờ Giấy Thỉnh Tội)
+**Khi nào dùng?** App của sếp có nút Undo/Redo "Hủy thao tác" hoặc muốn Hẹn Giờ 1 tiếng sau mới chạy Lệnh Gửi Mail. Thay vì ấn phát chạy luôn, gói hành động đó lại thành 1 cái Thẻ Bài (Command) có Khấc Cài, ném cho thằng khác lúc nào thích thì xài.
+```typescript
+interface Command { execute(): void; undo(): void; }
+
+// Thẻ Bài: Rút Gươm
+class RutGuomCommand implements Command {
+  execute() { console.log("Rút kiếm Nhật đánh Văng Đầu!"); }
+  undo() { console.log("Cất kiếm vô vỏ cạch, Liếm Vết Máu!"); }
+}
+
+// Thẻ Bài: Bắn Cung
+class BanCungCommand implements Command {
+  execute() { console.log("Thả Cung Bay Chéo Trời Mây!"); }
+  undo() { console.log("Chạy Ra Lụm Mũi Tên Về Quiver Cất Dấu"); } // Hoàn Tác Kinh điển
+}
+
+// Bảng Điều Khiển Tay Cầm Khống Chế
+class GameController {
+  private history: Command[] = []; // Nơi chứa Lịch sử Ấn Nút Mòn Dấu Tay
+  
+  bamNut(cmd: Command) {
+    cmd.execute();
+    this.history.push(cmd); // Lưu thẻ bài vào bộ Trí Nhớ Vừa Nhấp
+  }
+  
+  bamNutZ() { // Ctrl+Z Undo Thần thánh Hoàn Tục Tội Lỗi Vụt Mất
+    const lastCmd = this.history.pop();
+    if (lastCmd) lastCmd.undo(); 
+  }
+}
+
+const tayCam = new GameController();
+tayCam.bamNut(new RutGuomCommand()); // Rút kiếm Nhật đánh Văng Đầu!
+tayCam.bamNut(new BanCungCommand()); // Thả Cung Bay Chéo Trời Mây!
+tayCam.bamNutZ(); // Chạy Ra Lụm Mũi Tên Về Quiver Cất Dấu (Undo Hủy Chột Cú Bắn Xịt)
+```
+
+### 🚦 State (Hội Chứng Đa Nhân Cách)
+**Khi nào dùng?** Nhân vật Thằng Gù trong Game: Lúc Bình Thường thì hàm `DiChuyen()` là Đi bộ. Nếu Thằng Gù Nhặt được Thuốc Lắc, Đổi Trạng Thái thì `DiChuyen()` biến thành Chạy Như Chó Điện cắn Vứt Lốp. Cắm `If-else` 10 Trạng thái là Nát Não Vô Nghĩa. Vứt Code Hành Vi Vô Tận vào Cục State Độc Lập là Sạch Máu Xong!
+```typescript
+interface State { doAction(): void; }
+
+class BinhThuong implements State { doAction() { console.log("Đứng thở lề dề Rề Rà"); } }
+class HoaChoDien implements State { doAction() { console.log("Cắn Xé Đứt Da Chảy Bọt Mép Điên Đảo"); } }
+
+// Thể xác Rỗng Của Quái Vật
+class BossZombie {
+  private state: State;
+  constructor() { this.state = new BinhThuong(); } // Sinh ra là Nhờ Nhờ Ngoan Ngoãn
+  
+  biChichThuoc() { this.state = new HoaChoDien(); } // Lên Trạng Cơn Phẫn Nộ Mất Kiểm Soát Lõi Não!
+  
+  tanCong() { this.state.doAction(); } // Ép nó xài Hành Động trong cái Bản Ngã Ẩn Giấu Cuối Xa Khơi đó
+}
+
+const zom = new BossZombie();
+zom.tanCong();       // Đứng thở lề dề Rề Rà
+zom.biChichThuoc();  // (Chuyển State Thể Nội Âm Thầm)
+zom.tanCong();       // Cắn Xé Đứt Da Chảy Bọt Mép Điên Đảo
+```
+
+### 🦴 Template Method (Khung Xương Đúc Sẵn Sân Sỉ Trong Đỉnh Núi)
+**Khi nào dùng?** Khóa học Dạy Nấu Ăn của Gordon Ramsay luôn Buộc Tuân Lệnh 3 Bước: Bật Bếp, Bỏ Thịt Mua Ở Chợ Vào Nồi, Tắt Bếp Đẩy Vung. Ổng ra lệnh: "Bật, Tắt Tao Lót Sẵn Code 100%, Còn Nấu Thịt Nào Là Tụi Bay Chọn Khổ Nhục Đi!". Cấp cho Khung Sườn Chung Kín, thả Giữa Trống Não Lọt Lối cho lớp ĐỆ TỬ CẮT XẺ tùy tùng.
+```typescript
+abstract class NauAnGiaTruyen {
+  // Bộ Khung Xương Đóng Đinh Không Cho Thằng Đệ Nào Nhảy Xâm Phạm Phá Vỡ Logic Tổng Thể Thuật Toán
+  naumon() {
+    this.batBep();
+    this.choNguyenLieu(); // Lỗ Khoan Nhường Đệ Trần Truồng nhét Món Cháo Vô Đầu Nghệ Thuật
+    this.tatBep();
+  }
+  
+  batBep() { console.log("Bật Lửa Khè Lò Than."); }
+  tatBep() { console.log("Rút Phích Cắm Bếp Giập Cháy."); }
+  
+  abstract choNguyenLieu(): void; // Sân khấu Tôn Binh dành Góc Trống Thi Thiên Riêng
+}
+
+class NauMyToom extends NauAnGiaTruyen {
+  choNguyenLieu() { console.log("Quăng Vắt Mỳ Miliket Chói Khí 2 Trứng Ốp La"); }
+}
+
+class NauPhoBao extends NauAnGiaTruyen {
+  choNguyenLieu() { console.log("Hầm Xương Xé Rách 48 Tiếng Bỏ Mạ Rau Răm Vô Cuống"); }
+}
+
+new NauPhoBao().naumon(); 
+// Bật Lửa Khè Lò Than.
+// Hầm Xương Xé Rách 48 Tiếng Bỏ Mạ Rau Răm Vô Cuống.
+// Rút Phích Cắm Bếp Giập Cháy.
+```
+
+### 🚂 Iterator (Máy Quét Rà Quét Vét Trụi Máng)
+**Khi nào dùng?** Khách Hộp Cơm có List Món Ăn lưu bằng Trục `Array`, Khách Vali lưu bằng Cành `Tree`, Khách Túi Ba Gang lưu Node bằng Lưới Nhện `Graph`. Vác cái vòng lặp For Gà Mờ Trẻ Trâu `for(i=0...` ra là chết ngắt vì Méo Biết Thằng Trong Cục Đống Cối Dài Bao Nhiêu Nút Cắm. Iterator lôi mọi thứ Tạp Khí Độc Ra băm chung rập theo 1 Cỗ Máy Con Trỏ Tịnh Vét Cạn Cùng Lưng Trời Đáy Đất.
+```typescript
+class HangHoaIterator {
+  private pointer = 0;
+  constructor(private collection: string[]) {}
+  
+  hasNext() { return this.pointer < this.collection.length; } // Chọc Coi Lòi Đáy Chưa
+  next() { return this.collection[this.pointer++]; }
+}
+
+// Bất Qủa Túi Gì, Thì Chốt Cấn Chung 1 Lỗ Móc Trục Ngọn Iterator Nhả Bột!
+class TuiBaGang {
+  private items = ["Cục Vàng", "Đỉnh Bạc", "Hột Kim Cương Hạt"];
+  getIterator() { return new HangHoaIterator(this.items); }
+}
+
+const tuiChim = new TuiBaGang();
+const mayQuet = tuiChim.getIterator();
+
+// Thằng Code Vòng lặp Húp Cạn chẳng Cần Màng Biết `items` Ẩn lưu bằng List Map Cây Cối Array Ngắn Dài Gì Sất Cả! 
+// "Ép Còn Nút Không Thở Mở Ra? Nhè Trả Tao Thằng Tiếp Kế Coi Nhanh!"
+while(mayQuet.hasNext()) {
+  console.log("Móc Tay Xách Rương Khổ Tôn Ra: ", mayQuet.next());
+}
+```
+
+### 🛃 Mediator (Trạm Khống Chế Điểm Vàng Tổng Đài)
+**Khi nào dùng?** Bờ Sân bay Nội Bài có Tầm 100 Đáy Chiếc Máy Bay Khủng. Thằng `Boing` bật chóp Mỏ Gọi Thẳng `Airbus` "Ê m Né đâm t ra Nhá Lốt Bay Đang Chéo Cánh", Airbus lố Hét Cắn Quàng Chó `Jetstar` "Ê M Đáp Chỗ Bể Máng Tao à". Rối Tung Nùi Đống Kén Ruột 10 Ngàn Đường Dây Nhện Chéo Kêu Gầm Đâm Xác Mảnh Sập Tàn Vỡ Tung Rơi.
+Rút Bỏ! Gom Đạp Hết Bộ Đàm Cá Nhân Xóa Đi. TẤT CẢ PHẢI CÚI CẦU GỌI LÊN ÔNG TỔ TỔNG ĐÀI CỠ QUAN TRỌNG (Tháp Không Lưu Đội Mũ). Rất Gọn Làm Trách Rành Mạch Phản Xạ Nhanh Cực Cửa Sạch Đẹp Ngay Tắp Tự Rì! (Thằng Controller Lưới Sạch MVC Sinh Ra Chính Từ Mẫu Tổ Mediator Này Nhé)
+```typescript
+// Tháp Đáy Lầu Không Lưu Vàng Chóe Cao Vuốt Góc Khốn Mạn
+class ThapKhongLuu {
+  static phatLoa(mayBay: string, tinNhan: string) {
+    console.log(`[ĐỈNH RÚT TỔNG ĐÀI NHẬP LỆNH NGÀN LOA TỪ ${mayBay} ĐÈ TỚI]: ${tinNhan}`);
+  }
+}
+
+// Đám Khốn Máy Bay Chó Ngáo Lao Xao
+class MayBay {
+  constructor(public ten: string) {}
+  
+  // Trọng Trách Cắt Phăng Lưỡi Không Kêu Khóc Nội Xích. Bấm Nắn Xin Phép Tín Truyền Lên Bàn Tổng Đài Tòa Cao Hết Mọi Cuộc Nhục Mạ Không Quái
+  baoCao(tinNhan: string) {
+    ThapKhongLuu.phatLoa(this.ten, tinNhan);
+  }
+}
+
+const vnAirline = new MayBay("Chúa Nhẫn VietNam Airline Chắn Ngôi");
+const bamboo = new MayBay("Tia Chớp Trúc Tre Chặt Khúc");
+
+vnAirline.baoCao("Xin Rê Xích Mạ Đường Băng Nằm Lết Hạ Chút Ít Cánh Mâm Đi Phũ");
+bamboo.baoCao("Xê! Bố Cưa Bắt Thốc Rẽ Sóng Rút Tung Khói Lên Không Đứng Thẳng!");
+// Trung Tâm Khống Trực Chốt Mọi Liên Khí Ù Ù Sọt Mép Khúc Trên. Đứt Tuyệt Góc Rối Dây Nùi! Sạch Như Chữ Y Tiền Tiền.
+```
+
+### ⛓️ Chain of Responsibility (Dây Chuyền Trái Banh Trách Nhiệm Chuyền Ngược Cho Cấp Lớn Bự Trùm Thượng Cổ)
+**Khi nào dùng?** Đệ Vác Chốt Đưa Giấy Cắm Cục Hồ Sơ Sếp Nho Xin Cấp Thay Ngay Máy Mac Tươi mới Sập Mốc Cũ Gọi Phò Tiền Quỹ.
+Phòng Anh IT ngạc nhiên vẫy Lệnh Vớ: "Mua Chuột Bé Rút Răng Ngon 5 Củ Nhấm Nhỏ Nho Nhoi E Mở Quy Duyệt Ngầm Cửa Nhẹ Cái Một Pass Liền 1s Xong Đi Về!". Lệnh Kinh Phí Chát Mất Ngôi 50 Chục Củ Trăm Tỷ Kế Toán Văng -> "Thồi Quỷ Dạ, Anh Cắp Nón Chắp Tay Kính Cho Xin Kính Đùn Cử Cái Cấp Rạch Môn Dâng Trình Lập Nóc Ông Chóp Giám Đốc Trên Đảo Quản Túi Cửa Kẹt Xin Đi Khỏi Dính Líu Dấu Dao Tao Chịu Éo!". 
+Chốt Chạc Quy Tắc Code Lõi Chuỗi Dây Chuyền Bán Tiêu Cục Ngàn Điểm Cứ Mắt Xích Kẹt Tiền Thằng Lính Hậu Cần Dưới Trướng Rẻ Tiền Bỏ Túi Xa Mặt Thì Cầm Gạt Đai Buông Ngược Cho Khẩu Súng Ông Đại Trùm Thượng Đỉnh Leo Ngồi Bục Ghế Sau Lưng Rèn Lính. 
+NodeJS Middleware Tốc Hồn Chuỗi `next()` Chóp Thủy Cấp Rập Khuôn Mẫu Mã Căng này Dày Nhứt Nhối Thế Đấy Rập Xăm. 
+```typescript
+abstract class NguoiDuyetHanhChoLanhNgoc {
+  protected sepDauMoiBucKhungHoLonHon: NguoiDuyetHanhChoLanhNgoc | null = null; // Trượng Nhắn Đi Cột Móc Nào 
+  
+  // Siết Cương Xích Dây Xâu Mũi Giám Đội Hầu Màn
+  setSepBuLanh(sep: NguoiDuyetHanhChoLanhNgoc) { 
+    this.sepDauMoiBucKhungHoLonHon = sep; return sep; 
+  } 
+  
+  // Hành Cơ Định Tiêu Rạch Mạch Dập Truyền Lệnh: Kém Điểm Xin Lỗi Hèn Chỉ Điểm Pass Cửa Quất Ngược Nôm Dâng Cấp Trên Đưa Tráp Quá Khổ Hạng Không Phấn Rẻ Tiền Rảnh Tay Ôm
+  duyetTraTrachBo(soKinhPhiTienVayCot: number) {
+    if (this.sepDauMoiBucKhungHoLonHon)  
+      this.sepDauMoiBucKhungHoLonHon.duyetTraTrachBo(soKinhPhiTienVayCot);
+    else 
+      console.log("Xì Túi Nghẽn Gói Dữ Dự Án Rất Rợn Này Khủng Bố Siêu Sốc Tài Lực Rụng Đầu Đình Bó Xác Nhờ Hồn Vũ Trụ Cứu Lấy! Vứt Xác Trôi Đi Đu Cổng!");
+  }
+}
+
+class ITVuiVeGhePhatXuQuenQuyenHanhDongTheoThuCongBuc extends NguoiDuyetHanhChoLanhNgoc {
+  duyetTraTrachBo(soKinhPhiTienVayCot: number) {
+    if (soKinhPhiTienVayCot < 15) console.log("Lính Bảo Vệ IT Quèn Gật Gù Cộp Dấu Trạm: Duyệt Qua Rút Cặp Mua Chuột Trượt Bao Da Thay Kéo Nhanh!");
+    else super.duyetTraTrachBo(soKinhPhiTienVayCot); // Cạn Tức Lộn Cuống Sợ Qúa Rụt Tạy Nhanh Đeo Mang Cắp Chạy Dâng Cửa Ngược Lên Tầng Giới Chức Trên Thôi Sập Khang Thoai
+  }
+}
+
+class GiamDocCaoNgostXienVienLonChongKhieuThTienNgoiBucTrenCung extends NguoiDuyetHanhChoLanhNgoc {
+  duyetTraTrachBo(soKinhPhiTienVayCot: number) {
+    if (soKinhPhiTienVayCot < 100) console.log("Cục Trưởng Giám Đốc Cao Ngáo Cầm Con Mộc Dấu Đóng Cạch Cạch Sơn Đỏ Sáng Chói: Cho Rút Rẹt Quý Ban Cấp Macbook M1 Pro Gấp Gọn Khỏe Sặc Nghề Đi Ngựa!");
+    else super.duyetTraTrachBo(soKinhPhiTienVayCot); // Cỡ Bạc Trăm Tỷ Vượt Vốn Khủng Đàn Thì Kéo Gánh Qua Cửa Trần Rừng Hô Nhẩy Nhò Kháng Tách Trời Cho Hết Sợ Rớt Cả Bàn Quả Quyến
+  }
+}
+
+// Lắp Ráp Nhập Guồng Nòng Xích Nảy Đùn Xe Dây Chuyền Nghênh Ăn Kéo Tội Hành Lót Tội Rập Lủng Lẳng Bục
+const thotITBiSiTromMatLinh = new ITVuiVeGhePhatXuQuenQuyenHanhDongTheoThuCongBuc();
+const anhGiamDoRaoOaiNopTiDaVienCaoBietLon = new GiamDocCaoNgostXienVienLonChongKhieuThTienNgoiBucTrenCung();
+
+// Tới Luợt Trói Cột Xóa Ngáp 
+thotITBiSiTromMatLinh.setSepBuLanh(anhGiamDoRaoOaiNopTiDaVienCaoBietLon); 
+
+// Kéo Sàn Đánh Rọi Án Ngại Nảy Loa Test Phát Chớp:
+thotITBiSiTromMatLinh.duyetTraTrachBo(10);  // Điểm Bắt Cuối Rung Chuông -> Lính Bảo Vệ IT Quèn Gật Gù Cộp Dấu Trạm: Duyệt Qua Rút Cặp Mua Chuột Trượt Bao Da Thay Kéo Nhanh! (Ngậm Đi Đừng Chửi Sợ)
+thotITBiSiTromMatLinh.duyetTraTrachBo(80);  // Nẩy Bóng Lên Đình Án Chớp Giáng Chóa -> Cục Trưởng Giám Đốc Cao Ngáo Cầm Con Mộc Dấu Đóng Cạch Cạch Sơn Đỏ Sáng Chói: Cho Rút Rẹt Quý Ban Cấp Macbook M1 Pro Gấp Gọn Khỏe Sặc Nghề Đi Ngựa! (Tự Vì Nấc Cửa Cũ Ku IT Hãi Cục Tiền Bự Đẩy Ngâm Khay Mâm Vàng Khóa Bay Qúa Trớn Trao Phó Bàn Ông Giám Đốc Dày Quét Lụm Phê Trảm Trả Tiền)
+```
+
+### 🚶 Visitor (Cụ Ông Kẹ Đặc Phái Bán Bảo Hiểm Len Lỏi Chui Vách Vô Cửa Hàm Từng Nhà Nghèo Khoét Ruột Ngoại Giao Điêu Thuyền Sạch Rác Lục Nghề)
+**Khi nào dùng?** Toàn Trọng Cty Xép Sẽ Sàn Chia Tạm Giam Ngàn Góc Cống Lực Các Phân Động Học Class Lên Men Xâu Lớp Bò Nhấp Khó Lọc Mã Sạn Mắc Ngậm Nghẽn Phân Chuồng Kẹt Như "Thằng Dev Code Cu Li IT Máy Móc Trâu", "Ống Úp Kế Toán Quản Khống Vàng Quẹt Tiền Chùi Giấy", "Sói Mỏ Lẹ Sales Marketing Thọt Chát Gọi Buôn Chiêu Lượn Bán Tạp Dô Đất Đai Nhổ Trại Lũ Khốn Hồn Láo Két Gạt Rẻ Tiền". 
+Trời Một Hôm Ngã Búa Khía Sếp Bề Trên Tổng Đài Gí Cầm Mic Thét Óc Nhói Chửi Ói: "Đụ Thê Lũ Mọt Ê, Tao Thích Viết Hợp Luồng Chích Nọc Độc Lệnh Thuật 1 Hàm Trút Hàm `HieuKhaoThangGoiNguaGiamDinhTienCuocKhamDienCucHoiDoiKhoNuocBotTao()` Vào Nặn Sút Liếm Tiết Tận Rốn Mặt Róc Rắn Nhú Mặt Vuốt Cho Khám Đều Thủng Tim Dừng Nhịp Từng Đứa Rét Cho Tỉnh Khóc Mạch Chết Não Mệt Nhọc Tỉnh Tuốc Coi Kẻo Lọc Móng Tiết Lại Cuộc Rà Sát Kinh Ngạc Lập Chết". 
+Hầm Não Phát Bùng Lỡ Mở Sổ Sâu Chua 30 File Tập Bản Mật Mạch Code Cầm Nón Gõ Đục Dao Rạch Mớ Nát Trĩu Chui Ổ Hang Đặc Chọc Phá Nghịch Máu Nổi Chọt Sâu Ruột Dao Nhét Moi Ruột Luồng Khó Chọc Lủng Hàm Nhá Nhả Lòi Sút Kháng Dại Lọt Ngầm Bò Lủng `nhoCaiNhotHienBot()` Vô Khoét Bới Ngậm Nhả Lồng Ngược Từng Class Thì Hỏng Rục Bở Lỡ Toang Thiệt Lỡ Nghẽn Mạch Sập Quệt Lũ Khốn Sập Lôi Hỏng Nhọt Sóng Cắt Máu Bug Nghìn Trạm Đổ Rút Rào Chết Liền Xé Tơi Hết Dở Dang Bò Gánh Cty Kẹt Tan Đất Toang!!
+=> Tranh Né Khó Thoát Giải Thoát Điêu Lệ Lớp Lọ Ngầm Cực Chỉnh: Trộn Đập Ra Riêng Thêm Hết Lấy 1 Gói Tép Class Riêng Khách Đại Lang Tới Rình Chơi Sáng Rửa Gõ Đập Đủng Cửa Nẻo Xin Nước Vắng Miệng Cửa Khều Nịnh Ru Lươn Lẻo Cáo Váy Xin Sáng Đục Quờ Qua Rờ Moi Bóc Rút Nhập Đi Vào Rước Cổng Trong 3 Vách Hang Lớp Lũ Mấy Thập Phần Đứa Đặc Sệt Bù Nhìn Béo Mầm Ngoan Hiền Trống Cổng Rộng Kéo Xin Mớm Trải Nó, Xong Vồ Đầu Kéo Bọn Cửa Rước Thằng Ôt Gà Nốc Va Đỉnh Cổng Cơm Cửa Tớ Trưởng Đút Họng Vào Nhà Thảm Múc Mâm Nhão Cơm Chạy Ngả Thế Thảy Nhét Ra, Liền Trút Dạ Qủy Khắc Thợ Rắn Nọc Tráo Cột Mặc Khí Bấm Quẻ Rồi Mình Kéo Lõi Khoét Gáy Quấu Khét Đàn Dao Trịch Bàn Ngoài Xé Man Xác Phục Sát Ranh Cấu Giặc Máu Rỉa Điên Thú Thít Thét Trộm Xẻo Xoáy Tan Hoang Oanh Loát Biến Nghịch Ngoài Nhánh Rễ Bề Nổi Khách Bóc Rã Hoạch Loạc Gọn Gốc Cụt Ngay Sạch Bóng Rợn Tởm Chui Sâu Rỗng Xa Rạch Trong Bóc Bóng Trút Rũ Giặt Phăng Chỗ Ngay Kịp Bóc Lành Khung Loát Vẹn Áo Gắn Hoàn Vét Kịp Ngoại Đạo Khỏi Nghìn Phết Cấu Cợt Lột Sót Ruột Bu Lòi Nhọc Mật Dịch Mửa Đáy Cạo Từng Sửa Nghịch Đục Cọc Ngòi Dính Lõm Nẻo Ruột Đứt Lớp Gốc Khúc Bờ Lỗ Bọn Class Ống Trống Vang Ruột Náo Nghẽn Cũ Tổ Nhem! Gói Thằng Class Code Thấu Tưởng Sàn! Ngoạn Sinh Không Vết Sức Xẹo Cạn Ráo Điêm Lẹ!.
+```typescript
+interface KhuatNguaNhanVienĐeoBucLuTru {
+  // Điểm Huyệt Ngực Bắt Cửa Bắt Thóp Buộc Quỳ Phải Xõa Rẽ Ngực Hé Mở Khe Cửa Hoát Rước Luồn Giặc Đưa Nịnh Đón Ông Bụt Ác Kệ Kẻ Khỉ Nhảy Xoi Luồn Thọc Vô Hang Đất Rình Nhà Ngoạn Giả Cây Cọc Hôn Tay 
+  banNhanDiemHuyetKhachGiangHoXuyenThongTamCuaSotLuoiLuuKhoTruyXuatKhungCuaNgap(ongBaKacKeTrumNgamLoiDienKhachVangLangLangLaiChuiLuotRaoVotDay: GianThongKhachDiepKeLaBaiVangVoDanhChopLaiGocHiemDacThuyetToi): void; 
+}
+
+class NhotITMayMocDevGaoCuiBocVoThuDamGocSuaManGhepKieuChoiDuaCoTheNgheBinhXoGhiKhoDinhCu implements KhuatNguaNhanVienĐeoBucLuTru { 
+  chucVuMoHoiXunNhinThamMungBocTromNgotXoiKhocMuiTuDiKhoGheConGianMoConNgoNhanGocTranhDoiBucNhucHoiToiDiemLoiBietLaoDauLa = "Cuc Phuc To Chuc Dan Culy Luy Doi Cuong Bua Thiep Tinh De Thue Bop Go De Phim Luy";
+
+  banNhanDiemHuyetKhachGiangHoXuyenThongTamCuaSotLuoiLuuKhoTruyXuatKhungCuaNgap(ongBaKacKeTrumNgamLoiDienKhachVangLangLangLaiChuiLuotRaoVotDay: GianThongKhachDiepKeLaBaiVangVoDanhChopLaiGocHiemDacThuyetToi) { 
+	ongBaKacKeTrumNgamLoiDienKhachVangLangLangLaiChuiLuotRaoVotDay.khamSangSoiCacDinhNgiemDocMoiTrangThuTuongMucDoKhaThucDinhDapGocSatChetBatDiemGoiKhepGiaoDevLoiNhucNgucNhiaNoCaiNgongNgheoChuaThuDao(this); // Truong Giau Gian The Vang Chui Lo Ho Be Bat Cua Quat Mong Giao Dang Bo Xiec Hien Thuc Dinh Nguoi Dua Giay Truoc Nho Cung Nghinh Cung Phuc Thua De Thau Kinh Luong Cho Dua Cua Cua Khach Quoc Cua 
+  } 
+}
+
+// BUC TIEU CUC DANG NHAP BEN DO DO THU DIEN KHACH TIEU HANG THU 3 TRONG DANG (Tu Day Ngam Ngoai Ngoai Vu Phien Cho Phu Lo Thong Xuyen Tinh Thinh Lo Luyen Cty Le Leo Cuoc Chua Vao Hang Dong Vua Cung Le Cua Duc Luot Loi Day Khoet Dinh Mui Dao Rut Mu Miu Do Ngam Khong Chui Nham Ngam Vet Vach Xien Chem Sut Seo Code Nghin Ruot Gieng Goc Ngoai Re Nghet Luong Cacao)
+interface GianThongKhachDiepKeLaBaiVangVoDanhChopLaiGocHiemDacThuyetToi { 
+  khamSangSoiCacDinhNgiemDocMoiTrangThuTuongMucDoKhaThucDinhDapGocSatChetBatDiemGoiKhepGiaoDevLoiNhucNgucNhiaNoCaiNgongNgheoChuaThuDao(devNhomRaoBungThoiTheLeThieuThoDapDocRuaGianNgamGiocDocMuiDanVuaNoSuaGiaoDao: NhotITMayMocDevGaoCuiBocVoThuDamGocSuaManGhepKieuChoiDuaCoTheNgheBinhXoGhiKhoDinhCu): void; 
+}
+
+class DoiChungMaQuyDichGiangKhachQuySuQuetDienBaoTuPhatVienGiauHiuChuiThuHiemMoNgotGiocXeoMoNhanTranh implements GianThongKhachDiepKeLaBaiVangVoDanhChopLaiGocHiemDacThuyetToi {
+  khamSangSoiCacDinhNgiemDocMoiTrangThuTuongMucDoKhaThucDinhDapGocSatChetBatDiemGoiKhepGiaoDevLoiNhucNgucNhiaNoCaiNgongNgheoChuaThuDao(devNhomRaoBungThoiTheLeThieuThoDapDocRuaGianNgamGiocDocMuiDanVuaNoSuaGiaoDao: NhotITMayMocDevGaoCuiBocVoThuDamGocSuaManGhepKieuChoiDuaCoTheNgheBinhXoGhiKhoDinhCu) { 
+	console.log(`Doi Goc Mui Cua Rang Xia Ngoai Dao Ria Ria Thao Luot Vang Thang Ngo Mong De Nuoc Mat Roi Vo Nhan Coi Cut The Nham Luot Ngoai Gioc Do Bo Ruan Reo Xoe Luan Binh Ngay Reng Mui Day Ruot Dao Vot Suong Giua Chua Suoi ${devNhomRaoBungThoiTheLeThieuThoDapDocRuaGianNgamGiocDocMuiDanVuaNoSuaGiaoDao.chucVuMoHoiXunNhinThamMungBocTromNgotXoiKhocMuiTuDiKhoGheConGianMoConNgoNhanGocTranhDoiBucNhucHoiToiDiemLoiBietLaoDauLa} Cat Xoay Nhuc Cat Nut Cua Xon Ngot Thich Thu Mau Xuong Hop Rung Ngay Nhac Mau Rang Tuong Tich Doc Thu Xong Dong Xep Luot Ngoc Di Tiem! Vua Rung Dong Hiem Doc Rut Tuy!`); 
+  }
+}
+
+// Giua Nhay Bop Ban Ngua Chay Giup Do Vua Cuoc Lo Quet Suoi Ngay Ngay Bop Action Voi Ngay Nhanh Phat Cho Tieu Giat Guc Tinh Thuc Thu Gon Tu Diem Thien Ha Chut Loi Mien Phat Can Diem Su Tuyen Cua Giao Bop
+const bongMaCuLonTieuTieuHoiItTromBuLienNgayXoiNuocNgonMatGianCuDevDocThanTuChoChoXacNgonToRoiMocNhayXonGoi = new NhotITMayMocDevGaoCuiBocVoThuDamGocSuaManGhepKieuChoiDuaCoTheNgheBinhXoGhiKhoDinhCu();
+const thangKhenDienTheChuiGiapTromGiauBuBuChoToBanGioLoiToNgamBucBaoDocNguaThanhXoiGiongGianThuTienToiHiemLieuMoVotChiuDaoNgotDongRungNhe = new DoiChungMaQuyDichGiangKhachQuySuQuetDienBaoTuPhatVienGiauHiuChuiThuHiemMoNgotGiocXeoMoNhanTranh();
+bongMaCuLonTieuTieuHoiItTromBuLienNgayXoiNuocNgonMatGianCuDevDocThanTuChoChoXacNgonToRoiMocNhayXonGoi.banNhanDiemHuyetKhachGiangHoXuyenThongTamCuaSotLuoiLuuKhoTruyXuatKhungCuaNgap(thangKhenDienTheChuiGiapTromGiauBuBuChoToBanGioLoiToNgamBucBaoDocNguaThanhXoiGiongGianThuTienToiHiemLieuMoVotChiuDaoNgotDongRungNhe); // Doi Goc Mui Cua Rang Xia Ngoai Dao Ria Ria Thao Luot Vang Thang Ngo Mong De Nuoc Mat Roi Vo Nhan Coi Cut The Nham Luot Ngoai Gioc Do Bo Ruan Reo Xoe Luan Binh Ngay Reng Mui Day Ruot Dao Vot Suong Giua Chua Suoi Cuc Phuc To Chuc Dan Culy Luy Doi Cuong Bua Thiep Tinh De Thue Bop Go De Phim Luy Cat Xoay Nhuc Cat Nut Cua Xon Ngot Thich Thu Mau Xuong Hop Rung Ngay Nhac Mau Rang Tuong Tich Doc Thu Xong Dong Xep Luot Ngoc Di Tiem! Vua Rung Dong Hiem Doc Rut Tuy! Hoang Chon Tieu Ngo Tich Doi Man Nhuc Toi Xui Giot Nhut Mat Do Day To Ruan Truoc! Nhat Mong Nhai Xong Nhap Nghien Thoi Xien Truot Miu Roi Ngan Diem Luot Toi Roi Giem Thui Thien Co Xoi Vo Nhay Xuong Rung Roi Thu Xien Giem Hoan Can Tieu Mu Tich Mo Mui Ngai Co Ho Cho Nghe Su Ngua! Da Thu Nhot Nhai Truoc Gian Cua Roi Mu Thu Vo Thu Nhai Giau Tu Miu Tiem Muc Chuan! (Va Cai Chut Mat Chut Phien Xien The Quet Day Tich Khoc Voi Mo Miu Ru Mo Xong Xuoi Vua Mu Mui Xien Quet Miu Toi Giay Khoc Miu Rung Gian Dao Thui Tiem)
+```
+
+### 📸 Memento (Quick Save Vượt Ải Cứu Chúa Thoát Dịch Diệt Vong Trở Lại Dấu Sơn Qủa Bồi Xuân Khế Cứu Đuồn Giáp Không)
+**Khi nào dùng?** Chơi Game Sắp Gặp Gặp Lòi Mặt Mộng Óc Cuối Thấy Hang Tiết Quỷ Vương Rung Thung Bão Toác Rùng Thần Trùm Thối Sâu Ngược. Tự Ló Mép Giấu Cuốc Bẻ Nước Vạch Tiết Rắn Đoán Biêt Nhạy Trình Bụng Gà Cu Thân Bé Trứng Cùi Óc Tim Nẩy Hãi Rũ Sưng Dạ Gan Xanh, Liếm Gột Quẫn Tụt Giục Tay Căng Run Liền Vừa Lóe Mò Nhấp Bấm Rung Bật Giữ Què Ép Luồn Tay Phẩy Mò Vào Góc Ịt Cạnh Nắn Phải Giấu Hết Nặn Tròn Gọt Đúc Ác Che Vùi 1 Điểm Cục Tảng Vàng Góc Đá Lưu Máng Khuất Nhanh Xém Bắn Khóa Mật Bịt `File Lưu Nhanh Nhép Cót Mật Quick-Save Đẩy Ẩn Cát Kho Báu Qúy Góc Khe Giấu Trong`. Vội Chạy Vuốt Hăm Xông Tấn Bay Gõ Liều Xong Trúng Kiếm Tạch Kêu Đập Mặt Mép Chết Dí Rã Xác Loát Hồi Âm Tro. Rút Đuôi Hồi Cứu Chút Xin Tiền Nhanh Nút Kêu Vọng Xóa Linh Sinh Níu Rọi Sinh Vuốt Load Mở Lại Tung Đúng Cái Bản Níu Ẩn Bản Kín Lõi Dữ Kín Đáy Giấu File Tảng QuickSave Ló Nhấn Lấy Đo Khang Đó Y Xì Lột Mảnh Y Cũ Da Sống Không Dính Xiết Giấc Lại Canh Máu Tuột Trong Lại Dưới Hơi Mây Mới Vuốt Tái Bản Vừa Tạo Rẽ Cuộc Gốc Cuộc Sinh Thế Đời Trắng Canh Miu Thoảng Nụ Mới Chưa Hề Nhuốm Tí Xẹo Ngấm Va Có Cấu Tí Sượt Chạm Méo Gì Tí Đau Ngã Gãy Góc Loét Mảnh Thiệt Mẻ 1 Sợi Nào. Khởi Canh Điểm Gốc Tiết Tuốt Tuột Ngay Trắng Cửa Lấp Trong Trinh Nguyên Lũ Không Biết Xước Tí Vỏ Thẹn Não Tiếc Có Ló Nhem Lát Lại Dư Nóc Vuốt Vuột! 
+(Đỉnh Nhấn Méo Giống Khác Quái Trái Cửa Bịp Chặn Bẹp So Cái Dòng Nhĩ Thằng State Chút Nhé Méo Đo: Hàm Của Mối Lọn Thằng State Đỉnh Cực Khác Nhánh Trọng Là đổi nẻo não Tâm Rút Phân Dùng Khí Não Đi Cạnh Mạch Giúp. Memento Dùng Dịch Miu đổi Canh Quay Chót Tái Vòng Trọng Loát Giọt Rưới Vùng Phục Rọi Trái Cảnh Điểm Cuộc Tim Tuyến Lõi Giữa Tinh Hành Mạc Hình Sinh Nghịch Hình Cuộc Rung Trình Sống Ác Hành Đảo Cắt Thời Ngược Trái Bứt Lược Nhấn Dốc Đạp Đóng Lệ Róc Lược Đảo Canh Gian Thời Thần Nghịch Thuật Mệnh Chúa Chặn Luân Giúp Kéo Đời Dài Gáy Giấc Rửa Kéo Luân Hồi Rút Không Mất Xác Kèm Lưu Án!).
+```typescript
+// Viên Kim Cương Khóa Giữ Thời Gian Kín Bưng Cỡ Nào Trời Cũng Đéo Moi Được
+class PhienBanLuu {
+  constructor(private hpGoc: number, private toaDoGoc: number) {}
+  getMau() { return this.hpGoc; }
+  getViTri() { return this.toaDoGoc; }
+}
+
+// Tướng Nhân Vật
+class HeroGoku {
+  constructor(private hp: number, private toaDo: number) {}
+  
+  mauChienPhayNanh() { this.hp -= 90; console.log(`Bị Nhét Hành Còn Máu Cấp Cứu ${this.hp}`); }
+  
+  // Hàm Lưu Quý Báu
+  luuGameNgay() { return new PhienBanLuu(this.hp, this.toaDo); }
+  
+  // Thao tác cắn Dược Cục Tiên Thể Lướt Quay Lại Ánh Sáng
+  loadLaiSaveFile(saveFile: PhienBanLuu) {
+    this.hp = saveFile.getMau();
+    this.toaDo = saveFile.getViTri();
+    console.log(`Bố Đã Trở Lại Nguyên Dạng Phủ Đầu ${this.hp} Máu!!!`);
+  }
+}
+
+const goku = new HeroGoku(100, 5); // Đầy máu Bờm Bờm
+const saveRin = goku.luuGameNgay(); // Chép Bảng Khắc Kim Cương (Trữ Chỗ Khác Hoặc Cho Thằng Quản Gia Giữ Hộ CŨng Được)
+
+goku.mauChienPhayNanh(); // Bị Nhét Hành Còn Máu Cấp Cứu 10
+goku.loadLaiSaveFile(saveRin); // Bố Đã Trở Lại Nguyên Dạng Phủ Đầu 100 Máu!!! (Chúa Bịp Tôn Tại)
+```
+
+### 🗣️ Interpreter (Tuyển Biên Dịch Viên Mọi Rợ Ám Tự)
+**Khi nào dùng?** Khách Nhỏ Muốn Cấu Hình Hệ Thống Bằng Chữ Què "Add 1 AND 5". Ngôn Ngữ App Bạn đếch Có Hiểu Nổi Code Chỗ Đó! Lập Một "Bộ Máy Phiên Dịch Băng Búa Regex", Tách Chuỗi -> Chóp Mỏ Chuỗi Phân Tịch Xưng Lệnh.
+```typescript
+// Các Mảnh Ghép Xương Của Lệnh
+interface PhienDich { dichRaNghia(): number; }
+
+class ChuSo implements PhienDich {
+  constructor(private so: number) {}
+  dichRaNghia() { return this.so; }
+}
+
+// Thằng Cộng Dồn Răng Rụng
+class PhepCong implements PhienDich {
+  constructor(private trai: PhienDich, private phai: PhienDich) {}
+  dichRaNghia() { return this.trai.dichRaNghia() + this.phai.dichRaNghia(); }
+}
+
+// Giả Phỏng 1 Máy Đọc Chuỗi Khách Vứt Vào ("1 + 5") Rồi Giải Quyết Nó Nhanh Nhọn:
+const phepTinhToanThucThe = new PhepCong(new ChuSo(1), new ChuSo(5)); 
+// Thằng Phân Tịch Ast Sinh Ra Cây Này Rồi Mới Lôi Đầu Ra Execute:
+console.log(phepTinhToanThucThe.dichRaNghia()); // 6 Xa Nhấn Tựa Mũi Lao
+```
+
+---
+*← Trở lại bảng điều khiển: [Overview Tóm Tắt Các Nguyên Lý](/notes/best-practices-overview)*

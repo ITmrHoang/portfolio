@@ -1,0 +1,96 @@
+---
+title: "Best Practices: Architecture Patterns - Kiến Trúc Phần Mềm Hiện Đại"
+date: 2026-04-05T00:00:00Z
+topic: "Software Engineering"
+---
+
+## 🏢 Architecture Pattern là gì?
+
+Nếu **Design Patterns** nói về cách thiết kế *1 căn phòng* sao cho thoải mái, thì **Architecture Patterns (Kiến trúc phần mềm)** nói về cách xây dựng *cả 1 tòa nhà chọc trời* sao cho nó không sập. 
+
+Một kiến trúc tốt giúp hệ thống dễ dàng chịu tải cao (scability), phân chia team ra code cùng được và mở rộng tính năng mà không xung đột lẫn nhau.
+
+---
+
+## 1️⃣ MVC (Model - View - Controller)
+Kiến trúc phổ biến nhất quả đất, thường dùng trong các Web framework truyền thống.
+
+- **Model:** Chứa Business Logic, Data, quản lý Database (VD: Lấy dữ liệu user).
+- **View:** Giao diện hiển thị cho người dùng (HTML/CSS).
+- **Controller:** Đứng giữa nhận Request từ User (qua View), gọi Model lấy Data, rồi gửi kết quả trả về cho View.
+- *Ví dụ:* Ruby on Rails, Spring MVC, Laravel, Express.js.
+
+---
+
+## 2️⃣ MVVM (Model - View - ViewModel)
+Nâng cấp của MVC, sinh ra cho các ứng dụng Client-side nơi mà giao diện thay đổi dữ liệu liên tục (Two-way data binding).
+
+- **ViewModel:** Một class đại diện ảo cho View (Chứa state). Khi state trong ViewModel đổi, View **tự động** update mà không cần Controller đi set tay từng cái (Reactivity).
+- *Ví dụ:* Vue.js, Angular, SwiftUI, WPF.
+
+---
+
+## 3️⃣ Clean Architecture (Kiến trúc Sạch)
+Được Uncle Bob tạo ra để giải quyết vấn đề hệ thống phụ thuộc quá nhiều vào "công nghệ nền" (Framework, Database).
+
+- **Cấu trúc hình củ hành onion:** Đi từ ngoài vào trong: *Frameworks/UI -> Controllers/Gateways/Presenters -> Use Cases -> Entities (Core Logic)*.
+- **Quy tắc vàng:** Các lớp bên trong KHÔNG ĐƯỢC PHÉP biết gì về lớp bên ngoài. Core Entity không quan tâm nó đang chạy trên MySQL hay MongoDB, Express hay Fastify. Nó chỉ biết Input và Output.
+
+---
+
+## 4️⃣ Hexagonal Architecture (Ports & Adapters)
+Tư tưởng rất giống Clean Architecture. Hệ thống là "Trung tâm Hexagon" chứa toàn bộ logic nghiệp vụ (Domain).
+
+- **Ports:** Các giao diện (Interface) mà ứng dụng chìa ra ngoài. (VD: Interface báo lấy Data).
+- **Adapters:** Gọi vào hoặc triển khai các Ports. (VD: Cục Adapter nối Database MySQL vào Port lấy Data).
+- Nhờ vậy, bạn có thể dễ dàng rút Database MySQL ra, cắm Adapter MongoDB vào mà không đổi 1 dòng Core Logic nào.
+
+---
+
+## 5️⃣ Monolithic (Kiến trúc Nguyên khối)
+Tất cả components, logics, views, databases được viết chung vô 1 project, deploy chung 1 server gốc.
+
+- **Ưu điểm:** Khởi đầu cực nhanh, dễ test, không cần tốn tiền DevOps xịn mướn server lạ. Phù hợp Startup thời gian đầu.
+- **Nhược điểm:** Khi app phình to, build app mất 30 phút, 1 lỗi nhỏ ơ tính năng review cũng làm chết cứng cả hệ thống thanh toán.
+
+---
+
+## 6️⃣ Microservices (Kiến trúc Vi dịch vụ)
+Chia app khổng lồ thành hàng tá dịch vụ mini độc lập hoàn toàn.
+
+- **Ví dụ:** Netflix có service riêng cho Đăng nhập, service riêng cho Gợi ý phim, service riêng cho Thanh toán.
+- Mỗi service tự có Database riêng, có thể code bằng các ngôn ngữ khác nhau (Login bằng Go, Report bằng Python, API bằng Node).
+- Nếu service Recommend chết, user vẫn coi phim bình thường!
+
+---
+
+## 7️⃣ Event-Driven Architecture (Hướng sự kiện)
+Thay vì các service gọi trực tiếp cho nhau (`A() gọi B() -> C()`), chúng giao tiếp bằng cách "Bắn tín hiệu vào không trung" (Produce Event) và "Nghe lén tín hiệu" (Consume Event).
+
+- **Ví dụ:** User đặt hàng -> Bắn ra sự kiện `OrderPlaced`.
+  - Service Kho hàng thấy `OrderPlaced` -> Tự vô trừ kho.
+  - Service Email thấy `OrderPlaced` -> Tự gửi mail cảm ơn.
+- *Công cụ nổi tiếng:* Apache Kafka, RabbitMQ, AWS EventBridge.
+
+---
+
+## 8️⃣ CQRS (Command Query Responsibility Segregation)
+Nghe tên thì kinh nhưng nguyên lý là **TÁCH ĐÔI** việc Đọc (Query - Read) và Ghi (Command - Write) vào Database.
+
+- Thường trên các app, lượng user đọc dữ liệu thường lấn át ghi dữ liệu (Bạn đọc Facebook Feed 100 lần mới Post 1 tus).
+- Ta tách nó ra:
+  - **Database Read:** Tối ưu để lấy data siêu tốc, không cần quan tâm chốt giao dịch.
+  - **Database Write:** Chữa transaction, logic kiểm tra quyền, độ an toàn data khắt khe.
+- Sau khi ghi xong vào DB Write, một Event sẽ đồng bộ qua DB Read.
+
+---
+
+## 9️⃣ Serverless
+Đừng bị lừa bởi cái tên "Không máy chủ" - nó CÓ máy chủ, chỉ là Amazon/Google đã bao thầu hạ tầng. Bạn chỉ lo viết đúng hàm `function()` đẩy lên mây.
+
+- *Ví dụ:* AWS Lambda. Bạn vứt code `resizeImage()` lên. Có user đổi avatar -> Hàm tự chạy sinh ra -> Chạy xong tự sập.
+- Không lo bảo trì server ảo, có 1000 user thì AWS tự nhân bản ra 1000 hàm chạy cùng lúc tốn phí vài cent.
+
+---
+
+*← Bài trước: [Design Patterns - Các mẫu thiết kế GoF](/notes/best-practices-design-patterns) | Bài sau: [Quy trình & Các phương pháp Engineering](/notes/best-practices-software-engineering) →*
