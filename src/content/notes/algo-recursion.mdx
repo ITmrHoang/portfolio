@@ -1,0 +1,302 @@
+---
+title: "Recursion & Backtracking (Đệ quy & Quay lui)"
+date: 2026-03-11T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Đệ quy là gì?
+
+Hãy tưởng tượng bạn đứng giữa hai **tấm gương đối diện nhau** — hình ảnh của bạn lặp lại vô tận. Đó chính là ý tưởng của đệ quy!
+
+**Đệ quy (Recursion)** = Hàm gọi lại **chính nó** cho đến khi đạt **điều kiện dừng**.
+
+```
+hàm đệ quy(vấn đề) {
+    nếu (vấn đề đủ nhỏ)  ← Base case (điều kiện dừng)
+        → trả kết quả
+
+    nếu không
+        → gọi lại đệ quy(vấn đề nhỏ hơn)  ← Recursive case
+}
+```
+
+### Hai thành phần bắt buộc
+
+| Thành phần | Ý nghĩa | Nếu thiếu? |
+|------------|---------|-------------|
+| **Base case** | Điều kiện DỪNG | Chạy vô tận → Stack Overflow! 💥 |
+| **Recursive case** | Gọi lại chính mình với bài toán nhỏ hơn | Không giải được vấn đề |
+
+---
+
+## 📚 Cách hoạt động: Call Stack
+
+Khi hàm gọi hàm, mỗi lần gọi được **xếp chồng** lên **call stack**:
+
+```
+factorial(4)
+├── 4 * factorial(3)          ← Push vào stack
+│   ├── 3 * factorial(2)      ← Push
+│   │   ├── 2 * factorial(1)  ← Push
+│   │   │   └── return 1      ← Base case! Pop!
+│   │   └── return 2 * 1 = 2  ← Pop!
+│   └── return 3 * 2 = 6      ← Pop!
+└── return 4 * 6 = 24         ← Pop! Kết quả!
+```
+
+---
+
+## ⚠️ Stack Overflow
+
+Nếu quên **base case** hoặc base case sai → hàm gọi mãi không dừng:
+
+```javascript
+// ❌ SAI - Không có base case!
+function forever() {
+    return forever();  // Gọi mãi → Stack Overflow!
+}
+
+// ✅ ĐÚNG - Có base case!
+function countdown(n) {
+    if (n <= 0) return;  // Base case: dừng khi n <= 0
+    console.log(n);
+    countdown(n - 1);  // Giảm n mỗi lần
+}
+```
+
+---
+
+## 💻 Ví dụ 1: Giai thừa (Factorial)
+
+`5! = 5 × 4 × 3 × 2 × 1 = 120`
+
+### JavaScript
+
+```javascript
+// Đệ quy tính giai thừa
+function factorial(n) {
+    // Base case: 0! = 1, 1! = 1
+    if (n <= 1) return 1;
+    
+    // Recursive case: n! = n * (n-1)!
+    return n * factorial(n - 1);
+}
+
+console.log(factorial(5));  // 120
+console.log(factorial(0));  // 1
+
+// So sánh với vòng lặp (iteration)
+function factorialLoop(n) {
+    let result = 1;
+    for (let i = 2; i <= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+console.log(factorialLoop(5));  // 120
+```
+
+### Python
+
+```python
+# Đệ quy tính giai thừa
+def factorial(n):
+    if n <= 1:        # Base case
+        return 1
+    return n * factorial(n - 1)  # Recursive case
+
+print(factorial(5))  # 120
+
+# So sánh: Vòng lặp
+def factorial_loop(n):
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result
+
+print(factorial_loop(5))  # 120
+```
+
+### Rust
+
+```rust
+// Đệ quy tính giai thừa
+fn factorial(n: u64) -> u64 {
+    if n <= 1 { return 1; }  // Base case
+    n * factorial(n - 1)     // Recursive case
+}
+
+fn main() {
+    println!("5! = {}", factorial(5));  // 120
+    println!("0! = {}", factorial(0));  // 1
+}
+```
+
+---
+
+## 💻 Ví dụ 2: Fibonacci
+
+`0, 1, 1, 2, 3, 5, 8, 13, 21, 34...` — Mỗi số = tổng 2 số trước!
+
+### JavaScript
+
+```javascript
+// Fibonacci đệ quy (đơn giản nhưng chậm!)
+function fibonacci(n) {
+    if (n <= 0) return 0;  // Base case 1
+    if (n === 1) return 1; // Base case 2
+    return fibonacci(n - 1) + fibonacci(n - 2);  // 2 recursive calls!
+}
+
+console.log(fibonacci(10));  // 55
+
+// ⚡ Fibonacci tối ưu với Memoization
+function fibMemo(n, memo = {}) {
+    if (n in memo) return memo[n];  // Đã tính rồi? Lấy luôn!
+    if (n <= 0) return 0;
+    if (n === 1) return 1;
+    
+    memo[n] = fibMemo(n - 1, memo) + fibMemo(n - 2, memo);
+    return memo[n];
+}
+
+console.log(fibMemo(50));  // 12586269025 (nhanh!)
+```
+
+### Python
+
+```python
+# Fibonacci đệ quy
+def fibonacci(n):
+    if n <= 0: return 0
+    if n == 1: return 1
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+print(fibonacci(10))  # 55
+
+# ⚡ Fibonacci với memoization (decorator)
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib_memo(n):
+    if n <= 0: return 0
+    if n == 1: return 1
+    return fib_memo(n - 1) + fib_memo(n - 2)
+
+print(fib_memo(50))  # 12586269025
+```
+
+### Rust
+
+```rust
+use std::collections::HashMap;
+
+// Fibonacci đệ quy
+fn fibonacci(n: u64) -> u64 {
+    if n <= 0 { return 0; }
+    if n == 1 { return 1; }
+    fibonacci(n - 1) + fibonacci(n - 2)
+}
+
+// ⚡ Fibonacci với memoization
+fn fib_memo(n: u64, memo: &mut HashMap<u64, u64>) -> u64 {
+    if let Some(&val) = memo.get(&n) {
+        return val;
+    }
+    let result = if n <= 1 { n }
+                 else { fib_memo(n - 1, memo) + fib_memo(n - 2, memo) };
+    memo.insert(n, result);
+    result
+}
+
+fn main() {
+    println!("fib(10) = {}", fibonacci(10));  // 55
+    
+    let mut memo = HashMap::new();
+    println!("fib(50) = {}", fib_memo(50, &mut memo));  // 12586269025
+}
+```
+
+---
+
+## 🔙 Backtracking (Quay lui) — Thử và Sai
+
+**Backtracking** là một kỹ thuật mở rộng của đệ quy. Hãy tưởng tượng bạn đang tìm đường ra khỏi mê cung:
+1. Bạn đi thử một con đường (Đệ quy).
+2. Gặp ngõ cụt? Bạn đi lùi lại ngã rẽ trước đó (Backtrack).
+3. Thử con đường khác (Lặp lại quá trình).
+
+### Ví dụ kinh điển: Bài toán N-Queens (Xếp Hậu)
+Yêu cầu: Đặt N quân Hậu lên bàn cờ N×N sao cho không quân nào ăn được quân nào.
+
+Thuật toán Backtracking hoạt động như sau:
+1. Đặt thử quân Hậu vào cột 1, hàng 1.
+2. Sang cột 2, đặt thử tiếp. Nếu bị chiếu → thử hàng tiếp theo.
+3. Nếu tất cả các hàng ở cột hiện tại đều bị chiếu → **Quay lui (Backtrack)** về cột trước, di chuyển Hậu cột trước sang vị trí khác!
+
+```javascript
+function solveNQueens(n) {
+    const board = Array(n).fill().map(() => Array(n).fill('.'));
+    const solutions = [];
+
+    // Kiểm tra Hậu có an toàn?
+    function isSafe(row, col) {
+        // Kiểm tra hàng ngang, dọc, chéo (đã rút gọn để dễ hiểu ý tưởng)
+        for (let i = 0; i < col; i++) if (board[row][i] === 'Q') return false;
+        for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) if (board[i][j] === 'Q') return false;
+        for (let i = row, j = col; i < n && j >= 0; i++, j--) if (board[i][j] === 'Q') return false;
+        return true;
+    }
+
+    // Hàm đệ quy Backtracking
+    function backtrack(col) {
+        if (col === n) {
+            // Base case: Đã đặt hậu đến cột cuối cùng
+            solutions.push(board.map(r => r.join('')));
+            return;
+        }
+
+        // Thử đặt Hậu ở từng hàng trong cột này
+        for (let row = 0; row < n; row++) {
+            if (isSafe(row, col)) {
+                board[row][col] = 'Q';  // CHỌN (Choose)
+                backtrack(col + 1);     // ĐỆ QUY (Explore)
+                board[row][col] = '.';  // QUAY LUI (Unchoose / Backtrack)!!!
+            }
+        }
+    }
+
+    backtrack(0); // Bắt đầu từ cột 0
+    return solutions;
+}
+
+console.log(solveNQueens(4).length); // 2 cách xếp hợp lệ cho bàn cờ 4x4
+```
+
+---
+
+## 🔄 Recursion vs Iteration (Vòng lặp)
+
+| Tiêu chí | Recursion | Iteration |
+|----------|-----------|-----------|
+| Code | Ngắn gọn, thanh lịch | Dài hơn nhưng rõ ràng |
+| Bộ nhớ | Tốn (call stack) | Ít hơn |
+| Tốc độ | Chậm hơn (overhead gọi hàm) | Nhanh hơn |
+| Debug | Khó hơn | Dễ hơn |
+| Khi nào? | Bài toán chia nhỏ tự nhiên (tree, graph) | Bài toán lặp đơn giản |
+
+---
+
+## 🎯 Khi nào nên dùng Recursion?
+
+- ✅ Bài toán chia thành **bài toán con giống nhau** (Divide & Conquer)
+- ✅ Duyệt **Tree** và **Graph** (DFS)
+- ✅ Bài toán có tính chất **phân cấp** (file system, DOM)
+- ✅ **Merge Sort**, **Quick Sort**, **Binary Search**
+- ❌ Bài toán đơn giản → dùng **vòng lặp** (nhanh hơn, ít bộ nhớ)
+- ❌ Dữ liệu rất lớn → có thể **Stack Overflow**
+
+---
+
+*← Quay lại [Trie](/notes/ds-trie) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Bubble Sort →](/notes/algo-bubble-sort)*

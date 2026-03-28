@@ -1,0 +1,76 @@
+---
+title: "String Algorithms - Xử lý chuỗi siêu việt"
+date: 2026-03-26T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Bài toán Pattern Matching
+
+**Yêu cầu:** Cho một văn bản (Text) dài $N$ ký tự và một từ khóa (Pattern) dài $M$ ký tự. Hãy tìm các vị trí xuất hiện của từ khóa trong văn bản.
+
+Giống như bạn ấn `Ctrl + F` để tìm từ trong trang web vậy!
+Cách ngẫu nhiên rà soát từ trái qua phải (Naive) sẽ mất `O(N * M)` — Nếu độ văn bản $10^5$, từ dài $10^4$ là chết máy!
+
+Đây là vũ đài để các thuật toán xử lý chuỗi xưng vương, thực hiện trong `O(N + M)`!
+
+---
+
+## 🏇 1. KMP Algorithm (Knuth-Morris-Pratt)
+
+Thuật toán KMP nói rằng: *"Đừng vứt đi những gì ta đã ráp thành công!"*
+
+Khi so khớp bị trật một ký tự, cách Naive sẽ dời từ khóa 1 bước và So Khớp Lại Từ Đầu.
+KMP dùng một mảng ma thuật gọi là **LPS (Longest Prefix Suffix)** array.
+
+### LPS Array là gì?
+LPS lưu trữ độ dài của phần "Tiền tố giống hệt Hậu tố" dài nhất trong chuỗi.
+Ví dụ: Chuỗi `A B A B A C A`
+Chỗ "A B A B A", phần đầu có `A B A` và phần đuôi cũng có `A B A`. Vậy $LPS = 3$.
+
+### Mánh khóe KMP:
+Khi so khớp bị trật nhịp, ta nhìn vào bảng `LPS` để biết phần mình vừa so đúng đã "chùng chéo" bao nhiêu. Nhờ đó ta trượt Pattern một bước dài vèo vèo qua mà không phải xem lại! Tốc độ duy trì chuẩn ở mức `O(N + M)`.
+
+---
+
+## 🎩 2. Rabin-Karp & Rolling Hash (Đập nhuyễn thành Số)
+
+Nếu bạn không thể so sánh nguyên cái Chuỗi, hãy băm nó thành **Số Đặc Biệt (Hash Output)**. Hai chuỗi giống hệt nhau sẽ có Hash Output bằng nhau. Kỹ thuật này gọi là **Rabin-Karp**.
+
+### Vấn đề:
+Lấy Hash từng ô trượt độ dài `M` tốn thời gian tính toán!
+
+### Giải pháp: Cửa sổ trượt băm (Rolling Hash)
+Giống như bạn kéo một khung kính qua văn bản. Mã Hash ô mới có thể tính cái RẦM từ Mã Hash ô cũ cực nhanh rớt mạng `O(1)`:
+`Hash(Khung Mới) = Hash(Khung Cũ) - Khúc đầu bị rớt + Khúc đuôi được thêm`
+
+*(Thường đổi các ký tự ra mã hệ cơ số to như độ dài bảng chữ cái, ví dụ cơ số 31, 256,... rồi chia lấy dư Modulo `10^9+7` để tránh tràn số).*
+
+**Độ phức tạp:** $O(N + M)$ trên trung bình, cẩn thận chạm biên cực tệ $O(N*M)$ do va chạm Hash. Bù lại nó cho phép **tìm Đa Chiều (Mảng 2D)** mượt mà!
+
+---
+
+## 🌪 3. Mảng Z (Z-Algorithm)
+
+Z-algorithm tìm độ dài xâu trùng khớp dài nhất giữa (Xâu tính từ Vị trí `i` đến đuôi) và (Xâu tính từ Đầu mút).
+Ví dụ: Xâu `a a c a a b a a c`
+Tạo mảng Z. `Z[i]` là độ dài khớp lớn nhất của xâu con bắt đầu tại `i` với tiền tố của mảng đó.
+
+### Siêu trick kết dính:
+Để tìm chuỗi mẫu `Pattern` trong `Text`:
+- Chế ra chuỗi quái dị: `Pattern + "#" + Text`. (Dấu `#` là gì cũng được miễn không có trong 2 mảng).
+- Lập mảng Z cho chuỗi dị tật lớn này.
+- Quét kết quả: Hễ thấy con số `Z[i]` nào đúng bằng kích thước của `Pattern`, thì chỗ đó chính là nơi mẫu xuất hiện trong Text! Tuyệt đối ảo diệu, thời gian chính xác `O(N + M)`.
+
+---
+
+## 🎯 Chọn thuật toán nào?
+
+| Thuật toán | Ưu điểm | Nhược điểm |
+|------------|----------|-------------|
+| **KMP** | Tối ưu thời gian xấu nhất O(N) | Chế mảng LPS ngáo và khó hiểu |
+| **Rabin-Karp** | Dễ viết, mở rộng sang Tìm Pattern Ma trận 2D ngon ơ! | Bị đụng Hash (Hash collision) nếu Modulo không đủ "dị" |
+| **Z-Algorithm** | Dễ hiểu theo toán nhồi, Mảng ảo `#` mạnh vô song | Gặp rắc rối khi chạy các dạng Online Dynamic (Dữ liệu thêm vào bớt đi) |
+
+---
+
+*← Quay lại [Computational Geometry](/notes/algo-comp-geometry) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Network Flow →](/notes/algo-network-flow)*

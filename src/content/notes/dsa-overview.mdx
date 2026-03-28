@@ -1,0 +1,178 @@
+---
+title: "Cấu trúc Dữ liệu & Giải thuật - Tổng quan cho người mới"
+date: 2026-03-28T00:00:00Z
+topic: "DSA"
+---
+
+Chào mừng bạn đến với chuỗi bài viết **Data Structures & Algorithms (DSA)** — Cấu trúc Dữ liệu & Giải thuật dành cho người mới! Mọi thứ được giải thích từ con số 0, kèm code mẫu **JavaScript**, **Python** và **Rust**.
+
+---
+## 🤔 Tại sao phải học DSA?
+
+Hãy tưởng tượng bạn có **1 tỷ cuốn sách** trong thư viện. Nếu sách xếp lung tung → bạn mất **cả đời** để tìm 1 cuốn. Nhưng nếu sách được **sắp xếp theo chủ đề, theo tên** → bạn tìm trong **vài giây**.
+
+**Cấu trúc Dữ liệu** = Cách bạn **sắp xếp** sách trong thư viện.  
+**Giải thuật** = Cách bạn **tìm kiếm** cuốn sách bạn cần.
+> Hiểu DSA = Viết code **nhanh hơn**, **tốn ít bộ nhớ hơn**, và **giải quyết vấn đề thông minh hơn**.
+
+---
+
+## 📐 Complexity Analysis — Phân tích Độ phức tạp
+
+### Big O Notation /bɪɡ oʊ noʊˈteɪ.ʃən/ là gì?
+
+**Big O** là cách đo **tốc độ** (Time Complexity /taɪm kəmˈplɛk.sɪ.ti/) và **bộ nhớ** (Space Complexity /speɪs kəmˈplɛk.sɪ.ti/) của một giải thuật khi dữ liệu **tăng lên**.
+
+> Hãy tưởng tượng bạn tìm 1 cuốn sách trong thư viện có **n** cuốn. Big O cho biết: khi thư viện lớn gấp 10 lần, bạn mất **bao lâu hơn**?
+
+### Bảng Complexity từ nhanh → chậm
+
+| Big O | Tên (English) | Phát âm IPA | Ý nghĩa | Ví dụ đời thực |
+|-------|---------------|-------------|---------|-----------------|
+| **O(1)** | Constant /ˈkɒn.stənt/ | Hằng số | Luôn cùng tốc độ, bất kể n lớn cỡ nào | Mở ngăn kéo biết chính xác vị trí |
+| **O(log n)** | Logarithmic /ˌlɒɡ.əˈrɪð.mɪk/ | Logarit | Mỗi bước loại bỏ **nửa** dữ liệu | Tìm từ trong từ điển (chia đôi) |
+| **O(n)** | Linear /ˈlɪn.i.ər/ | Tuyến tính | Tăng tỉ lệ thuận với n | Đọc từng trang sách từ đầu đến cuối |
+| **O(n log n)** | Linearithmic /ˌlɪn.i.əˈrɪð.mɪk/ | Log tuyến tính | Chia nhỏ + xử lý từng phần | Merge Sort, Quick Sort |
+| **O(n²)** | Quadratic /kwɒˈdræt.ɪk/ | Bình phương | Vòng lặp lồng vòng lặp | So sánh từng cặp học sinh |
+| **O(n³)** | Cubic /ˈkjuː.bɪk/ | Lập phương | 3 vòng lặp lồng nhau | Nhân ma trận |
+| **O(2ⁿ)** | Exponential /ˌek.spəˈnen.ʃəl/ | Hàm mũ | Gấp đôi mỗi bước | Thử tất cả tổ hợp mật khẩu |
+| **O(n!)** | Factorial /fækˈtɔː.ri.əl/ | Giai thừa | Tất cả hoán vị | Bài toán Người bán hàng |
+
+### So sánh trực quan
+
+```
+n = 10        n = 100       n = 1000
+O(1)      1          1            1         ← Luôn nhanh!
+O(log n)  3          7           10         ← Rất nhanh
+O(n)     10        100         1000         ← Ổn
+O(n²)   100     10,000     1,000,000        ← Chậm dần
+O(2ⁿ)  1024   1.27×10³⁰    ∞ 💀           ← Không khả thi!
+```
+
+### Thuật ngữ quan trọng
+
+| Tiếng Việt | English | IPA | Giải thích |
+|------------|---------|-----|------------|
+| Độ phức tạp thời gian | Time Complexity | /taɪm kəmˈplɛk.sɪ.ti/ | Code chạy **nhanh hay chậm** |
+| Độ phức tạp không gian | Space Complexity | /speɪs kəmˈplɛk.sɪ.ti/ | Code dùng **nhiều hay ít bộ nhớ** |
+| Trường hợp tốt nhất | Best Case | /bɛst keɪs/ | Input lý tưởng |
+| Trường hợp trung bình | Average Case | /ˈæv.ər.ɪdʒ keɪs/ | Input thông thường |
+| Trường hợp xấu nhất | Worst Case | /wɜːrst keɪs/ | Input tệ nhất |
+| Tại chỗ | In-place | /ɪn pleɪs/ | Không dùng thêm bộ nhớ |
+| Ổn định | Stable | /ˈsteɪ.bəl/ | Giữ thứ tự phần tử bằng nhau |
+| Chia để trị | Divide and Conquer | /dɪˈvaɪd ænd ˈkɒŋ.kər/ | Chia nhỏ bài toán → giải → gộp |
+| Tham lam | Greedy | /ˈɡriː.di/ | Chọn tốt nhất **ngay lúc này** |
+| Quy hoạch động | Dynamic Programming | /daɪˈnæm.ɪk ˈproʊ.ɡræm.ɪŋ/ | Ghi nhớ kết quả, không tính lại |
+| Quay lui | Backtracking | /ˈbæk.træk.ɪŋ/ | Thử → sai → quay lại thử cách khác |
+
+**Quy tắc**: Big O càng nhỏ → code càng nhanh. Luôn cố gắng chọn giải thuật có Big O thấp nhất!
+
+---
+
+## 🗺️ Lộ trình học 29 chủ đề (Dễ → Khó)
+
+> Đọc từ dưới lên nếu bạn mới bắt đầu! Các chủ đề hiển thị theo thứ tự **khó nhất ở trên**.
+
+### 🟢 Nền tảng (Foundation)
+
+| # | Chủ đề | Mô tả | Link |
+|---|--------|-------|------|
+| 1 | **Array & String** | Mảng, chuỗi — nền tảng mọi thứ | [📖 Đọc bài](/notes/ds-arrays) |
+| 2 | **Linked List** | Danh sách liên kết, pointer | [📖 Đọc bài](/notes/ds-linked-lists) |
+| 3 | **Stack & Queue** | LIFO, FIFO — hai nguyên tắc vàng | [📖 Đọc bài](/notes/ds-stacks-queues) |
+| 4 | **Hashing & Heap** | Bảng băm, đống — tìm kiếm O(1) | [📖 Đọc bài](/notes/ds-hash-tables) |
+
+### 🟡 Trung cấp (Intermediate)
+
+| # | Chủ đề | Mô tả | Link |
+|---|--------|-------|------|
+| 5 | **Searching & Sorting** | Tìm kiếm và sắp xếp | [📖 Đọc bài](/notes/algo-searching) |
+| 6 | **Recursion & Backtracking** | Đệ quy, quay lui | [📖 Đọc bài](/notes/algo-recursion) |
+| 7 | **Trees & BST** | Cây dữ liệu phân cấp | [📖 Đọc bài](/notes/ds-trees) |
+| 8 | **Tries & Suffix Tree** | Xử lý từ điển chuỗi | [📖 Đọc bài](/notes/ds-trie) |
+| 9 | **Graph Algorithms** | Chiều rộng / sâu, Đường đi ngắn nhất | [📖 Đọc bài](/notes/ds-graphs) |
+
+### 🟠 Nâng cao (Advanced)
+
+| # | Chủ đề | Mô tả | Link |
+|---|--------|-------|------|
+| 10 | **Greedy Algorithms** | Giải thuật tham lam | [📖 Đọc bài](/notes/algo-greedy) |
+| 11 | **Dynamic Programming** | Quy hoạch động cơ bản | [📖 Đọc bài](/notes/algo-dynamic-programming) |
+| 12 | **Bitwise Operation & Trick** | Thao tác bit, mẹo tối ưu | [📖 Đọc bài](/notes/algo-bitwise) |
+| 13 | **Mathematical** | Số học, số nguyên tố, modular | [📖 Đọc bài](/notes/algo-mathematical) |
+| 14 | **DSU & MST** | Nhóm liên thông, Cây khung nhỏ nhất | [📖 Đọc bài](/notes/algo-dsu-mst) |
+
+### 🔴 Chuyên sâu (Expert)
+
+| # | Chủ đề | Mô tả | Link |
+|---|--------|-------|------|
+| 15 | **Advanced Graph Algorithms** | Topological Sort, SCC, Euler | [📖 Đọc bài](/notes/algo-advanced-graph) |
+| 16 | **Advanced DP Techniques** | Bitmask DP, Digit DP, Tree DP | [📖 Đọc bài](/notes/algo-advanced-dp) |
+| 17 | **Segment Tree & Fenwick Tree** | Range update/query nâng cao | [📖 Đọc bài](/notes/ds-segment-tree) |
+| 18 | **Sparse Table & Binary Lifting** | Range query, Khứu giác LCH | [📖 Đọc bài](/notes/ds-sparse-table) |
+| 19 | **String Algorithms** | KMP, Rabin-Karp, Z-function | [📖 Đọc bài](/notes/algo-string) |
+
+### ⚫ Siêu chuyên sâu (Master)
+
+| # | Chủ đề | Mô tả | Link |
+|---|--------|-------|------|
+| 20 | **Computational Geometry** | Hình học tính toán, Convex Hull | [📖 Đọc bài](/notes/algo-comp-geometry) |
+| 21 | **Network Flow Algorithms** | Luồng Mạng Cực Đại | [📖 Đọc bài](/notes/algo-network-flow) |
+| 22 | **Game Theory & Nim Game** | Sprague-Grundy, Nim | [📖 Đọc bài](/notes/algo-game-theory) |
+| 23 | **Approximation & Randomized** | Monte Carlo, Las Vegas | [📖 Đọc bài](/notes/algo-approx-random) |
+
+### 🟣 Khuôn mẫu giải thuật (Patterns)
+
+Phần này hướng dẫn các **Patterns (Khuôn mẫu)** thần thánh để giải quyết nhanh gọn các bài toán trên LeetCode / HackerRank.
+
+| # | Chủ đề | Mô tả | Link |
+|---|--------|-------|------|
+| 24 | **15 Lệnh bài LeetCode** | Tổng hợp cấu trúc 15 Patterns | [📖 Đọc bài](/notes/pattern-15-leetcode-strategies) |
+| 25 | **Array & String Patterns** | Two Pointers, Sliding Window, Prefix Sum | [📖 Đọc bài](/notes/pattern-array-string) |
+| 26 | **LinkedList & Intervals** | Fast/Slow Pointers, Intervals, Cyclic Sort | [📖 Đọc bài](/notes/pattern-linkedlist-intervals) |
+| 27 | **Stack & Heap Patterns** | Monotonic Stack, Top K Elements | [📖 Đọc bài](/notes/pattern-stack-heap) |
+| 28 | **Tree & Graph Patterns** | BFS/DFS, Topo, Union Find | [📖 Đọc bài](/notes/pattern-tree-graph) |
+| 29 | **DP & Backtracking Patterns** | Subsets, Knapsack, Palindrome | [📖 Đọc bài](/notes/pattern-backtracking-dp) |
+
+---
+
+## 📊 Bảng so sánh Time Complexity
+
+### Data Structures
+
+| Cấu trúc | Access | Search | Insert | Delete |
+|-----------|--------|--------|--------|--------|
+| Array | O(1) | O(n) | O(n) | O(n) |
+| Hash Table | O(1) | O(1) | O(1) | O(1) |
+| Linked List | O(n) | O(n) | O(1) | O(1) |
+| Stack/Queue | O(n) | O(n) | O(1) | O(1) |
+| BST (balanced) | O(log n) | O(log n) | O(log n) | O(log n) |
+| Heap | O(1) top | O(n) | O(log n) | O(log n) |
+
+### Sorting Algorithms
+
+| Giải thuật | Best | Average | Worst | Space | Stable |
+|-----------|------|---------|-------|-------|--------|
+| Bubble Sort | O(n) | O(n²) | O(n²) | O(1) | ✅ |
+| Selection Sort | O(n²) | O(n²) | O(n²) | O(1) | ❌ |
+| Insertion Sort | O(n) | O(n²) | O(n²) | O(1) | ✅ |
+| Merge Sort | O(n log n) | O(n log n) | O(n log n) | O(n) | ✅ |
+| Quick Sort | O(n log n) | O(n log n) | O(n²) | O(log n) | ❌ |
+
+---
+
+## 💡 Mẹo học DSA
+
+```
+Bước 1: Hiểu concept → đọc bài giải thích
+Bước 2: Xem code mẫu → chạy thử
+Bước 3: Tự code lại → không nhìn bài mẫu
+Bước 4: Giải bài tập → LeetCode, Codeforces
+Bước 5: Lặp lại sau 1 tuần → spaced repetition
+```
+
+> **Đừng cố học hết trong 1 ngày.** Mỗi ngày 1 chủ đề, thực hành code, và sau vài tuần bạn sẽ nắm vững DSA!
+
+---
+
+*Nguồn tham khảo: [Zero To Mastery - DSA Cheat Sheet](https://zerotomastery.io/cheatsheets/data-structures-and-algorithms-cheat-sheet/)*

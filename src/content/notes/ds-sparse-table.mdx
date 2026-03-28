@@ -1,0 +1,64 @@
+---
+title: "Sparse Table & Binary Lifting - Truy vấn Range và Tổ tiên"
+date: 2026-03-25T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Sparse Table (Bảng Thưa)
+
+**Bài toán (Range Minimum Query - RMQ):** Cho mảng `A` kích thước $10^5$. Giám khảo ném vào mặt bạn $10^5$ câu hỏi (truy vấn) dạng: *"Số nhỏ nhất từ vị trí L tới vị trí R là bao nhiêu?"*.
+
+- Chạy vòng lặp từ L tới R cho mỗi truy vấn: `O(N * Q)` → Timeout (TLE).
+- Dùng Segment Tree: Xây dựng `O(N)`, truy vấn `O(log N)`. Cả bài chạy `O(N + Q log N)`.
+- Dùng **Sparse Table**: Xây dựng `O(N log N)`, truy vấn **`O(1)`** siêu tốc độ chớp nhoáng! Cả bài chạy `O(N log N + Q)`. Khủng khiếp!
+
+### Tại sao Sparse Table cực kỳ nhanh với Hàm Max/Min?
+Hàm Max/Min (hoặc GCD/LCM) có 1 đặc điểm diệu kỳ: **Tính chồng lấp khối không làm sai kết quả (Idempotent)**. `min(a, a) = a`. `max(a, a) = a`.
+
+**Sparse Table** chuẩn bị trước câu trả lời cho mọi khoảng có độ dài là lũy thừa của 2: `[1, 2, 4, 8, 16...]`.
+Bạn mảng `ST[i][j]` = Số Min/Max từ vị trí `i`, kéo dài ra một đoạn dài chính xác $2^j$.
+
+**Cách trả lời câu hỏi O(1):**
+Hỏi đoạn `[L, R]` dài 13 phần tử?
+1. Tìm khúc block lũy thừa của 2 to nhất nhét vừa 13 là $2^3 = 8$. (Gọi là độ lớn 8).
+2. Lấy khối dài 8 bắt đầu từ `L`. `(L_min = ST[L][3])`
+3. Lấy khối dài 8 kết thúc tại `R` (bắt đầu từ `R - 8 + 1`). `(R_min = ST[R-7][3])`
+4. Hai khối này có đoạn bị chồng lấn ở giữa (Overlap). Nhưng vì là hàm Min, chồng lấn KHÔNG ẢNH HƯỞNG GÌ HẾT.
+5. Câu trả lời = `min(L_min, R_min)`. Chỉ đúng 1 lệnh kiểm tra mảng. Boom!! `O(1)`.
+
+> ⚠️ **Hạn chế:** Sparse Table là dữ liệu tĩnh. Nếu mảng bị UPDATE 1 phần tử, cái bảng ST hỏng hết phải xây lại!
+
+---
+
+## 🧗‍♂️ Binary Lifting (Nhảy Cóc Nhị Phân)
+
+Nhảy từng đoạn là phương pháp vô tận trong lập trình. **Binary Lifting** trên Cây có nghĩa là: "*Thực hiện mọi hành động leo lên đỉnh núi thông qua các bước dài với lũy thừa của 2*".
+
+**Bài toán (LCA - Lowest Common Ancestor):** Bạn làm sơ đồ gia phả. Có Hùng và Lan. Hỏi: Ai là "*ông tổ chung gần nhất*" của hai người này? Cây gia phả cao tít 1 triệu cụ tổ. Trèo từng bước tốn `O(N)`.
+
+**Áp dụng Binary Lifting:**
+Chuẩn bị một mảng (hoặc ma trận) cực dị:
+`up[u][j]` = Người cha (tổ tiên) nằm cao hơn đỉnh `u` đúng một đoạn cách xa $2^j$ đời!
+- `up[u][0]` = Cha 1 đời của u.
+- `up[u][1]` = Cha 2 đời của u (= Cha của `up[u][0]`).
+- `up[u][2]` = Cha 4 đời của u (= Cha của `up[u][1]`).
+- Cứ thế, công thức động siêu dễ (DP): `up[u][j] = up[ up[u][j-1] ][ j-1 ]`.
+
+### Giải thuật tìm Tổ tiên chung (LCA) siêu thanh `O(log N)`:
+Giả sử độ sâu (Depth) của anh Hùng là cực thấp (sâu) so với Lan.
+1. Hùng dùng phép "nhảy cóc qua $2^j$ đời" để bắt kịp độ sâu của Lan. Nếu lệch 13 đời? Hùng nhảy 8 đời, rồi 4 đời, rồi 1 đời theo biểu diễn nhị phân `1101` của số 13. Tuyệt đối không leo thang bộ.
+2. Giờ cả 2 đứng cùng 1 "tầng", nhưng chưa gắp nhau.
+3. Cùng nhảy tay trong tay! Dùng vòng for thử nhảy cả hai một khối siêu to (ví dụ $2^{20}$). Nếu cả 2 đáp lên cùng 1 ông tổ → Nhảy xa quá lố mẹ rồi, lùi lại! Nếu người Hùng đáp trúng Khác ông tổ Lan đáp tới → An toàn, NHẢY THẬT và tiếp tục với độ dài giảm 1 nửa ($2^{19}, 2^{18}...$).
+4. Ngay khi nhảy xong khối $2^0 = 1$ cuối cùng, cha của Hùng hiện tại (cũng là cha của Lan hiện tại) chính là câu trả lời!
+
+---
+
+## Kênh Mẹo Nhớ Của Dân CP
+| Concept | Khi nào dùng | Tránh dùng |
+|---------|--------------|------------|
+| Sparse Table | Tính Range Min/Max/GCD cực tĩnh, TLE Segment | Mảng hay bị Update Range |
+| Binary Lifting | Tìm LCA / Tăng tốc DP trên cây / Tìm đường đi cây | Đồ thị bình thường (phải là Cây) |
+
+---
+
+*← Quay lại [DSU & MST](/notes/algo-dsu-mst) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Segment & Fenwick Trees →](/notes/ds-segment-tree)*

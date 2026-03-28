@@ -1,0 +1,147 @@
+---
+title: "Selection Sort (Sắp xếp chọn) - Tìm nhỏ nhất, đặt vào đúng chỗ"
+date: 2026-03-07T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Selection Sort là gì?
+
+Hãy tưởng tượng bạn xếp **bài poker** theo thứ tự: nhìn tất cả các lá, chọn lá **nhỏ nhất**, đặt sang **vị trí đầu**. Rồi tìm lá nhỏ nhất **còn lại**, đặt tiếp. Cứ thế cho đến hết!
+
+**Selection Sort** = Tìm phần tử **nhỏ nhất**, đổi chỗ với phần tử ở **vị trí đầu** chưa sắp xếp.
+
+```
+[64, 25, 12, 22, 11]
+ ↑                ↑ min=11 → đổi với 64
+[11, 25, 12, 22, 64]
+     ↑   ↑ min=12 → đổi với 25
+[11, 12, 25, 22, 64]
+         ↑   ↑ min=22 → đổi với 25
+[11, 12, 22, 25, 64]
+             ↑       ← 25 < 64, đúng rồi
+[11, 12, 22, 25, 64] ✅ Done!
+```
+
+---
+
+## ⏱️ Time Complexity
+
+| Trường hợp | Big O |
+|-------------|-------|
+| **Tốt nhất** | O(n²) |
+| **Trung bình** | O(n²) |
+| **Xấu nhất** | O(n²) |
+| **Space** | O(1) |
+
+> 💡 Khác Bubble Sort: Selection Sort **luôn** O(n²), nhưng thực hiện **ít swap hơn** (tối đa n swap).
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== SELECTION SORT - JAVASCRIPT =====
+
+function selectionSort(arr) {
+    const n = arr.length;
+    
+    for (let i = 0; i < n - 1; i++) {
+        let minIndex = i;  // Giả sử phần tử hiện tại là nhỏ nhất
+        
+        // Tìm phần tử nhỏ nhất trong phần còn lại
+        for (let j = i + 1; j < n; j++) {
+            if (arr[j] < arr[minIndex]) {
+                minIndex = j;
+            }
+        }
+        
+        // Đổi chỗ nếu tìm được phần tử nhỏ hơn
+        if (minIndex !== i) {
+            [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+        }
+    }
+    return arr;
+}
+
+console.log(selectionSort([64, 25, 12, 22, 11]));
+// [11, 12, 22, 25, 64]
+```
+
+### Python
+
+```python
+# ===== SELECTION SORT - PYTHON =====
+
+def selection_sort(arr):
+    n = len(arr)
+    
+    for i in range(n - 1):
+        min_index = i
+        
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_index]:
+                min_index = j
+        
+        if min_index != i:
+            arr[i], arr[min_index] = arr[min_index], arr[i]
+    
+    return arr
+
+print(selection_sort([64, 25, 12, 22, 11]))
+# [11, 12, 22, 25, 64]
+```
+
+### Rust
+
+```rust
+// ===== SELECTION SORT - RUST =====
+
+fn selection_sort(arr: &mut Vec<i32>) {
+    let n = arr.len();
+    
+    for i in 0..n - 1 {
+        let mut min_index = i;
+        
+        for j in (i + 1)..n {
+            if arr[j] < arr[min_index] {
+                min_index = j;
+            }
+        }
+        
+        if min_index != i {
+            arr.swap(i, min_index);
+        }
+    }
+}
+
+fn main() {
+    let mut numbers = vec![64, 25, 12, 22, 11];
+    selection_sort(&mut numbers);
+    println!("{:?}", numbers);  // [11, 12, 22, 25, 64]
+}
+```
+
+---
+
+## 🔄 Selection Sort vs Bubble Sort
+
+| Tiêu chí | Selection Sort | Bubble Sort |
+|----------|---------------|-------------|
+| Số lần swap | Ít (tối đa n) ✨ | Nhiều |
+| Best case | O(n²) | O(n) ✨ |
+| Ổn định (Stable) | ❌ Không | ✅ Có |
+| Dùng khi | Swap tốn kém | Dữ liệu gần sorted |
+
+---
+
+## 🎯 Khi nào dùng?
+
+- ✅ Khi **swap tốn kém** (dữ liệu lớn mỗi phần tử)
+- ✅ Bộ nhớ hạn chế (in-place, O(1) space)
+- ❌ Dữ liệu lớn → dùng Merge Sort / Quick Sort
+
+---
+
+*← Quay lại [Bubble Sort](/notes/algo-bubble-sort) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Insertion Sort →](/notes/algo-insertion-sort)*

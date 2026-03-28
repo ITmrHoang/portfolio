@@ -52,18 +52,23 @@ const topics = [...new Set(notes.map((n) => n.data.topic))];
           </button>
         </div>
         
-        <nav class="space-y-6 text-sm">
+        <nav class="space-y-2 text-sm">
           {topics.length === 0 ? (
             <p class="text-gray-500 italic">Chưa có bài viết.</p>
-          ) : topics.map(topic => (
-            <div>
-              <!-- Menu góc (Topic) -->
-              <h4 class="font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-1">
-                {topic}
-              </h4>
-              <!-- Menu nhánh (Sub-menu bài viết) -->
-              <ul class="space-y-3 border-l-2 border-indigo-50 ml-2 pl-4">
-                {notes.filter(note => note.data.topic === topic).map(note => {
+          ) : topics.map(topic => {
+            const topicNotes = notes.filter(note => note.data.topic === topic);
+            const hasActive = topicNotes.some(note => currentSlug === note.slug);
+            return (
+            <details class="group" open={hasActive || undefined}>
+              <summary class="font-bold text-gray-800 uppercase tracking-wider cursor-pointer flex items-center justify-between py-2 px-2 rounded-lg hover:bg-indigo-50/50 transition-colors select-none list-none">
+                <span class="flex items-center gap-2">
+                  {topic}
+                  <span class="text-xs text-gray-400 font-normal normal-case">({topicNotes.length})</span>
+                </span>
+                <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </summary>
+              <ul class="space-y-2 border-l-2 border-indigo-50 ml-2 pl-4 mt-2 mb-3">
+                {topicNotes.map(note => {
                   const isActive = currentSlug === note.slug;
                   return (
                     <li>
@@ -77,8 +82,9 @@ const topics = [...new Set(notes.map((n) => n.data.topic))];
                   );
                 })}
               </ul>
-            </div>
-          ))}
+            </details>
+            );
+          })}
         </nav>
       </div>
     </aside>

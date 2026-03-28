@@ -1,0 +1,112 @@
+---
+title: "DSU & MST - Đếm cụm liên thông & Cây khung nhỏ nhất"
+date: 2026-03-21T00:00:00Z
+topic: "DSA"
+---
+
+## 🤝 DSU (Disjoint Set Union) là gì?
+
+**Disjoint Set Union (Tìm - Gộp)** là một cấu trúc dữ liệu sinh ra để giải quyết cực kỳ gọn gàng **bài toán Kết Nối**. 
+Ví dụ: A làm bạn với B, B làm bạn với C. Hỏi A có đang nằm trong cùng "Hội bạn" với C không? DSU giải quyết câu hỏi này trong thời gian gần như **O(1)**!
+
+### 2 Thao tác cốt lõi của DSU
+- **Find(x):** Tìm "đại ca" (người đứng đầu) của nhóm chứa phần tử `x`.
+- **Union(x, y):** Cho "đại ca" của nhóm `x` nhận "đại ca" của nhóm `y` làm đàn em (Gộp 2 nhóm làm 1).
+- Kiểm tra `x` và `y` có cùng nhóm không: Chỉ cần hỏi `Find(x) == Find(y)`.
+
+### Tối ưu hóa DSU (Rất Quan Trọng!)
+Nếu cứ trỏ đại ca thành một đường dài `A → B → C → D`, `Find(D)` sẽ mất `O(n)`.
+- **Path Compression (Nén đường):** Trong lúc `Find`, thay đổi mũi tên trỏ thẳng lên đại ca tối cao! Cây sẽ trở thành dẹt.
+- **Union by Rank/Size:** Khi gộp, luôn lấy cây NHỎ cắm vào làm con của cây LỚN. Tránh làm tăng chiều cao cây.
+
+**Code C++ Mẫu DSU (Siêu xịn):**
+```cpp
+struct DSU {
+    vector<int> parent, size;
+    DSU(int n) {
+        parent.resize(n); size.assign(n, 1);
+        for(int i = 0; i < n; i++) parent[i] = i; // Tự làm đại ca của chính mình
+    }
+    
+    // Tìm có nén đường (Path Compression)
+    int find(int i) {
+        if (parent[i] == i)
+            return i;
+        return parent[i] = find(parent[i]); 
+    }
+    
+    // Gộp 2 đỉnh (Union by Size)
+    void unite(int i, int j) {
+        int root_i = find(i);
+        int root_j = find(j);
+        if (root_i != root_j) {
+            // Cây nhỏ cắm vào cây to
+            if (size[root_i] < size[root_j]) swap(root_i, root_j);
+            parent[root_j] = root_i;
+            size[root_i] += size[root_j];
+        }
+    }
+};
+```
+
+---
+
+## 🌲 MST (Minimum Spanning Tree - Cây Khung Nhỏ Nhất)
+
+### Bài toán
+Bạn nhận thầu mắc dây cáp Internet cho `N` thành phố. Bạn có một bản đồ các tuyến đường và chi phí kéo cáp trên từng tuyến. Làm sao nối mạng tất cả các thành phố (liên thông) sao cho **tổng chi phí mua cáp là nhỏ nhất**?
+
+Đó chính là đi tìm **Minimum Spanning Tree (MST)** của cái bản đồ đó!
+
+*Lưu ý:* Cây Khung luôn có đúng `N - 1` cạnh nối `N` đỉnh và không có chu trình (vòng khép kín).
+
+---
+
+## 🚀 Thuật toán Mua cáp: Kruskal's (Dùng Greedy + DSU)
+
+Kruskal là ông hoàng của sự đơn giản và thanh lịch.
+**Ý tưởng (Greedy):** Cáp nào rẻ, rinh về chăng trước!
+
+1. Sắp xếp **TẤT CẢ** các đoạn cáp theo giá tiền từ **thấp tới cao**.
+2. Rút lần lượt từng cuộn cáp rẻ nhất ra ráp vào bản đồ.
+3. *Vấn đề lớn:* Lỡ cuộn cáp bạn vừa mua nối 2 thành phố **ĐÃ CÓ MẠNG** với nhau rồi thì sao? Vừa phí tiền vừa tạo thành mớ bòng bong (chu trình)!
+4. *Giải pháp:* Dùng **DSU**! Trước khi chăng đoạn cáp `U-V`, hỏi DSU xem `Find(U) == Find(V)` không?
+   - Cùng nhóm (đã có mạng tới nhau): Vứt đoạn cáp mới.
+   - Khác nhóm: Nối lại, `Union(U, V)`, cộng dồn chi phí.
+
+*Độ phức tạp:* `O(E log V)` (Chủ yếu do lúc sort `E` cạnh ban đầu).
+
+```javascript
+/* Giả mã Kruskal bằng JS */
+edges.sort((a,b) => a.cost - b.cost); // Rẻ chăng trước
+let totalCost = 0;
+let mstEdges = 0;
+
+for (let edge of edges) {
+    if (dsu.find(edge.u) !== dsu.find(edge.v)) {
+        dsu.unite(edge.u, edge.v);
+        totalCost += edge.cost;
+        mstEdges++;
+        if (mstEdges === N - 1) break; // Xong N-1 cạnh!
+    }
+}
+```
+
+---
+
+## 🚀 Thuật toán Mua cáp: Prim's (Dùng Priority Queue)
+
+Nếu Kruskal đứng trên mây nhìn xuống bản đồ và nhặt rác, thì Prim **đứng tại một thành phố** và lan ra như vết dầu loang.
+
+1. Khởi tạo một `PriorityQueue` (Min-Heap) rỗng. Bỏ thành phố xuất phát (A) vào giỏ, độ tốn là 0. Bật công tắc `Visited[A] = True`.
+2. Lấy TẤT CẢ các con đường nối ra khỏi A và đẩy vào Min-Heap.
+3. Rút đoạn đường rẻ nhất từ Min-Heap ra. Giả sử đoạn đó nối A tới B.
+4. Nếu B đã có mạng (`Visited[B] == True`) → Bỏ qua.
+5. Nếu chưa có mạng → Nhận đoạn đường! Bật `Visited[B] = True` và nhét TẤT CẢ con đường loanh quanh B vào Min-Heap.
+6. Cứ làm tới khi chăng đủ `N - 1` cạnh.
+
+*Độ phức tạp:* Tương tự Kruskal `O(E log V)`. Tuy nhiên, Prim **nhanh hơn trên đồ thị cực đặc** (dày đặc cạnh / dense graph).
+
+---
+
+*← Quay lại [Advanced Graphs](/notes/algo-advanced-graph) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Sparse Table & Binary Lifting →](/notes/ds-sparse-table)*

@@ -4,7 +4,8 @@ interface Props {
 }
 
 const { title } = Astro.props;
-const base = import.meta.env.BASE_URL.replace(/\/$/, ""); 
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const baseJson = JSON.stringify(base);
 ---
 
 <!doctype html>
@@ -18,7 +19,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   </head>
   <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col">
     <!-- Navbar -->
-    <header class="bg-gray-950 shadow-lg sticky top-0 z-50 border-b border-indigo-500/20">
+    <header class="bg-gray-950 shadow-lg sticky top-0 z-[60] border-b border-indigo-500/20">
       <div class="max-w-[1600px] mx-auto px-4 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex-shrink-0 flex items-center pr-4">
@@ -202,8 +203,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       }
     </style>
 
-    <script is:inline>
+    <script is:inline define:vars={{ baseJson }}>
       document.addEventListener('DOMContentLoaded', () => {
+
+        // --- TÍNH NĂNG 0: GLOBAL BASE URL FIX ---
+        // Tự động prepend base URL cho tất cả link nội bộ bắt đầu bằng /
+        // Hoạt động trên cả GitHub Pages (/portfolio/) và deploy trực tiếp (/)
+        const BASE = JSON.parse(baseJson);
+        if (BASE) {
+          document.querySelectorAll('a[href^="/"]').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith(BASE + '/') && href !== BASE) {
+              link.setAttribute('href', BASE + href);
+            }
+          });
+        }
+
 
         // --- TÍNH NĂNG 1: MAGIC BOTTOM NAVIGATION (MOBILE CURVED) ---
         const navItems = document.querySelectorAll('.magic-nav-item');
@@ -217,8 +232,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
           let activeItem = Array.from(navItems).find(item => {
             const itemPath = item.getAttribute('data-path');
-            return (itemPath !== `${base}/` && currentPath.includes(itemPath)) ||
-                   (itemPath === `${base}/` && (currentPath === `${base}/` || currentPath === `${base}`));
+            return (itemPath !== BASE+'/' && currentPath.includes(itemPath)) ||
+                   (itemPath === BASE+'/' && (currentPath === BASE+'/' || currentPath === BASE));
           }) || navItems[0];
           
           const moveIndicator = (item) => {
@@ -255,7 +270,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         const executeSearch = (inputEl) => {
           const val = inputEl.value.trim();
           if (val !== '') {
-            window.location.href = `${base}/search?q=` + encodeURIComponent(val);
+            window.location.href = BASE + '/search?q=' + encodeURIComponent(val);
           } else {
             inputEl.focus(); // Nếu input rỗng thì focus mở rộng ra
           }

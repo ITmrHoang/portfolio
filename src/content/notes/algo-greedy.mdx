@@ -1,0 +1,175 @@
+---
+title: "Greedy Algorithms (Giải thuật tham lam) - Chọn tốt nhất hiện tại"
+date: 2026-03-17T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Giải thuật Tham lam (Greedy) là gì?
+
+Hãy tưởng tượng bạn đang chơi một trò chơi đi tìm kho báu. Tại mỗi ngã rẽ, bạn luôn chọn con đường có **nhiều vàng nhất ngập trước mắt**, hy vọng rằng cứ chọn đường nhiều vàng nhất ở mỗi bước thì cuối cùng sẽ gom được nhiều vàng nhất toàn bộ hành trình.
+
+**Greedy Algorithm** hoạt động y hệt vậy:
+- Thuật toán đưa ra lựa chọn **tối ưu cục bộ** (tốt nhất ngay tại thời điểm hiện tại).
+- **Không bao giờ "quay xe"** (no backtracking) hay thay đổi quyết định trước đó.
+- Hy vọng rằng chuỗi các lựa chọn cục bộ này sẽ dẫn đến một giải pháp **tối ưu toàn cục**.
+
+---
+
+## ⏳ Hai tính chất bắt buộc của Greedy
+
+Để Greedy hoạt động đúng (tìm ra kết quả tối ưu), bài toán **phải có 2 tính chất sau**:
+
+1. **Greedy Choice Property (Tính chọn tham lam):** 
+   Lựa chọn tốt nhất hiện tại sẽ dần tới giải pháp tổng thể tốt nhất, mà không cần xem xét các lựa chọn trong tương lai.
+2. **Optimal Substructure (Cấu trúc con tối ưu):** 
+   Giải pháp tối ưu cho bài toán lớn chứa đựng giải pháp tối ưu cho các bài toán con bên trong nó.
+
+> ⚠️ **Chú ý:** Nếu bài toán KHÔNG có tính chất số 1, Greedy có thể đưa ra kết quả sai (ví dụ: thay vì tới kho báu lớn nhất, lại dẫn bạn tới ngõ cụt. Lúc đó phải dùng **Quy hoạch động - DP**).
+
+---
+
+## 🪙 Ví dụ kinh điển: Bài toán đổi tiền (Coin Change)
+
+**Yêu cầu:** Bạn là thu ngân, cần thối lại `N` đồng cho khách sao cho **số lượng tờ tiền là ít nhất**. Bạn có các mệnh giá: `[1, 5, 10, 20, 50, 100]`.
+
+**Cách dùng Greedy:** Luôn chọn tờ tiền có mệnh giá **lớn nhất** nhưng thả không vượt quá số tiền còn lại phải thối.
+
+Ví dụ: Cần thối `68` đồng.
+1. Khả thi lấy lớn nhất 50 → Còn `18`
+2. Khả thi lấy lớn nhất 10 → Còn `8`
+3. Khả thi lấy lớn nhất 5 → Còn `3`
+4. Khả thi lấy lớn nhất 1 → Còn `2`
+5. Khả thi lấy lớn nhất 1 → Còn `1`
+6. Khả thi lấy lớn nhất 1 → Còn `0`
+→ Kết quả: `1 tờ 50, 1 tờ 10, 1 tờ 5, 3 tờ 1` (Tổng = 6 tờ).
+
+### 💻 Code Cụ Thể
+
+#### JavaScript
+
+```javascript
+function greedyCoinChange(coins, amount) {
+    // Sắp xếp coin giảm dần
+    coins.sort((a, b) => b - a);
+    
+    let count = 0;
+    for (let coin of coins) {
+        if (amount === 0) break;
+        if (coin <= amount) {
+            // Lấy nhiều nhất số lượng tờ tiền mệnh giá này có thể
+            let numNotes = Math.floor(amount / coin);
+            count += numNotes;
+            amount -= coin * numNotes;
+            console.log(`Dùng ${numNotes} tờ ${coin}`);
+        }
+    }
+    return amount === 0 ? count : -1;
+}
+
+const coins = [1, 5, 10, 20, 50, 100];
+console.log("Tổng tờ tiền:", greedyCoinChange(coins, 68));
+```
+
+#### Python
+
+```python
+def greedy_coin_change(coins, amount):
+    # Sắp xếp coin giảm dần
+    coins.sort(reverse=True)
+    
+    count = 0
+    for coin in coins:
+        if amount == 0:
+            break
+        if coin <= amount:
+            num_notes = amount // coin
+            count += num_notes
+            amount -= coin * num_notes
+            print(f"Dùng {num_notes} tờ {coin}")
+            
+    return count if amount == 0 else -1
+
+coins = [1, 5, 10, 20, 50, 100]
+print("Tổng tờ tiền:", greedy_coin_change(coins, 68))
+```
+
+#### Rust
+
+```rust
+fn greedy_coin_change(mut coins: Vec<i32>, mut amount: i32) -> i32 {
+    // Sắp xếp giảm dần
+    coins.sort_by(|a, b| b.cmp(a));
+    
+    let mut count = 0;
+    
+    for coin in coins {
+        if amount == 0 { break; }
+        if coin <= amount {
+            let num_notes = amount / coin;
+            count += num_notes;
+            amount -= coin * num_notes;
+            println!("Dùng {} tờ {}", num_notes, coin);
+        }
+    }
+    if amount == 0 { count } else { -1 }
+}
+
+fn main() {
+    let coins = vec![1, 5, 10, 20, 50, 100];
+    println!("Tổng tờ tiền: {}", greedy_coin_change(coins, 68));
+}
+```
+
+> ⚠️ **Khi nào Greedy thất bại trong bài toán đổi tiền?**
+> Nếu các mệnh giá là `[1, 3, 4]` và bạn cần thối `6` đồng:
+> - **Greedy** chọn: `4 + 1 + 1` (3 tờ)
+> - **Tối ưu thực sự** (Dùng DP): `3 + 3` (2 tờ)
+> Do đó, Greedy chỉ đúng với một số bộ mệnh giá nhất định (với tiền tệ thực tế thì luôn đúng).
+
+---
+
+## ⏱️ Time Complexity
+
+Greedy thường rất nhanh! Đa số bài toán Greedy bao gồm bước **sắp xếp** (Sorting) ban đầu:
+
+| Thao tác | Big O | Giải thích |
+|----------|-------|------------|
+| **Sắp xếp list** | O(n log n) | Thường dùng thuật toán sort nhanh như Merge/Quick |
+| **Duyệt qua list** | O(n) | Chỉ cần duyệt mảng một lần (chọn hoặc bỏ) |
+| **Tổng cộng** | **O(n log n)** | Sort là bước tốn thời gian nhất |
+
+*Space Complexity:* Thường là `O(1)` nếu không yêu cầu mảng nhớ (in-place).
+
+---
+
+## 🌍 Các giải thuật nổi tiếng dựa trên Greedy
+
+Bạn có thể chưa biết, nhưng nhiều giải thuật cực đỉnh khác cốt lõi chính là Greedy!
+
+1. **Dijkstra's Algorithm (Tìm đường đi ngắn nhất):** Tại mỗi đỉnh, luôn đi tới đỉnh gần nhất chưa được thăm.
+2. **Kruskal's & Prim's Algorithm (Minimum Spanning Tree - MST):** Luôn chọn cạnh có trọng số nhỏ nhất mà không tạo thành vòng (cycle).
+3. **Huffman Coding (Nén dữ liệu):** Ghép 2 ký tự có tần suất xuất hiện nhỏ nhất lại với nhau dần dần.
+4. **Fractional Knapsack (Cái túi ba lô phân số):** Xếp ưu tiên lấy các đồ vật có tỷ lệ (Giá trị/Trọng lượng) cao nhất.
+
+---
+
+## ✅ Ưu điểm & ❌ Nhược điểm
+
+| ✅ Ưu điểm | ❌ Nhược điểm |
+|-------------|---------------|
+| Dễ nghĩ, code rất ngắn gọn và thanh lịch | Khó chứng minh thuật toán đưa ra kết quả tối ưu 100% |
+| Hiệu suất cực nhanh (thường là O(n) hoặc O(n log n)) | Không hoạt động cho những bài toán yêu cầu phải xét tổng hợp toàn cục (như túi knapsack 0/1) |
+| Tiết kiệm bộ nhớ (ít khi dùng bảng phụ như DP) | Chỉ thấy cây mà không thấy rừng (local search) |
+
+---
+
+## 🎯 Khi nào nên nghĩ tới Greedy?
+
+- ✅ Bài toán yêu cầu **tối ưu hóa** (Tìm Max, Min, ít nhất, nhiều nhất).
+- ✅ Dữ liệu có thể được **sắp xếp**.
+- ✅ Bài toán có thể chia thành từng bước chọn riêng biệt và bạn "cảm thấy" nếu chọn tốt nhất hiện tại sẽ không làm phiền tương lai.
+- ❌ Nếu việc chọn lựa hiện tại khiến bạn phải hối hận và quay lại thử cách khác → dùng **Backtracking** hoặc **Dynamic Programming**.
+
+---
+
+*← Quay lại [Hashing & Heap](/notes/ds-hash-tables) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Bitwise Operations →](/notes/algo-bitwise)*

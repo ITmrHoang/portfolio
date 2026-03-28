@@ -1,0 +1,73 @@
+---
+title: "Network Flow Algorithms - Luồng Mạng Cực Đại"
+date: 2026-03-28T00:00:00Z
+topic: "DSA"
+---
+
+## 🚰 Mạng lưới Luồng (Network Flow) là gì?
+
+Hãy tưởng tượng một nhà máy sản xuất nước ngọt (Nguồn - **Source $S$**) cần bơm nước giải khát theo mạng lưới đường ống để đến một thành phố lớn (Đích - **Sink $T$**).
+
+Tuy nhiên, mỗi đường ống có một **Sức chứa tối đa (Capacity)**: ống to bơm được 10 lít/giây, ống nhỏ chỉ bơm được 2 lít/giây. Nước đổ dồn về các trạm trung chuyển (Đỉnh) không được ứ đọng, Lượng VÀO trạm phải bằng đúng Lượng RA khỏi trạm.
+
+**Bài toán Max Flow:** Hồ chứa của Source bơm max bình, làm sao biết được Thành phố $T$ nhận được tổng cộng bao nhiêu lít nước mỗi giây ở mức Tối Đa?
+
+Đây là một bài toán cực kinh điển cho Phân phối hệ thống tài nguyên, Băng thông mạng Internet, Lịch bay đường hàng không...
+
+---
+
+## 🌊 1. Định lý Max-Flow Min-Cut
+
+Có một sự thật gây choáng ngợp do hai ông Ford và Fulkerson phát minh: **Luồng Cực Đại (Max Flow)** trong mạng lưới luông CÂN BẰNG ĐÚNG BẰNG **Lát Cắt Nhỏ Nhất (Min Cut)**.
+
+**Min Cut là gì?**
+Khủng bố muốn đánh bom làm tê liệt hoàn toàn đường ống từ nhà máy tới Thành phố. Chúng phải chọn cắt đứt một tập hợp các đường ống sao cho Không một giọt nước nào chảy tới $T$ nữa. Nhưng chúng muốn tiết kiệm kíp nổ, nên tổng "độ cứng" (Capacity) của các ống bị cắt phải nhỏ nhất.
+Con số chi phí đánh bom nhỏ nhất đó = CHÍNH LÀ dòng chảy cực đại của bạn.
+
+---
+
+## 🚜 2. Thuật toán Ford-Fulkerson
+
+Để đẩy nước, chúng ta cứ rà soát tìm một con đường từ $S$ tới $T$ còn trống (Đường tăng luồng - **Augmenting Path**), đẩy dòng nước qua đó theo sức chứa yếu nhất trên đường ống đó.
+Ngặt nỗi, lỡ đẩy ngu bị bít đường do "tham lam" thì sao?
+Thuật giải lật ngược tình thế: **Cạnh dư (Residual Edge)**.
+Mỗi khi đẩy `X` lít từ A tới B, hệ thống sẽ mở ra một cái vòi TRẢ LẠI `X` lít từ B về A. Phép thuật này cho phép các dòng nước chạy sau rút lại quyết định sai lầm của dòng nước chạy trước.
+
+### Tại sao Ford-Fulkerson hay bị chê?
+Nếu cài bằng **DFS** để tìm đường qua Residual Graph, thuật toán DFS có thể ngoằn ngoèo qua một ống 1 lít liên tục 1 triệu lần... Dẫn đến độ phức tạp O(E * Max_Flow). Quá tệ nếu Max_Flow là con số khổng lồ!
+
+## 🚀 3. Thuật toán Edmonds-Karp
+
+Ông Edmonds và Karp sửa sai rất nhẹ nhàng: *"Để tìm con đường tăng dòng trải nước, ĐỪNG DÙNG DFS! HÃY DÙNG BFS (Tìm đường đi ngắn nhất về NHẤT SỐ LƯỢNG CẠNH)"*.
+
+Việc đơn giản này triệt tiêu hoàn toàn nhược điểm của luồng ống bị lặp, chốt hạ thuật toán với tốc độ cố định **$O(V \times E^2)$**. Dù Max Flow có to 1 Tỷ, nó vẫn cực nhanh!
+
+---
+
+## ⚡ 4. Dinic's Algorithm (Bậc thầy Bơm Nước O(V²E))
+
+Edmonds-Karp đẩy từng đường một rất mất thời gian. Ông Yefim Dinitz (Dinic) phớt lờ điều phiền toái đó.
+**Dinic's Flow** phân lớp đồ thị ra thành tầng rác nước (Level Graph) bằng lưới BFS.
+
+Tại mỗi Cấp tầng nước, Dinic làm luôn một phát **DFS Đẩy Dòng Lũ (Blocking Flow)**. Ông đẩy đến mức nhồi nhét ngập nước cả tầng đó (dead ends). Các bước như sau:
+1. Dùng BFS xếp level từ $S$ tới $T$. (Chỉ cho phép nước nhảy sang level cao hơn).
+2. Dùng DFS đẩy 1 mớ Blocking Flows từ $S$ bằng cách chạy đi chạy lại trên Level Graph.
+3. Không tìm được DFS về $T$ nữa? Xóa lưới level, Cập nhật Residual và lặp lại bước 1!
+
+Tốc độ chạy bá đạo: Trung bình $O(V^2 E)$. Đặc biệt khi chạy trên mạng nhị phân Bipartite, thuật chỉ mất $O(E \sqrt{V})$ (Nhanh như sấm!).
+
+---
+
+## 🤝 Cặp lồng và Ghép Cặp (Bipartite Matching)
+
+Mô phỏng Mạng Luồng Max Flow có ứng dụng CỰC KHỦNG: **Bipartite Matching** (Ghép cặp đôi).
+- Đề bài: Có 10 anh Thợ Máy và 10 chiếc Ô-tô hỏng. Mỗi anh chỉ biết sửa 3-4 dòng máy nhất định. Hỏi công ty phân công sao cho LƯỢNG XE ĐƯỢC CHỮA CÙNG LÚC nhiều nhất?
+- Dùng Luồng cực đại:
+  - Nối 1 ống to (Capacity 1) từ $S$ tới tất cả 10 anh Thợ.
+  - Tương tự, nếu anh Thợ A sửa được xe Y, nối 1 ống Capacity 1 từ A tới Y.
+  - Từ tất cả xe nối 1 ống tóm vào cống xả $T$ (Capacity 1).
+  - Chạy Dinic (hoặc luồng Hopcroft–Karp siêu chuyên), luồng Max = Lượng Ghép Cặp Lớn Nhất!
+
+---
+
+*← Quay lại [String Algorithms](/notes/algo-string) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Game Theory →](/notes/algo-game-theory)*

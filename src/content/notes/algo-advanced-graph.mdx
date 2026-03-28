@@ -1,0 +1,85 @@
+---
+title: "Advanced Graph Algorithms - Topo Sort, SCC, & Euler"
+date: 2026-03-22T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Đồ thị nâng cao có gì?
+
+Thuật toán BFS, DFS và Dijkstra là những công cụ tuyệt vời, nhưng chưa đủ để giải quyết những bài toán phức tạp về sự phụ thuộc công việc, phân tích mạng xã hội, hay tìm đường vẽ 1 nét. Chào mừng bạn đến với **Graph Algorithms hạng nặng**.
+
+---
+
+## 🏗️ 1. Topological Sorting (Sắp xếp Tô-pô)
+
+**Bài toán:** Bạn có danh sách các môn học Đại học, môn này là môn tiên quyết của môn kia (VD: Phải học Cấu trúc Dữ liệu trước khi học AI). Làm sao xếp lịch học hợp lý?
+
+Đồ thị này gọi là **DAG (Directed Acyclic Graph)** — Đồ thị có hướng, không chu trình.
+
+**Sắp xếp Topo** sẽ xếp các đỉnh thành một đường thẳng sao cho: Nếu có cạnh $U \rightarrow V$, thì $U$ phải đứng trước $V$.
+
+### Thuật toán Kahn (BFS Dựa trên Bậc vào - In-degree)
+1. Đếm **bậc vào** (số mũi tên trỏ tới) của tất cả các đỉnh.
+2. Đưa tất cả đỉnh có `in-degree == 0` (môn không cần môn tiên quyết) vào một Hàng đợi (Queue).
+3. Rút đỉnh $U$ từ Queue ra, đưa vào mảng kết quả.
+4. Xóa các cạnh xuất phát từ $U$. Tức là giảm `in-degree` của các đỉnh kề $V$ đi 1.
+5. Nếu $V$ có `in-degree == 0`, nhét $V$ vào Queue. Lặp lại!
+
+*(Ứng dụng: Build hệ thống (Makefiles), Resolve dependencies (NPM package), Lên lịch thi công).*
+
+---
+
+## 🔗 2. Strongly Connected Components (Thành phần liên thông mạnh - SCC)
+
+**Bài toán:** Trong đồ thị có hướng (mạng xã hội phân nhánh lớn/nhỏ), tìm các cụm đỉnh mà **từ một đỉnh bất kỳ trong cụm, bạn có thể đi tới tất cả các đỉnh khác trong chính cụm đó**.
+
+Cụm này gọi là **SCC**. Kỹ thuật tìm SCC thường chia nhỏ một đồ thị hỗn loạn lộ xộn thành một "Đồ thị DAG gồm các SCC siêu đỉnh".
+
+### Thuật toán Tarjan (O(V + E))
+Dùng DFS với mảng `low` và `disc` (thời gian khám phá).
+- `disc[u]`: Bước thời gian DFS đặt chân tới đỉnh `u`.
+- `low[u]`: Nút "thấp nhất" (có disc lới nhất) mà `u` có thể đi ngược lại được thông qua 1 cạnh back-edge (cạnh ngược).
+- Nếu sau khi duyệt hết con của `u`, mà `low[u] == disc[u]` → Xin chúc mừng, `u` chính là gốc của một SCC mới!
+
+### Thuật toán Kosaraju (O(V + E))
+2 lần DFS, cực kỳ thanh lịch:
+1. DFS lần 1 trên đồ thị gốc, đưa các đỉnh vừa thăm xong vào một **Stack**.
+2. **Đảo ngược chiều** tất cả các mũi tên trong đồ thị (Tạo đồ thị chuyển vị - Transposed Graph).
+3. Đem các đỉnh trong Stack ra (pop từng cái), chạy DFS lần 2. Mỗi lần DFS hoàn thành là vẽ ra được 1 SCC!
+
+---
+
+## 🌁 3. Articulation Points (Đỉnh khớp) & Bridges (Cạnh cầu)
+
+**Bài toán mạng internet:** Nếu một bộ định tuyến (Router) hỏng, liệu toàn bộ mạng có bị chia cắt thành 2 nửa mất liên lạc? Bộ định tuyến chết chóc đó gọi là **Khớp (Articulation Point)**. Nếu cắt 1 sợi cáp mà mạng rớt, sợi cáp đó gọi là **Cầu (Bridge)**.
+
+**Cách tìm bằng thuật toán Tarjan sửa đổi:**
+Vẫn dùng mảng `disc` và `low` qua một đường DFS.
+- Nếu cạnh $U - V$ thuộc cây DFS, và `low[V] > disc[U]` → Tức là từ $V$ và con của $V$ **không** có đường vòng nào quay lại được trên $U$. Nếu cắt cạnh $U-V$, $V$ sẽ cô lập. Vậy $U-V$ là **Bridge**.
+
+---
+
+## 🎨 4. Eulerian Path & Eulerian Circuit (Đường đi Euler)
+
+**Bài toán kinh điển:** [Cây cầu Königsberg](https://vi.wikipedia.org/wiki/B%C3%A0i_to%C3%A1n_b%E1%BA%A3y_c%C3%A2y_c%E1%BA%A7u_%E1%BB%9F_K%C3%B6nigsberg) — vẽ hình bằng một nét bút mà không nhấc bút, không đi qua nét nào 2 lần (đi qua tất cả các **cạnh** đúng 1 lần).
+
+- **Eulerian Circuit (Chu trình Euler):** Bắt đầu và kết thúc tại cùng một đỉnh. Cần điều kiện: Đồ thị liên thông và **tất cả các đỉnh phải có bậc CHẴN**.
+- **Eulerian Path (Đường đi Euler):** Vẫn qua mọi cạnh 1 lần nhưng không về lại điểm xuất phát. Cần điều kiện: Có đúng **0 hoặc 2 đỉnh** có bậc LẺ. (Nếu 2 đỉnh bậc lẻ, bạn phải xuất phát ở 1 đỉnh bậc lẻ và rớt lại ở đỉnh bậc lẻ kia).
+
+### Hierholzer's Algorithm (Tìm đường Euler)
+Thay vì DFS lùi bừa bãi, thuật toán Hierholzer sử dụng DFS kết hợp Stack. Nó cứ đi tới khi gặp ngõ cụt thì bỏ đỉnh ngõ cụt đó vào ngăn xếp Kết Quả (để đảo ngược sau). Vừa đi vừa xóa cạnh. Cực kỳ nhanh và thanh lịch `O(E)`.
+
+---
+
+## 🎯 Khi nào sử dụng thuật toán nào?
+
+| Yêu cầu bài toán | Thuật toán ưu tiên |
+|------------------|--------------------|
+| Thứ tự công việc, Dependencies | **Topological Sort (Kahn's)** |
+| Nhóm các mạng lưới "khép kín" | **Tarjan's hoặc Kosaraju's SCC** |
+| Tìm điểm dễ bị sập của hệ thống (Điểm chết) | **Đỉnh khớp / Cạnh cầu (Tarjan)** |
+| Đi qua mọi cạnh đúng 1 lần (Vẽ một nét) | **Hierholzer's (Eulerian Path)** |
+
+---
+
+*← Quay lại [Advanced DP](/notes/algo-advanced-dp) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [DSU & MST →](/notes/algo-dsu-mst)*

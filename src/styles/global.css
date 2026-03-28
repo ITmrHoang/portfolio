@@ -100,6 +100,57 @@ input {
 table {
 	width: 100%;
 }
+
+/* === Prose Table Styling === */
+.prose table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1.5em 0;
+	font-size: 0.9em;
+	border-radius: 8px;
+	overflow: hidden;
+	border: 1px solid #e5e7eb;
+}
+.prose thead {
+	background: #f1f5f9;
+}
+.prose thead th {
+	padding: 0.75rem 1rem;
+	text-align: left;
+	font-weight: 700;
+	color: #1e293b;
+	border-bottom: 2px solid #cbd5e1;
+	white-space: nowrap;
+}
+.prose tbody td {
+	padding: 0.65rem 1rem;
+	border-bottom: 1px solid #f1f5f9;
+	color: #334155;
+	vertical-align: top;
+}
+.prose tbody tr:nth-child(even) {
+	background: #f8fafc;
+}
+.prose tbody tr:hover {
+	background: #eef2ff;
+}
+.prose tbody td code {
+	font-size: 0.85em;
+}
+
+/* === Details/Summary clean marker === */
+.prose details > summary {
+	list-style: none;
+}
+.prose details > summary::-webkit-details-marker {
+	display: none;
+}
+
+/* === Prose table responsive wrapper === */
+.prose .table-wrapper {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
 img {
 	max-width: 100%;
 	height: auto;

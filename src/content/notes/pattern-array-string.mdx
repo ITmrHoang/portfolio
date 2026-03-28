@@ -1,0 +1,145 @@
+---
+title: "Pattern: Array & String - Two Pointers, Sliding Window, Prefix Sum"
+date: 2026-04-01T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Tại sao lại học theo Pattern?
+
+Thay vì cố gắng ghi nhớ giải pháp cho 1000 bài toán trên LeetCode, bạn chỉ cần nhớ **15 Patterns (Khuôn mẫu)**. Các Pattern này giống như những chiếc "chìa khóa đa năng", giúp bạn "nhìn thấu" cách giải quyết ngay khi vừa đọc xong đề bài!
+
+Bài viết này tập trung vào 3 Patterns thần thánh nhất cho Mảng (Array) và Chuỗi (String).
+
+---
+
+## 🏃‍♂️ 1. Two Pointers (Hai con trỏ)
+
+Dùng hai biến (tượng trưng cho 2 con trỏ `left` và `right`) để duyệt cấu trúc dữ liệu, thường từ 2 đầu mảng tiến vào giữa, hoặc cùng xuất phát rồi chạy lệch nhau.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Đề bài yêu cầu tìm một cặp phần tử (Pair), bộ ba (Triplet) hoặc dồn mảng.
+- Mang tính chất **Tối ưu O(N)** (Thay vì vòng lặp lồng nhau O(N²)).
+- Mảng đầu vào thường **đã được sắp xếp (Sorted)**.
+
+### ⚙️ Template & Cách hoạt động
+Ví dụ kinh điển: **Tìm 2 số có tổng bằng Target trong mảng đã sắp xếp.**
+
+```javascript
+function twoSum(arr, target) {
+    let left = 0;
+    let right = arr.length - 1;
+
+    while (left < right) {
+        let current_sum = arr[left] + arr[right];
+        
+        if (current_sum === target) {
+            return [left, right]; // Trúng phóc!
+        } else if (current_sum < target) {
+            left++; // Tổng nhỏ quá -> Cần số lớn hơn -> Tiến left
+        } else {
+            right--; // Tổng lớn quá -> Cần số nhỏ hơn -> Lùi right
+        }
+    }
+    return [-1, -1];
+}
+```
+
+**Các biến thể phổ biến:**
+- Lọc phần tử trùng lặp (Remove Duplicates) bằng cách cho 1 con trỏ đọc `Fast`, 1 con trỏ ghi lại `Slow`.
+- Bài toán "Đảo ngược chuỗi" (Swap `left` và `right`).
+- Bài toán "Bình phương mảng đã sắp xếp" (So sánh bình phương `left` và `right`, đưa cái bự hơn vào cuối mảng mới).
+
+---
+
+## 🪟 2. Sliding Window (Cửa sổ trượt)
+
+Đỉnh cao của nghệ thuật cắt dải! Được sử dụng để tìm hoặc tính toán thứ gì đó trên một **Mảng con liên tiếp (Contiguous Subarray / Substring)**.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Câu hỏi chứa các từ khóa: **"Subarray"**, **"Substring"**, **"Longest"** (dài nhất), **"Shortest"** (ngắn nhất), **"Maximum/Minimum"**.
+- Tránh chạy vòng lặp lồng nhau (O(N²)) để tính tất cả mảng con. Cửa sổ trượt giảm độ phức tạp xuống **O(N)**.
+
+### ⚙️ Cửa sổ cố định kích thước K
+Tìm tổng lớn nhất của chuỗi con liên tiếp độ dài K.
+
+```python
+def max_subarray_sum(arr, k):
+    max_sum = 0
+    window_sum = sum(arr[:k]) # Tính vách đầu tiên
+    max_sum = window_sum
+    
+    # Trượt cái khung kính đi
+    for i in range(k, len(arr)):
+        # Cộng thêm phần tử mới vào cửa sổ, Trừ phần tử tụt ra khỏi cửa sổ
+        window_sum = window_sum + arr[i] - arr[i-k]
+        max_sum = max(max_sum, window_sum)
+        
+    return max_sum
+```
+
+### ⚙️ Cửa sổ kích thước Động (Co giãn)
+Bài toán cực khó: **Tìm Chuỗi con dài nhất không có ký tự lặp lại.**
+
+```javascript
+function lengthOfLongestSubstring(s) {
+    let windowStart = 0;
+    let maxLength = 0;
+    let charIndexMap = new Map(); // Ghi nhớ vị trí xuất hiện của ký tự
+
+    for (let windowEnd = 0; windowEnd < s.length; windowEnd++) {
+        let rightChar = s[windowEnd];
+        
+        // CÚ CĂNG: Nếu gặp ký tự đã có trong cửa sổ
+        if (charIndexMap.has(rightChar)) {
+            // Giật khung cửa (windowStart) đuổi chót qua luôn chỗ xuất hiện cũ
+            windowStart = Math.max(windowStart, charIndexMap.get(rightChar) + 1);
+        }
+        
+        charIndexMap.set(rightChar, windowEnd); // Cập nhật vị trí mới nhất
+        maxLength = Math.max(maxLength, windowEnd - windowStart + 1); // Đo đạc độ dài
+    }
+    
+    return maxLength;
+}
+```
+*Tip ghi nhớ:* Dãn khung ra phía Đông (`windowEnd++`) gặp rác thì Cắt khung từ phía Tây (`windowStart++`) cho đến khi hết rác thì thôi.
+
+---
+
+## ➕ 3. Prefix Sum (Mảng cộng dồn)
+
+Khi bạn bị giám khảo "hành hạ" bằng cách liên tục bắt tính tổng của đoạn `arr[L...R]` ngẫu nhiên một tỷ lần.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Yêu cầu tính **Tổng (Sum)**, Tích, XOR của một **Khoảng (Range)**.
+- Bài toán tìm mảng con có "Tổng bằng K" nhưng mảng có CHỨA SỐ ÂM (không thể dùng Sliding Window vì cửa sổ nở ra chưa chắc tổng đã tăng!).
+
+### ⚙️ Logic và Cách Code
+Hóa giải phép lặp độ phức tạp `O(N)` thành truy vấn **`O(1)`**. Bằng cách tạo một mảng `P` chứa tổng tích lũy.
+`P[i] = P[i-1] + arr[i]`
+
+Muốn lấy Sum đoạn `[L, R]`, thì ta LẤY HẾT từ đầu tới `R` đem chém bỏ khúc cắt thừa từ đầu tới trước `L`:
+`Sum[L, R] = P[R] - P[L - 1]`
+
+```rust
+fn prefix_sum(arr: &[i32], queries: &[(usize, usize)]) {
+    let n = arr.len();
+    let mut p = vec![0; n + 1];
+    
+    // Xây dựng bảng Prefix Sum
+    for i in 0..n {
+        p[i + 1] = p[i] + arr[i];
+    }
+    
+    // Trả lời truy vấn O(1)
+    for &(l, r) in queries {
+        println!("Tổng từ {} tới {}: {}", l, r, p[r + 1] - p[l]);
+    }
+}
+```
+
+> 🎯 **Subarray Sum Equals K:** Chìa khóa là dùng Map kết hợp Prefix Sum. Ta kiểm tra: Nếu `SumHiệntại - K` mà ĐÃ CÓ MẶT trong lịch sử cái Map, thì tức là "Khúc giữa" chứa chính xác `K`! Giết trọn câu mảng con tổng K trong `O(N)`.
+
+---
+
+*← Quay lại [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Pattern: LinkedList & Intervals →](/notes/pattern-linkedlist-intervals)*

@@ -1,0 +1,360 @@
+---
+title: "Tries & Suffix Tree - Xử lý chuỗi nâng cao"
+date: 2026-03-13T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Trie là gì?
+
+Bạn đã bao giờ gõ "hel" trên Google và nó **gợi ý tự động** "hello", "help", "helmet"? Đó chính là **Trie** đang hoạt động!
+
+**Trie** (đọc là "try") = cây đặc biệt để lưu **tập hợp từ/chuỗi**:
+- Mỗi **node** = một ký tự
+- Đường đi từ root đến node = một **tiền tố** (prefix)
+- Node đánh dấu `end` = một **từ hoàn chỉnh**
+
+```
+           root
+          / | \
+         c  d  h
+         |  |  |
+         a  o  e
+        / \  |  |\ 
+       r   t g  l  a
+       |       |\ |  \
+       s      l  p d   p
+              |
+              o
+              
+Chứa: "cars", "cat", "dog", "hello", "help", "head", "heap"
+```
+
+---
+
+## ⏱️ Time Complexity
+
+| Thao tác | Big O | Giải thích |
+|----------|-------|------------|
+| **Insert** (thêm từ) | O(m) | m = độ dài từ |
+| **Search** (tìm từ) | O(m) | Duyệt theo ký tự |
+| **Prefix search** | O(m) | Tìm tất cả từ bắt đầu bằng prefix |
+| **Delete** (xóa từ) | O(m) | |
+
+> 💡 So với Hash Table: Trie tốt hơn khi cần tìm **tất cả từ** bắt đầu bằng prefix!
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== TRIE - JAVASCRIPT =====
+
+class TrieNode {
+    constructor() {
+        this.children = {};   // Key: ký tự, Value: TrieNode
+        this.isEndOfWord = false;  // Đánh dấu từ hoàn chỉnh
+    }
+}
+
+class Trie {
+    constructor() {
+        this.root = new TrieNode();
+    }
+
+    // Thêm từ - O(m)
+    insert(word) {
+        let current = this.root;
+        for (const char of word) {
+            if (!current.children[char]) {
+                current.children[char] = new TrieNode();
+            }
+            current = current.children[char];
+        }
+        current.isEndOfWord = true;  // Đánh dấu kết thúc từ
+    }
+
+    // Tìm từ chính xác - O(m)
+    search(word) {
+        let current = this.root;
+        for (const char of word) {
+            if (!current.children[char]) return false;
+            current = current.children[char];
+        }
+        return current.isEndOfWord;
+    }
+
+    // Kiểm tra prefix tồn tại - O(m)
+    startsWith(prefix) {
+        let current = this.root;
+        for (const char of prefix) {
+            if (!current.children[char]) return false;
+            current = current.children[char];
+        }
+        return true;
+    }
+
+    // Autocomplete: Tìm tất cả từ bắt đầu bằng prefix
+    autocomplete(prefix) {
+        let current = this.root;
+        for (const char of prefix) {
+            if (!current.children[char]) return [];
+            current = current.children[char];
+        }
+
+        const results = [];
+        this._findAllWords(current, prefix, results);
+        return results;
+    }
+
+    _findAllWords(node, prefix, results) {
+        if (node.isEndOfWord) {
+            results.push(prefix);
+        }
+        for (const char in node.children) {
+            this._findAllWords(node.children[char], prefix + char, results);
+        }
+    }
+}
+
+// --- Sử dụng ---
+const trie = new Trie();
+
+// Thêm từ
+["hello", "help", "helmet", "heap", "head", "cat", "car", "card"].forEach(
+    word => trie.insert(word)
+);
+
+// Tìm kiếm
+console.log(trie.search("hello"));   // true ✅
+console.log(trie.search("hell"));    // false ❌ (chưa hoàn chỉnh)
+console.log(trie.startsWith("hel")); // true ✅
+
+// Autocomplete - Tính năng gợi ý!
+console.log(trie.autocomplete("hel"));
+// ["hello", "help", "helmet"]
+
+console.log(trie.autocomplete("ca"));
+// ["cat", "car", "card"]
+```
+
+### Python
+
+```python
+# ===== TRIE - PYTHON =====
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end_of_word = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word):
+        current = self.root
+        for char in word:
+            if char not in current.children:
+                current.children[char] = TrieNode()
+            current = current.children[char]
+        current.is_end_of_word = True
+
+    def search(self, word):
+        current = self.root
+        for char in word:
+            if char not in current.children:
+                return False
+            current = current.children[char]
+        return current.is_end_of_word
+
+    def starts_with(self, prefix):
+        current = self.root
+        for char in prefix:
+            if char not in current.children:
+                return False
+            current = current.children[char]
+        return True
+
+    def autocomplete(self, prefix):
+        current = self.root
+        for char in prefix:
+            if char not in current.children:
+                return []
+            current = current.children[char]
+
+        results = []
+        self._find_all(current, prefix, results)
+        return results
+
+    def _find_all(self, node, prefix, results):
+        if node.is_end_of_word:
+            results.append(prefix)
+        for char, child in node.children.items():
+            self._find_all(child, prefix + char, results)
+
+# --- Sử dụng ---
+trie = Trie()
+for word in ["hello", "help", "helmet", "heap", "head"]:
+    trie.insert(word)
+
+print(trie.search("hello"))      # True
+print(trie.starts_with("hel"))   # True
+print(trie.autocomplete("hel"))  # ['hello', 'help', 'helmet']
+print(trie.autocomplete("hea"))  # ['heap', 'head']
+```
+
+### Rust
+
+```rust
+// ===== TRIE - RUST =====
+use std::collections::HashMap;
+
+struct TrieNode {
+    children: HashMap<char, TrieNode>,
+    is_end_of_word: bool,
+}
+
+impl TrieNode {
+    fn new() -> Self {
+        TrieNode {
+            children: HashMap::new(),
+            is_end_of_word: false,
+        }
+    }
+}
+
+struct Trie {
+    root: TrieNode,
+}
+
+impl Trie {
+    fn new() -> Self {
+        Trie { root: TrieNode::new() }
+    }
+
+    fn insert(&mut self, word: &str) {
+        let mut current = &mut self.root;
+        for c in word.chars() {
+            current = current.children
+                .entry(c)
+                .or_insert_with(TrieNode::new);
+        }
+        current.is_end_of_word = true;
+    }
+
+    fn search(&self, word: &str) -> bool {
+        let mut current = &self.root;
+        for c in word.chars() {
+            match current.children.get(&c) {
+                Some(node) => current = node,
+                None => return false,
+            }
+        }
+        current.is_end_of_word
+    }
+
+    fn starts_with(&self, prefix: &str) -> bool {
+        let mut current = &self.root;
+        for c in prefix.chars() {
+            match current.children.get(&c) {
+                Some(node) => current = node,
+                None => return false,
+            }
+        }
+        true
+    }
+
+    fn autocomplete(&self, prefix: &str) -> Vec<String> {
+        let mut current = &self.root;
+        for c in prefix.chars() {
+            match current.children.get(&c) {
+                Some(node) => current = node,
+                None => return vec![],
+            }
+        }
+        let mut results = Vec::new();
+        self.find_all(current, &mut prefix.to_string(), &mut results);
+        results
+    }
+
+    fn find_all(&self, node: &TrieNode, prefix: &mut String, results: &mut Vec<String>) {
+        if node.is_end_of_word {
+            results.push(prefix.clone());
+        }
+        for (&c, child) in &node.children {
+            prefix.push(c);
+            self.find_all(child, prefix, results);
+            prefix.pop();
+        }
+    }
+}
+
+fn main() {
+    let mut trie = Trie::new();
+    for word in &["hello", "help", "helmet", "heap", "head"] {
+        trie.insert(word);
+    }
+
+    println!("search 'hello': {}", trie.search("hello"));  // true
+    println!("starts_with 'hel': {}", trie.starts_with("hel")); // true
+    println!("autocomplete 'hel': {:?}", trie.autocomplete("hel"));
+}
+```
+
+---
+
+## 🧩 Suffix Tree & Suffix Automaton (Nâng cao)
+
+Nếu **Trie** dùng để tìm kiếm các **Tiền tố (Prefix)** của nhiều chuỗi khác nhau, thì **Suffix Tree (Cây Hậu Tố)** dùng để lưu **Tất cả các Hậu tố (Suffix)** của MỘT chuỗi duy nhất!
+
+Ví dụ, với chuỗi `BANANA`, các hậu tố là: 
+`BANANA`, `ANANA`, `NANA`, `ANA`, `NA`, `A`.
+Nhét tất cả các chuỗi này vào một Trie → Bạn có một **Suffix Trie** (phiên bản nén của nó gọi là **Suffix Tree**).
+
+### Công dụng "thần thánh" của Suffix Tree
+1. **Tìm chuỗi con (Substring matching)**: Tìm chuỗi $P$ trong văn bản dài $T$ chỉ mất `O(|P|)` (nhanh ngang KMP!).
+2. **Tìm chuỗi con chung dài nhất (Longest Common Substring)** của hai hoặc nhiều chuỗi.
+3. **Tìm chuỗi con lặp lại dài nhất** trong văn bản.
+
+Tuy nhiên, Suffix Tree rất khó cài đặt và tốn bộ nhớ. Trong thực tế (và thi đấu), người ta thường dùng **Suffix Array** (mảng hậu tố) kết hợp với **LCP Array**, hoặc dùng **Suffix Automaton** (máy trạng thái hữu hạn) nhẹ và dễ code hơn!
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Cách dùng Trie |
+|------------|---------------|
+| **Google Search** | Gợi ý từ khóa khi gõ |
+| **IDE autocomplete** | Gợi ý tên hàm, biến |
+| **Spell checker** | Kiểm tra chính tả |
+| **IP routing** | Longest prefix match |
+| **T9 keyboard** | Gợi ý từ trên điện thoại |
+| **Từ điển** | Tìm kiểm nhanh theo prefix |
+
+---
+
+## 🔄 Trie vs Hash Table
+
+| Tiêu chí | Trie | Hash Table |
+|----------|------|------------|
+| Tìm chính xác | O(m) | O(1) |
+| Tìm prefix | O(m) ✨ | O(n) — phải duyệt hết |
+| Bộ nhớ | Nhiều hơn | Ít hơn |
+| Sắp xếp | Tự động theo alphabet | Không có thứ tự |
+| Dùng khi | Autocomplete, prefix | Lookup nhanh |
+
+---
+
+## 🎯 Khi nào dùng Trie?
+
+- ✅ Cần **autocomplete** / gợi ý tự động
+- ✅ Cần tìm tất cả từ bắt đầu bằng **prefix**
+- ✅ Cần **spell checking** (kiểm tra chính tả)
+- ❌ Chỉ cần tìm kiếm chính xác → dùng **Hash Table** (nhanh hơn)
+- ❌ Bộ nhớ hạn chế → Trie tốn nhiều bộ nhớ
+
+---
+
+*← Quay lại [Graphs](/notes/ds-graphs) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Recursion →](/notes/algo-recursion)*

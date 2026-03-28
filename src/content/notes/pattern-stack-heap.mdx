@@ -1,0 +1,93 @@
+---
+title: "Pattern: Stack & Heap - Monotonic Stack & Top 'K' Elements"
+date: 2026-04-03T00:00:00Z
+topic: "DSA"
+---
+
+## 🥞 1. Monotonic Stack (Ngăn xếp Đơn điệu)
+
+Stack bình thường chỉ dùng để LIFO (Vào sau ra trước) như nút Back trình duyệt. **Monotonic Stack** là một Stack có thêm Quy luật: Tất cả phần tử trong Stack phải Sắp Xếp Tăng Dần hoặc Giảm Dần.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+Mô hình bài toán cực kinh điển: **"Next Greater Element"** (Tìm phần tử lớn hơn / nhỏ hơn GẦN NHẤT nằm bên Cạnh / bên Trái / bên Phải).
+*Ví dụ:* Nhiệt độ hàng ngày `[73, 74, 75, 71, 69, 72, 76]`. Chờ bao nhiêu ngày nữa thì mẻ trời ấm hơn số ngày hiện tại? Trả về mảng đếm ngày chờ!
+
+### ⚙️ Tại sao không dùng 2 vòng For?
+Vòng lặp trong lồng nhau quét `O(N^2)`.
+Dùng Monotonic Stack, mỗi phần tử bị quăng vào O(1) và đẩy ra O(1) → Chỉ mất **O(N)**.
+
+### ⚙️ Logic Hoạt động (Tìm số lớn hơn tiếp theo)
+Bạn lập mảng rỗng `stack` lưu **Chỉ số (Index)** của phần tử. Khởi tạo mảng `Kết quả` chứa số `-1` hoặc `0`.
+Duyệt mảng từ Trái qua Phải:
+Hỏi vòng `while`: Kẻ Mới Vừa Tới (số này lớn vãi lúa) có LỚN HƠN cái thằng đang thoi thóp trên ĐỈNH STACK không?
+- ĐÚNG: Đẩy thằng Đỉnh Stack văng ra (Pop). Vì "Kẻ Mới Tới" chính là đáp số Lớn Hơn Tiếp Theo của nó! Ghi nhận vào mảng Kết quả. Tiếp tục xét thằng kế trên đỉnh lôi ra bắn bỏ nốt nếu còn nhỏ hơn!
+- SAI: (Hoặc Stack rỗng). Im lặng chui vào Đỉnh Stack thoi thóp chờ kẻ khác to hơn tới giải cứu.
+
+```python
+def dailyTemperatures(temperatures):
+    ans = [0] * len(temperatures)
+    stack = [] # Lưu index
+    
+    for curr_idx, curr_temp in enumerate(temperatures):
+        # Ngày hôm nay nóng hơn ngày nằm trên đỉnh stack -> Bốc ngày đó ra trả kết quả!
+        while stack and curr_temp > temperatures[stack[-1]]:
+            prev_idx = stack.pop()
+            ans[prev_idx] = curr_idx - prev_idx # Tính khoảng cách số ngày
+        
+        # Nhét ngày hôm nay vào chờ ngày nóng hơn tới
+        stack.append(curr_idx)
+        
+    return ans
+```
+
+> 🔥 **Ghi nhớ:** 
+> - Tìm Max/ Lớn hơn -> Stack Giảm Dần. Mới Tới to hơn Đỉnh -> Pop!
+> - Tìm Min/ Nhỏ hơn -> Stack Tăng Dần. Mới Tới nhỏ hơn Đỉnh -> Pop!
+
+---
+
+## ⛰ 2. Top 'K' Elements (Khắc tinh Priority Queue)
+
+Heap (Đống) là giải pháp đỉnh cao nhất cho bất cứ thứ gì có chữ "Max", "Min", "Top".
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+Đề bài nhúng trực tiếp chữ: 
+- Tìm **$K$ phần tử Lớn Nhất / Nhỏ Nhất / Xa Nhất / Gần Nhất**.
+- Tìm các số **Xuất hiện nhiều nhất (K frequent)**.
+- Gộp (Merge) $K$ mảng đã sắp xếp.
+
+*(Tuyệt đối không lôi cái Hàm Array Cũ ra Sort toàn tập lại tốn `O(N log N)`. Build Heap giải trong `O(N log K)`).*
+
+### ⚙️ Template Giải Quyêt Top K Lớn Nhất
+**Quy tắc ngầm:** Trái khoáy! 
+- Yêu cầu K mảng LỚN NHẤT → Dùng **MIN HEAP** (size K).
+- Yêu cầu K mảng NHỎ NHẤT → Dùng **MAX HEAP** (size K).
+
+Tại sao tìm Lớn Nhất lại xài Min Heap?
+Vì cái Min Heap size $K$ nó ngậm K thằng to nhất của mảng lại, còn thằng Cỏn Con Nhất trong đám To Đó nằm chình ình trên Đỉnh. 
+Người mới đến đi kiểm tra: Mày to hơn thằng yết ớt nhất trên ải không? Nếu Có: Đấm vỡ mặt thằng yến ớt Đỉnh, thay chỗ!
+Do đó Cục Min Heap size K cứ giữ lại K tên đô con bá đạo nhất cuối cùng! Không bị phình size, Tốc O(N log K).
+
+```javascript
+// Minh họa K Frequent Elements bằng giả mã Max Priority Queue 
+function topKFrequent(nums, k) {
+    let map = new Map();
+    nums.forEach(n => map.set(n, (map.get(n) || 0) + 1));
+    
+    // JS ko có maxHeap sẵn, tự biểu diễn hàm sort mô phỏng logic Heap.
+    let minHeap = new MinPriorityQueue({ priority: x => x.count });
+    
+    for (let [num, count] of map.entries()) {
+        minHeap.enqueue({num, count});
+        if (minHeap.size() > k) {
+            minHeap.dequeue(); // Tống cổ thằng xuất hiện ÍT NHẤT trên đỉnh đi
+        }
+    }
+    
+    return minHeap.toArray().map(x => x.element.num);
+}
+```
+
+---
+
+*← Quay lại [LinkedList & Intervals](/notes/pattern-linkedlist-intervals) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Pattern: Tree & Graph →](/notes/pattern-tree-graph)*

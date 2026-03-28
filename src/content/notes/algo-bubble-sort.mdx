@@ -1,0 +1,145 @@
+---
+title: "Bubble Sort (Sắp xếp nổi bọt) - Đơn giản nhất để bắt đầu"
+date: 2026-03-06T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Bubble Sort là gì?
+
+Hãy tưởng tượng bạn có **một hàng bạn bè xếp theo chiều cao**. Bạn đi từ đầu hàng, so sánh **hai người cạnh nhau** — ai cao hơn thì đổi chỗ ra sau. Cứ đi qua đi lại, cuối cùng hàng sẽ **từ thấp đến cao**!
+
+**Bubble Sort** = So sánh các cặp liền kề, **đổi chỗ** nếu sai thứ tự. Phần tử lớn nhất "**nổi lên**" cuối mảng như bong bóng!
+
+```
+Lần 1: [5, 3, 8, 1, 2]
+        5>3 đổi → [3, 5, 8, 1, 2]
+                   5<8 giữ → [3, 5, 8, 1, 2]
+                              8>1 đổi → [3, 5, 1, 8, 2]
+                                         8>2 đổi → [3, 5, 1, 2, 8] ✅ 8 đã đúng vị trí
+
+Lần 2: [3, 5, 1, 2, 8]
+        3<5 giữ → 5>1 đổi → 5>2 đổi → [3, 1, 2, 5, 8] ✅ 5 đã đúng
+
+Lần 3: [3, 1, 2, 5, 8]
+        3>1 đổi → 3>2 đổi → [1, 2, 3, 5, 8] ✅ Done!
+```
+
+---
+
+## ⏱️ Time Complexity
+
+| Trường hợp | Big O | Khi nào? |
+|-------------|-------|----------|
+| **Tốt nhất** | O(n) | Mảng đã sắp xếp (có tối ưu) |
+| **Trung bình** | O(n²) | Mảng ngẫu nhiên |
+| **Xấu nhất** | O(n²) | Mảng sắp ngược |
+| **Space** | O(1) | Sắp xếp tại chỗ (in-place) |
+
+> ⚠️ O(n²) = rất chậm với dữ liệu lớn. 10.000 phần tử → 100 triệu phép so sánh!
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== BUBBLE SORT - JAVASCRIPT =====
+
+function bubbleSort(arr) {
+    const n = arr.length;
+    
+    for (let i = 0; i < n - 1; i++) {
+        let swapped = false;  // Tối ưu: kiểm tra có đổi chỗ không
+        
+        for (let j = 0; j < n - 1 - i; j++) {
+            // So sánh 2 phần tử cạnh nhau
+            if (arr[j] > arr[j + 1]) {
+                // Đổi chỗ (swap)
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                swapped = true;
+            }
+        }
+        
+        // Nếu không có đổi chỗ → mảng đã sorted → dừng sớm!
+        if (!swapped) break;
+    }
+    return arr;
+}
+
+// --- Test ---
+console.log(bubbleSort([64, 34, 25, 12, 22, 11, 90]));
+// [11, 12, 22, 25, 34, 64, 90]
+
+console.log(bubbleSort([1, 2, 3, 4, 5]));
+// [1, 2, 3, 4, 5] (đã sorted → O(n) nhờ tối ưu!)
+```
+
+### Python
+
+```python
+# ===== BUBBLE SORT - PYTHON =====
+
+def bubble_sort(arr):
+    n = len(arr)
+    
+    for i in range(n - 1):
+        swapped = False
+        
+        for j in range(n - 1 - i):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]  # Swap
+                swapped = True
+        
+        if not swapped:  # Đã sorted → dừng sớm
+            break
+    
+    return arr
+
+# --- Test ---
+print(bubble_sort([64, 34, 25, 12, 22, 11, 90]))
+# [11, 12, 22, 25, 34, 64, 90]
+```
+
+### Rust
+
+```rust
+// ===== BUBBLE SORT - RUST =====
+
+fn bubble_sort(arr: &mut Vec<i32>) {
+    let n = arr.len();
+    
+    for i in 0..n - 1 {
+        let mut swapped = false;
+        
+        for j in 0..n - 1 - i {
+            if arr[j] > arr[j + 1] {
+                arr.swap(j, j + 1);  // Swap built-in!
+                swapped = true;
+            }
+        }
+        
+        if !swapped { break; }
+    }
+}
+
+fn main() {
+    let mut numbers = vec![64, 34, 25, 12, 22, 11, 90];
+    bubble_sort(&mut numbers);
+    println!("{:?}", numbers);
+    // [11, 12, 22, 25, 34, 64, 90]
+}
+```
+
+---
+
+## 🎯 Khi nào dùng Bubble Sort?
+
+- ✅ Dữ liệu **rất nhỏ** (< 20 phần tử)
+- ✅ Dữ liệu **gần như** đã sắp xếp (O(n) best case)
+- ✅ Học thuật, thi cử — hiểu nguyên lý sắp xếp
+- ❌ Dữ liệu lớn → dùng **Merge Sort** hoặc **Quick Sort**
+
+---
+
+*← Quay lại [Recursion](/notes/algo-recursion) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Selection Sort →](/notes/algo-selection-sort)*

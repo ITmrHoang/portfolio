@@ -1,0 +1,231 @@
+---
+title: "Array & String - Cấu trúc dữ liệu nền tảng"
+date: 2026-03-01T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Array là gì?
+
+Hãy tưởng tượng bạn có **một dãy tủ đồ** ở trường, đánh số từ 0, 1, 2, 3... Mỗi tủ chứa **một món đồ**. Bạn muốn lấy đồ ở tủ số 3? Đi thẳng tới tủ số 3 — không cần mở từng tủ!
+
+**Array (Mảng)** chính là dãy tủ đồ trong máy tính:
+- Lưu dữ liệu **liên tiếp** trong bộ nhớ (cạnh nhau)
+- Mỗi phần tử có một **chỉ số (index)** bắt đầu từ 0
+- Truy cập phần tử bất kỳ **cực nhanh** thông qua index
+
+```
+Index:    0     1     2     3     4
+        ┌─────┬─────┬─────┬─────┬─────┐
+Array:  │ 🍎  │ 🍌  │ 🍇  │ 🍊  │ 🍓  │
+        └─────┴─────┴─────┴─────┴─────┘
+```
+
+---
+
+## 🔤 String (Chuỗi ký tự) là gì?
+
+Thực chất, **String** cực kỳ lỏng lẻo với Array! Trong nhiều ngôn ngữ lập trình phần thấp (như C), String chính là **một mảng các ký tự (characters)**.
+
+```
+       "HELLO"
+        ┌───┬───┬───┬───┬───┐
+Char:   │ H │ E │ L │ L │ O │
+        └───┴───┴───┴───┴───┘
+Index:    0   1   2   3   4
+```
+
+### Điểm đặc biệt của String: Tính Bất Biến (Immutability)
+Trong Java, Python, JavaScript, String là **Immutable (không thể thay đổi)**.
+- Nghĩa là bạn không thể sửa trực tiếp `str[0] = 'a'`.
+- Khi bạn "sửa" một String, máy tính thực chất đang **tạo ra một Array mới** trong bộ nhớ, copy dữ liệu cũ sang và thêm phần thay đổi. Điều này tốn thời gian `O(n)`.
+- **Mẹo (Trick):** Khi cần nối/sửa String liên tục trong vòng lặp, hãy dùng mảng (như `List` trong Python, `Array.join()` trong JS, `StringBuilder` trong Java) để nối chuỗi thay vì dùng toán tử `+` để đạt hiệu suất cao nhất!
+
+---
+
+## ⏱️ Time Complexity
+
+| Thao tác | Big O | Giải thích |
+|----------|-------|------------|
+| **Truy cập** (Access) | O(1) | Biết index → lấy ngay |
+| **Tìm kiếm** (Search) | O(n) | Phải duyệt từng phần tử |
+| **Thêm cuối** (Push) | O(1) | Thêm vào cuối nhanh |
+| **Thêm đầu/giữa** (Insert) | O(n) | Phải dịch chuyển các phần tử |
+| **Xóa cuối** (Pop) | O(1) | Xóa cuối nhanh |
+| **Xóa đầu/giữa** (Delete) | O(n) | Phải dịch chuyển các phần tử |
+
+---
+
+## 🔧 Hai loại Array
+
+### 1. Static Array (Mảng tĩnh)
+- Kích thước **cố định** khi tạo
+- Không thể thêm/xóa phần tử (chỉ thay đổi giá trị)
+- Ví dụ: Array trong C, Rust
+
+### 2. Dynamic Array (Mảng động)
+- Kích thước **tự động mở rộng** khi cần
+- Khi đầy → tạo mảng mới lớn hơn (thường gấp đôi) → copy dữ liệu sang
+- Ví dụ: `ArrayList` (Java), `list` (Python), `Vec` (Rust), `Array` (JavaScript)
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== ARRAY TRONG JAVASCRIPT =====
+
+// 1. Tạo array
+const fruits = ["🍎", "🍌", "🍇", "🍊", "🍓"];
+
+// 2. Truy cập phần tử (O(1)) - Cực nhanh!
+console.log(fruits[0]);  // "🍎" (index 0)
+console.log(fruits[3]);  // "🍊" (index 3)
+
+// 3. Thêm phần tử vào cuối (O(1))
+fruits.push("🥝");
+console.log(fruits);  // ["🍎", "🍌", "🍇", "🍊", "🍓", "🥝"]
+
+// 4. Xóa phần tử cuối (O(1))
+fruits.pop();
+console.log(fruits);  // ["🍎", "🍌", "🍇", "🍊", "🍓"]
+
+// 5. Thêm phần tử vào đầu (O(n)) - Chậm! Phải dịch tất cả
+fruits.unshift("🫐");
+console.log(fruits);  // ["🫐", "🍎", "🍌", "🍇", "🍊", "🍓"]
+
+// 6. Xóa phần tử đầu (O(n)) - Chậm!
+fruits.shift();
+console.log(fruits);  // ["🍎", "🍌", "🍇", "🍊", "🍓"]
+
+// 7. Tìm kiếm (O(n)) - Duyệt từng phần tử
+const index = fruits.indexOf("🍇");
+console.log(`🍇 ở vị trí: ${index}`);  // 2
+
+// 8. Duyệt tất cả phần tử
+fruits.forEach((fruit, i) => {
+    console.log(`Vị trí ${i}: ${fruit}`);
+});
+```
+
+### Python
+
+```python
+# ===== ARRAY (LIST) TRONG PYTHON =====
+
+# 1. Tạo list (Python dùng list thay cho array)
+fruits = ["🍎", "🍌", "🍇", "🍊", "🍓"]
+
+# 2. Truy cập phần tử (O(1)) - Cực nhanh!
+print(fruits[0])   # "🍎"
+print(fruits[3])   # "🍊"
+print(fruits[-1])  # "🍓" (Python cho phép index âm!)
+
+# 3. Thêm phần tử vào cuối (O(1))
+fruits.append("🥝")
+print(fruits)  # ["🍎", "🍌", "🍇", "🍊", "🍓", "🥝"]
+
+# 4. Xóa phần tử cuối (O(1))
+fruits.pop()
+print(fruits)  # ["🍎", "🍌", "🍇", "🍊", "🍓"]
+
+# 5. Thêm phần tử vào đầu (O(n)) - Chậm!
+fruits.insert(0, "🫐")
+print(fruits)  # ["🫐", "🍎", "🍌", "🍇", "🍊", "🍓"]
+
+# 6. Xóa phần tử đầu (O(n)) - Chậm!
+fruits.pop(0)
+print(fruits)  # ["🍎", "🍌", "🍇", "🍊", "🍓"]
+
+# 7. Tìm kiếm (O(n))
+index = fruits.index("🍇")
+print(f"🍇 ở vị trí: {index}")  # 2
+
+# 8. Duyệt tất cả phần tử
+for i, fruit in enumerate(fruits):
+    print(f"Vị trí {i}: {fruit}")
+```
+
+### Rust
+
+```rust
+// ===== ARRAY & VEC TRONG RUST =====
+
+fn main() {
+    // --- Static Array (kích thước cố định) ---
+    let fixed: [&str; 5] = ["🍎", "🍌", "🍇", "🍊", "🍓"];
+    println!("Phần tử đầu: {}", fixed[0]);  // "🍎"
+
+    // --- Dynamic Array (Vec - kích thước linh hoạt) ---
+    // 1. Tạo Vec
+    let mut fruits = vec!["🍎", "🍌", "🍇", "🍊", "🍓"];
+
+    // 2. Truy cập phần tử (O(1))
+    println!("Index 0: {}", fruits[0]);  // "🍎"
+    println!("Index 3: {}", fruits[3]);  // "🍊"
+
+    // 3. Thêm vào cuối (O(1) trung bình)
+    fruits.push("🥝");
+    println!("{:?}", fruits);
+
+    // 4. Xóa phần tử cuối (O(1))
+    fruits.pop();
+    println!("{:?}", fruits);
+
+    // 5. Thêm vào đầu (O(n)) - Chậm!
+    fruits.insert(0, "🫐");
+    println!("{:?}", fruits);
+
+    // 6. Xóa phần tử đầu (O(n))
+    fruits.remove(0);
+    println!("{:?}", fruits);
+
+    // 7. Tìm kiếm (O(n))
+    if let Some(index) = fruits.iter().position(|&x| x == "🍇") {
+        println!("🍇 ở vị trí: {}", index);  // 2
+    }
+
+    // 8. Duyệt tất cả phần tử
+    for (i, fruit) in fruits.iter().enumerate() {
+        println!("Vị trí {}: {}", i, fruit);
+    }
+}
+```
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Tại sao dùng Array? |
+|------------|---------------------|
+| **Danh sách sản phẩm** | Hiển thị theo thứ tự, truy cập nhanh bằng index |
+| **Pixel hình ảnh** | Mỗi pixel lưu liên tiếp trong bộ nhớ |
+| **Lịch sử duyệt web** | Danh sách các URL đã truy cập |
+| **Playlist nhạc** | Bài hát theo thứ tự phát |
+| **Điểm thi học sinh** | Dữ liệu đồng nhất, dễ tính trung bình |
+
+---
+
+## ✅ Ưu điểm & ❌ Nhược điểm
+
+| ✅ Ưu điểm | ❌ Nhược điểm |
+|-------------|---------------|
+| Truy cập cực nhanh O(1) | Thêm/xóa đầu/giữa chậm O(n) |
+| Đơn giản, dễ dùng | Kích thước cố định (static array) |
+| Tiết kiệm bộ nhớ | Lãng phí bộ nhớ nếu cấp phát dư |
+| Hỗ trợ mọi ngôn ngữ | Chỉ lưu được 1 kiểu dữ liệu (typed) |
+
+---
+
+## 🎯 Khi nào nên dùng Array?
+
+- ✅ Cần **truy cập nhanh** theo vị trí (index)
+- ✅ Dữ liệu có **thứ tự** quan trọng
+- ✅ Biết trước **số lượng** phần tử (hoặc ít thay đổi)
+- ❌ **Không nên** dùng khi cần thêm/xóa đầu/giữa liên tục → dùng **Linked List**
+- ❌ **Không nên** dùng khi cần tìm kiếm nhanh theo key → dùng **Hash Table**
+
+---
+
+*← Quay lại [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Linked List →](/notes/ds-linked-lists)*

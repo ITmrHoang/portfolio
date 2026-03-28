@@ -1,0 +1,284 @@
+---
+title: "Dynamic Programming (Quy hoạch động) - Ghi nhớ để không tính lại"
+date: 2026-03-18T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Dynamic Programming là gì?
+
+Hãy tưởng tượng bạn được hỏi: "1+1+1+1+1 bằng mấy?" → Bạn đếm: "5!"
+
+Rồi hỏi tiếp: "Thêm +1 nữa?" → Bạn **không đếm lại** từ đầu mà nói ngay: "6!" — vì bạn đã **nhớ** kết quả trước đó là 5.
+
+**Dynamic Programming (DP)** = Giải bài toán phức tạp bằng cách:
+1. Chia thành **bài toán con** nhỏ hơn
+2. **Ghi nhớ** (cache) kết quả đã tính
+3. **Tái sử dụng** kết quả thay vì tính lại
+
+> DP = Recursion + Memoization (Đệ quy + Ghi nhớ)
+
+---
+
+## 🗂️ Hai khái niệm chính
+
+### 1. Caching (Bộ nhớ đệm)
+Lưu trữ dữ liệu để **truy xuất nhanh hơn** trong tương lai.
+
+### 2. Memoization (Ghi nhớ)
+Dạng caching **đặc biệt** cho hàm: lưu kết quả hàm dựa trên tham số → lần gọi tiếp trả kết quả ngay!
+
+```
+fib(5) → tính = 5, lưu memo[5] = 5
+fib(5) → memo[5] đã có! Trả 5 ngay, không tính lại!
+```
+
+---
+
+## 🔄 Hai cách tiếp cận
+
+### Top-Down (Đệ quy + Memoization)
+- Bắt đầu từ **bài toán lớn** → chia nhỏ dần
+- Dùng **đệ quy** + cache kết quả
+- Dễ viết nếu quen đệ quy
+
+### Bottom-Up (Tabulation)
+- Bắt đầu từ **bài toán nhỏ nhất** → xây dần lên
+- Dùng **vòng lặp** + bảng (table)
+- Thường nhanh hơn (không có overhead đệ quy)
+
+```
+Fibonacci Top-Down:        Fibonacci Bottom-Up:
+fib(5)                     table[0] = 0
+├── fib(4)                 table[1] = 1
+│   ├── fib(3)             table[2] = 1
+│   │   ├── fib(2) → memo  table[3] = 2
+│   │   └── fib(1) → 1     table[4] = 3
+│   └── fib(2) → memo!     table[5] = 5 ✅
+└── fib(3) → memo!
+```
+
+---
+
+## 💻 Ví dụ 1: Fibonacci
+
+### JavaScript
+
+```javascript
+// ❌ Đệ quy thuần — O(2ⁿ) RẤT CHẬM!
+function fibSlow(n) {
+    if (n <= 1) return n;
+    return fibSlow(n - 1) + fibSlow(n - 2);
+}
+
+// ✅ Top-Down: Đệ quy + Memoization — O(n)
+function fibTopDown(n, memo = {}) {
+    if (n in memo) return memo[n];  // Đã tính? Lấy luôn!
+    if (n <= 1) return n;
+    memo[n] = fibTopDown(n - 1, memo) + fibTopDown(n - 2, memo);
+    return memo[n];
+}
+
+// ✅ Bottom-Up: Tabulation — O(n), ít bộ nhớ hơn
+function fibBottomUp(n) {
+    if (n <= 1) return n;
+    const table = [0, 1];
+    for (let i = 2; i <= n; i++) {
+        table[i] = table[i - 1] + table[i - 2];
+    }
+    return table[n];
+}
+
+// ✅ Bottom-Up tối ưu: chỉ cần 2 biến — O(n), O(1) space
+function fibOptimal(n) {
+    if (n <= 1) return n;
+    let prev2 = 0, prev1 = 1;
+    for (let i = 2; i <= n; i++) {
+        const current = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = current;
+    }
+    return prev1;
+}
+
+console.log(fibTopDown(50));   // 12586269025
+console.log(fibBottomUp(50));  // 12586269025
+console.log(fibOptimal(50));   // 12586269025
+```
+
+### Python
+
+```python
+# ❌ Đệ quy thuần — O(2ⁿ)
+def fib_slow(n):
+    if n <= 1: return n
+    return fib_slow(n - 1) + fib_slow(n - 2)
+
+# ✅ Top-Down: Memoization
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib_top_down(n):
+    if n <= 1: return n
+    return fib_top_down(n - 1) + fib_top_down(n - 2)
+
+# ✅ Bottom-Up: Tabulation
+def fib_bottom_up(n):
+    if n <= 1: return n
+    table = [0, 1]
+    for i in range(2, n + 1):
+        table.append(table[i-1] + table[i-2])
+    return table[n]
+
+# ✅ Bottom-Up tối ưu: O(1) space
+def fib_optimal(n):
+    if n <= 1: return n
+    prev2, prev1 = 0, 1
+    for _ in range(2, n + 1):
+        prev2, prev1 = prev1, prev2 + prev1
+    return prev1
+
+print(fib_top_down(50))   # 12586269025
+print(fib_bottom_up(50))  # 12586269025
+print(fib_optimal(50))    # 12586269025
+```
+
+### Rust
+
+```rust
+// ===== FIBONACCI DP - RUST =====
+use std::collections::HashMap;
+
+// Top-Down: Memoization
+fn fib_memo(n: u64, memo: &mut HashMap<u64, u64>) -> u64 {
+    if let Some(&val) = memo.get(&n) { return val; }
+    if n <= 1 { return n; }
+    let result = fib_memo(n - 1, memo) + fib_memo(n - 2, memo);
+    memo.insert(n, result);
+    result
+}
+
+// Bottom-Up: Tabulation
+fn fib_table(n: usize) -> u64 {
+    if n <= 1 { return n as u64; }
+    let mut table = vec![0u64; n + 1];
+    table[1] = 1;
+    for i in 2..=n {
+        table[i] = table[i-1] + table[i-2];
+    }
+    table[n]
+}
+
+// Bottom-Up tối ưu: O(1) space
+fn fib_optimal(n: u64) -> u64 {
+    if n <= 1 { return n; }
+    let (mut a, mut b) = (0u64, 1u64);
+    for _ in 2..=n {
+        let temp = a + b;
+        a = b;
+        b = temp;
+    }
+    b
+}
+
+fn main() {
+    let mut memo = HashMap::new();
+    println!("{}", fib_memo(50, &mut memo));  // 12586269025
+    println!("{}", fib_table(50));             // 12586269025
+    println!("{}", fib_optimal(50));           // 12586269025
+}
+```
+
+---
+
+## 💻 Ví dụ 2: Climbing Stairs (Leo cầu thang)
+
+Bạn leo cầu thang **n bậc**, mỗi bước leo **1 hoặc 2 bậc**. Có bao nhiêu cách?
+
+```
+n=1: [1]                → 1 cách
+n=2: [1,1] [2]          → 2 cách
+n=3: [1,1,1] [1,2] [2,1] → 3 cách
+n=4: 5 cách
+→ Giống Fibonacci!
+```
+
+```javascript
+// JavaScript - Climbing Stairs
+function climbStairs(n) {
+    if (n <= 2) return n;
+    let prev2 = 1, prev1 = 2;
+    for (let i = 3; i <= n; i++) {
+        const current = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = current;
+    }
+    return prev1;
+}
+
+console.log(climbStairs(5));   // 8 cách
+console.log(climbStairs(10));  // 89 cách
+```
+
+```python
+# Python - Climbing Stairs
+def climb_stairs(n):
+    if n <= 2: return n
+    prev2, prev1 = 1, 2
+    for _ in range(3, n + 1):
+        prev2, prev1 = prev1, prev2 + prev1
+    return prev1
+
+print(climb_stairs(5))   # 8
+print(climb_stairs(10))  # 89
+```
+
+---
+
+## 🧩 Nhận biết bài toán DP
+
+Bài toán nào nên dùng DP? Kiểm tra 2 điều:
+
+1. **Overlapping Subproblems**: Bài toán con lặp lại nhiều lần
+   - VD: fib(5) gọi fib(3) **2 lần**
+
+2. **Optimal Substructure**: Lời giải tối ưu = tổ hợp lời giải tối ưu con
+   - VD: Đường ngắn nhất A→D = đường ngắn nhất A→C + đường ngắn nhất C→D
+
+---
+
+## 🔄 So sánh các cách tiếp cận
+
+| Cách | Time | Space | Ưu điểm |
+|------|------|-------|---------|
+| Đệ quy thuần | O(2ⁿ) ❌ | O(n) | Đơn giản |
+| Top-Down (Memo) | O(n) ✅ | O(n) | Dễ viết từ đệ quy |
+| Bottom-Up (Table) | O(n) ✅ | O(n) | Nhanh hơn (no recursion) |
+| Bottom-Up tối ưu | O(n) ✅ | O(1) ✨ | Tốt nhất! |
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Bài toán DP |
+|------------|------------|
+| **Google Maps** | Đường đi ngắn nhất |
+| **Kiểm tra chính tả** | Edit distance (khoảng cách chỉnh sửa) |
+| **Chuỗi DNA** | Longest Common Subsequence |
+| **Cắt thanh sắt** | Rod cutting problem |
+| **Đổi tiền** | Coin change (ít đồng xu nhất) |
+| **Ba lô** | Knapsack problem (giá trị max) |
+| **Nén dữ liệu** | Longest Common Substring |
+
+---
+
+## 🎯 Khi nào dùng DP?
+
+- ✅ Bài toán có **bài toán con trùng lặp** (overlapping subproblems)
+- ✅ Bài toán có **cấu trúc tối ưu** (optimal substructure)
+- ✅ Cần tìm **giá trị tối ưu** (min, max, count)
+- ✅ Từ khóa: "tìm số cách", "tìm giá trị lớn/nhỏ nhất", "có khả thi không?"
+- ❌ Bài toán không có tính chất trên → dùng Greedy hoặc brute force
+
+---
+
+*← Quay lại [Dijkstra & Bellman-Ford](/notes/algo-dijkstra-bellman) | [Tổng quan DSA](/notes/dsa-overview)*

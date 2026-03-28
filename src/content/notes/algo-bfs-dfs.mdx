@@ -1,0 +1,365 @@
+---
+title: "BFS & DFS - Duyệt theo chiều rộng và chiều sâu"
+date: 2026-03-15T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 BFS và DFS là gì?
+
+Hãy tưởng tượng bạn **lạc trong mê cung** và cần tìm đường ra. Có 2 chiến lược:
+
+### BFS (Breadth-First Search) = Lan tỏa như "sóng nước" 🌊
+- Khám phá **tất cả hàng xóm gần nhất** trước
+- Rồi mới đi xa hơn (tầng 1 → tầng 2 → tầng 3...)
+- Dùng **Queue (FIFO)**
+
+### DFS (Depth-First Search) = Đi sâu nhất có thể 🏔️
+- Chọn 1 đường và đi **sâu tới cùng**
+- Nếu bế tắc → quay lại (backtrack) → thử đường khác
+- Dùng **Stack (LIFO)** hoặc **Recursion**
+
+```
+        A
+       / \
+      B   C
+     / \   \
+    D   E   F
+   /
+  G
+
+BFS: A → B → C → D → E → F → G  (theo tầng)
+DFS: A → B → D → G → E → C → F  (đi sâu)
+```
+
+---
+
+## 🌊 BFS - Breadth-First Search
+
+### Cách hoạt động
+
+1. Bắt đầu từ node gốc, đưa vào **Queue**
+2. Lấy node ra khỏi Queue, **thăm** nó
+3. Đưa tất cả **hàng xóm chưa thăm** vào Queue
+4. Lặp lại cho đến khi Queue rỗng
+
+```
+Queue: [A]         → Thăm A, thêm B, C
+Queue: [B, C]      → Thăm B, thêm D, E
+Queue: [C, D, E]   → Thăm C, thêm F
+Queue: [D, E, F]   → Thăm D, thêm G
+Queue: [E, F, G]   → Thăm E
+Queue: [F, G]      → Thăm F
+Queue: [G]         → Thăm G
+Queue: []          → Xong!
+
+Kết quả: A, B, C, D, E, F, G
+```
+
+### ⏱️ Time & Space
+
+| | Big O |
+|------|-------|
+| Time | O(V + E) — V: vertices, E: edges |
+| Space | O(V) — Queue lưu tối đa 1 tầng |
+
+---
+
+## 🏔️ DFS - Depth-First Search
+
+### Cách hoạt động
+
+1. Bắt đầu từ node gốc
+2. Đi sâu vào **node con đầu tiên** chưa thăm
+3. Nếu không còn con → **quay lại** (backtrack)
+4. Thử node con tiếp theo
+
+```
+Stack: [A]         → Thăm A, push B, C
+Stack: [B, C]      → Pop B, push D, E
+Stack: [D, E, C]   → Pop D, push G
+Stack: [G, E, C]   → Pop G (leaf)
+Stack: [E, C]      → Pop E (leaf)
+Stack: [C]         → Pop C, push F
+Stack: [F]         → Pop F (leaf)
+Stack: []          → Xong!
+
+Kết quả: A, B, D, G, E, C, F
+```
+
+### ⏱️ Time & Space
+
+| | Big O |
+|------|-------|
+| Time | O(V + E) |
+| Space | O(V) — Stack/Call stack depth |
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== BFS & DFS - JAVASCRIPT =====
+
+class Graph {
+    constructor() {
+        this.adjacencyList = {};
+    }
+
+    addVertex(vertex) {
+        if (!this.adjacencyList[vertex]) {
+            this.adjacencyList[vertex] = [];
+        }
+    }
+
+    addEdge(v1, v2) {
+        this.adjacencyList[v1].push(v2);
+        this.adjacencyList[v2].push(v1);
+    }
+
+    // === BFS: Dùng Queue ===
+    bfs(start) {
+        const visited = new Set();
+        const queue = [start];
+        const result = [];
+        visited.add(start);
+
+        while (queue.length > 0) {
+            const vertex = queue.shift();  // Lấy đầu queue
+            result.push(vertex);
+
+            for (const neighbor of this.adjacencyList[vertex]) {
+                if (!visited.has(neighbor)) {
+                    visited.add(neighbor);
+                    queue.push(neighbor);  // Thêm cuối queue
+                }
+            }
+        }
+        return result;
+    }
+
+    // === DFS Iterative: Dùng Stack ===
+    dfsIterative(start) {
+        const visited = new Set();
+        const stack = [start];
+        const result = [];
+
+        while (stack.length > 0) {
+            const vertex = stack.pop();  // Lấy đỉnh stack
+            if (!visited.has(vertex)) {
+                visited.add(vertex);
+                result.push(vertex);
+
+                for (const neighbor of this.adjacencyList[vertex]) {
+                    if (!visited.has(neighbor)) {
+                        stack.push(neighbor);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    // === DFS Recursive: Dùng Call Stack ===
+    dfsRecursive(start, visited = new Set(), result = []) {
+        visited.add(start);
+        result.push(start);
+
+        for (const neighbor of this.adjacencyList[start]) {
+            if (!visited.has(neighbor)) {
+                this.dfsRecursive(neighbor, visited, result);
+            }
+        }
+        return result;
+    }
+}
+
+// --- Test ---
+const g = new Graph();
+["A", "B", "C", "D", "E", "F"].forEach(v => g.addVertex(v));
+g.addEdge("A", "B");
+g.addEdge("A", "C");
+g.addEdge("B", "D");
+g.addEdge("B", "E");
+g.addEdge("C", "F");
+
+console.log("BFS:", g.bfs("A"));           // [A, B, C, D, E, F]
+console.log("DFS:", g.dfsRecursive("A"));  // [A, B, D, E, C, F]
+```
+
+### Python
+
+```python
+# ===== BFS & DFS - PYTHON =====
+from collections import deque
+
+class Graph:
+    def __init__(self):
+        self.adj = {}
+
+    def add_vertex(self, v):
+        if v not in self.adj:
+            self.adj[v] = []
+
+    def add_edge(self, v1, v2):
+        self.adj[v1].append(v2)
+        self.adj[v2].append(v1)
+
+    def bfs(self, start):
+        visited = set([start])
+        queue = deque([start])
+        result = []
+
+        while queue:
+            vertex = queue.popleft()
+            result.append(vertex)
+            for neighbor in self.adj[vertex]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return result
+
+    def dfs(self, start, visited=None, result=None):
+        if visited is None:
+            visited = set()
+            result = []
+        visited.add(start)
+        result.append(start)
+        for neighbor in self.adj[start]:
+            if neighbor not in visited:
+                self.dfs(neighbor, visited, result)
+        return result
+
+# --- Test ---
+g = Graph()
+for v in ["A", "B", "C", "D", "E", "F"]:
+    g.add_vertex(v)
+g.add_edge("A", "B")
+g.add_edge("A", "C")
+g.add_edge("B", "D")
+g.add_edge("B", "E")
+g.add_edge("C", "F")
+
+print("BFS:", g.bfs("A"))  # ['A', 'B', 'C', 'D', 'E', 'F']
+print("DFS:", g.dfs("A"))  # ['A', 'B', 'D', 'E', 'C', 'F']
+```
+
+### Rust
+
+```rust
+// ===== BFS & DFS - RUST =====
+use std::collections::{HashMap, HashSet, VecDeque};
+
+struct Graph {
+    adj: HashMap<String, Vec<String>>,
+}
+
+impl Graph {
+    fn new() -> Self {
+        Graph { adj: HashMap::new() }
+    }
+
+    fn add_vertex(&mut self, v: &str) {
+        self.adj.entry(v.to_string()).or_insert_with(Vec::new);
+    }
+
+    fn add_edge(&mut self, v1: &str, v2: &str) {
+        self.adj.get_mut(v1).unwrap().push(v2.to_string());
+        self.adj.get_mut(v2).unwrap().push(v1.to_string());
+    }
+
+    fn bfs(&self, start: &str) -> Vec<String> {
+        let mut visited = HashSet::new();
+        let mut queue = VecDeque::new();
+        let mut result = Vec::new();
+
+        visited.insert(start.to_string());
+        queue.push_back(start.to_string());
+
+        while let Some(vertex) = queue.pop_front() {
+            result.push(vertex.clone());
+            if let Some(neighbors) = self.adj.get(&vertex) {
+                for neighbor in neighbors {
+                    if !visited.contains(neighbor) {
+                        visited.insert(neighbor.clone());
+                        queue.push_back(neighbor.clone());
+                    }
+                }
+            }
+        }
+        result
+    }
+
+    fn dfs(&self, start: &str) -> Vec<String> {
+        let mut visited = HashSet::new();
+        let mut result = Vec::new();
+        self.dfs_helper(start, &mut visited, &mut result);
+        result
+    }
+
+    fn dfs_helper(&self, vertex: &str, visited: &mut HashSet<String>, result: &mut Vec<String>) {
+        visited.insert(vertex.to_string());
+        result.push(vertex.to_string());
+        if let Some(neighbors) = self.adj.get(vertex) {
+            for neighbor in neighbors {
+                if !visited.contains(neighbor) {
+                    self.dfs_helper(neighbor, visited, result);
+                }
+            }
+        }
+    }
+}
+
+fn main() {
+    let mut g = Graph::new();
+    for v in &["A", "B", "C", "D", "E", "F"] {
+        g.add_vertex(v);
+    }
+    g.add_edge("A", "B");
+    g.add_edge("A", "C");
+    g.add_edge("B", "D");
+    g.add_edge("B", "E");
+    g.add_edge("C", "F");
+
+    println!("BFS: {:?}", g.bfs("A"));
+    println!("DFS: {:?}", g.dfs("A"));
+}
+```
+
+---
+
+## 🔄 BFS vs DFS
+
+| Tiêu chí | BFS | DFS |
+|----------|-----|-----|
+| Cấu trúc dùng | Queue (FIFO) | Stack/Recursion (LIFO) |
+| Cách duyệt | Theo tầng (ngang) | Theo nhánh (sâu) |
+| Tìm đường ngắn nhất | ✅ (unweighted) | ❌ |
+| Bộ nhớ | Nhiều hơn (lưu 1 tầng) | Ít hơn |
+| Mê cung | Tìm lối ra gần nhất | Tìm bất kỳ lối ra |
+| Phù hợp | Đồ thị rộng, cạn | Đồ thị sâu, hẹp |
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+### BFS
+| Tình huống | Giải thích |
+|------------|-----------|
+| **Google Maps** | Tìm đường đi ngắn nhất |
+| **Gợi ý bạn bè** | Tìm bạn cách 2-3 bước |
+| **Web crawler** | Duyệt link theo tầng |
+| **Level order tree** | Duyệt cây theo từng tầng |
+
+### DFS
+| Tình huống | Giải thích |
+|------------|-----------|
+| **Giải mê cung** | Thử 1 đường đi sâu tới cùng |
+| **Topological sort** | Sắp xếp thứ tự phụ thuộc |
+| **Phát hiện cycle** | Kiểm tra đồ thị có vòng? |
+| **File system** | Duyệt thư mục con |
+
+---
+
+*← Quay lại [Searching](/notes/algo-searching) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Dijkstra & Bellman-Ford →](/notes/algo-dijkstra-bellman)*

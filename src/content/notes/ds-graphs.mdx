@@ -1,0 +1,277 @@
+---
+title: "Graphs (Đồ thị) - Mạng lưới kết nối vạn vật"
+date: 2026-03-14T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Graph là gì?
+
+Hãy nghĩ về **bản đồ thành phố**: mỗi ngã tư là một **điểm**, mỗi con đường nối hai ngã tư là một **đường nối**. Đó chính là Graph!
+
+Hoặc nghĩ về **Facebook**: mỗi người dùng là một **điểm**, mỗi quan hệ bạn bè là một **đường nối**.
+
+**Graph = Vertices (đỉnh) + Edges (cạnh)**
+
+```
+    A ─── B
+    │ \   │
+    │   \ │
+    C ─── D
+    
+    Vertices: {A, B, C, D}
+    Edges: {A-B, A-C, A-D, B-D, C-D}
+```
+
+---
+
+## 📋 Các loại Graph
+
+| Loại | Đặc điểm | Ví dụ |
+|------|----------|-------|
+| **Undirected** (Vô hướng) | Cạnh đi 2 chiều | Bạn bè Facebook |
+| **Directed** (Có hướng) | Cạnh đi 1 chiều | Follow trên Twitter |
+| **Weighted** (Có trọng số) | Mỗi cạnh có "giá trị" | Khoảng cách trên bản đồ |
+| **Unweighted** | Tất cả cạnh ngang nhau | Mạng xã hội |
+| **Cyclic** (Có chu trình) | Đi vòng được | Mạng đường phố |
+| **Acyclic** (Không chu trình) | Không đi vòng | Cây gia phả (Tree là Graph đặc biệt!) |
+
+```
+ Undirected     Directed      Weighted
+  A ── B        A → B        A ─5─ B
+  │    │        ↑   ↓        │     │
+  C ── D        C ← D        C ─3─ D
+                                2     7
+```
+
+---
+
+## 📊 Cách biểu diễn Graph
+
+### 1. Adjacency List (Danh sách kề) — phổ biến nhất!
+
+Mỗi đỉnh lưu danh sách các đỉnh **kề** với nó.
+
+```
+A → [B, C, D]
+B → [A, D]
+C → [A, D]
+D → [A, B, C]
+```
+
+**Ưu điểm**: Tiết kiệm bộ nhớ, nhanh khi duyệt neighbor.
+
+### 2. Adjacency Matrix (Ma trận kề)
+
+Bảng 2D, giá trị 1 = có cạnh, 0 = không.
+
+```
+    A  B  C  D
+A [ 0, 1, 1, 1 ]
+B [ 1, 0, 0, 1 ]
+C [ 1, 0, 0, 1 ]
+D [ 1, 1, 1, 0 ]
+```
+
+**Ưu điểm**: Kiểm tra "có cạnh nối A-B?" cực nhanh O(1).
+
+### So sánh
+
+| Tiêu chí | Adjacency List | Adjacency Matrix |
+|----------|---------------|-----------------|
+| Bộ nhớ | O(V + E) — ít hơn | O(V²) — nhiều hơn |
+| Kiểm tra cạnh | O(V) | O(1) |
+| Tìm neighbor | O(1) | O(V) |
+| Phù hợp | Sparse graph (ít cạnh) | Dense graph (nhiều cạnh) |
+
+---
+
+## 💻 Code mẫu: Graph (Adjacency List)
+
+### JavaScript
+
+```javascript
+// ===== GRAPH - JAVASCRIPT =====
+
+class Graph {
+    constructor() {
+        this.adjacencyList = {};
+    }
+
+    // Thêm đỉnh
+    addVertex(vertex) {
+        if (!this.adjacencyList[vertex]) {
+            this.adjacencyList[vertex] = [];
+        }
+    }
+
+    // Thêm cạnh (undirected)
+    addEdge(v1, v2) {
+        this.adjacencyList[v1].push(v2);
+        this.adjacencyList[v2].push(v1);
+    }
+
+    // Xóa cạnh
+    removeEdge(v1, v2) {
+        this.adjacencyList[v1] = this.adjacencyList[v1].filter(v => v !== v2);
+        this.adjacencyList[v2] = this.adjacencyList[v2].filter(v => v !== v1);
+    }
+
+    // In graph
+    print() {
+        for (const vertex in this.adjacencyList) {
+            console.log(`${vertex} → [${this.adjacencyList[vertex].join(", ")}]`);
+        }
+    }
+}
+
+// --- Ví dụ: Mạng xã hội ---
+const socialNetwork = new Graph();
+
+// Thêm người dùng
+["An", "Bình", "Chi", "Dũng"].forEach(name => {
+    socialNetwork.addVertex(name);
+});
+
+// Kết bạn
+socialNetwork.addEdge("An", "Bình");
+socialNetwork.addEdge("An", "Chi");
+socialNetwork.addEdge("Bình", "Dũng");
+socialNetwork.addEdge("Chi", "Dũng");
+
+socialNetwork.print();
+// An → [Bình, Chi]
+// Bình → [An, Dũng]
+// Chi → [An, Dũng]
+// Dũng → [Bình, Chi]
+```
+
+### Python
+
+```python
+# ===== GRAPH - PYTHON =====
+
+class Graph:
+    def __init__(self):
+        self.adjacency_list = {}
+
+    def add_vertex(self, vertex):
+        if vertex not in self.adjacency_list:
+            self.adjacency_list[vertex] = []
+
+    def add_edge(self, v1, v2):
+        self.adjacency_list[v1].append(v2)
+        self.adjacency_list[v2].append(v1)
+
+    def remove_edge(self, v1, v2):
+        self.adjacency_list[v1] = [v for v in self.adjacency_list[v1] if v != v2]
+        self.adjacency_list[v2] = [v for v in self.adjacency_list[v2] if v != v1]
+
+    def get_neighbors(self, vertex):
+        return self.adjacency_list.get(vertex, [])
+
+    def print_graph(self):
+        for vertex, neighbors in self.adjacency_list.items():
+            print(f"{vertex} → {neighbors}")
+
+# --- Ví dụ: Bản đồ thành phố ---
+city_map = Graph()
+
+cities = ["HCM", "Hà Nội", "Đà Nẵng", "Huế", "Nha Trang"]
+for city in cities:
+    city_map.add_vertex(city)
+
+city_map.add_edge("HCM", "Nha Trang")
+city_map.add_edge("HCM", "Đà Nẵng")
+city_map.add_edge("Đà Nẵng", "Huế")
+city_map.add_edge("Đà Nẵng", "Hà Nội")
+city_map.add_edge("Huế", "Hà Nội")
+
+city_map.print_graph()
+# HCM → ['Nha Trang', 'Đà Nẵng']
+# Đà Nẵng → ['HCM', 'Huế', 'Hà Nội']
+# ...
+```
+
+### Rust
+
+```rust
+// ===== GRAPH - RUST =====
+use std::collections::HashMap;
+
+struct Graph {
+    adjacency_list: HashMap<String, Vec<String>>,
+}
+
+impl Graph {
+    fn new() -> Self {
+        Graph {
+            adjacency_list: HashMap::new(),
+        }
+    }
+
+    fn add_vertex(&mut self, vertex: &str) {
+        self.adjacency_list
+            .entry(vertex.to_string())
+            .or_insert_with(Vec::new);
+    }
+
+    fn add_edge(&mut self, v1: &str, v2: &str) {
+        self.adjacency_list
+            .get_mut(v1).unwrap()
+            .push(v2.to_string());
+        self.adjacency_list
+            .get_mut(v2).unwrap()
+            .push(v1.to_string());
+    }
+
+    fn print_graph(&self) {
+        for (vertex, neighbors) in &self.adjacency_list {
+            println!("{} → {:?}", vertex, neighbors);
+        }
+    }
+}
+
+fn main() {
+    let mut graph = Graph::new();
+
+    for v in &["An", "Bình", "Chi", "Dũng"] {
+        graph.add_vertex(v);
+    }
+
+    graph.add_edge("An", "Bình");
+    graph.add_edge("An", "Chi");
+    graph.add_edge("Bình", "Dũng");
+    graph.add_edge("Chi", "Dũng");
+
+    graph.print_graph();
+}
+```
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Loại Graph |
+|------------|-----------|
+| **Google Maps** | Weighted, Directed (đường 1 chiều) |
+| **Facebook** | Undirected (bạn bè 2 chiều) |
+| **Twitter/Instagram** | Directed (follow 1 chiều) |
+| **Internet** | Mạng máy tính kết nối |
+| **Khuyến nghị sản phẩm** | Người dùng → sản phẩm |
+| **Lịch học** (tránh trùng) | Graph coloring |
+| **Dependency Manager** | npm, pip → DAG (Directed Acyclic) |
+
+---
+
+## 🎯 Khi nào dùng Graph?
+
+- ✅ Dữ liệu có **quan hệ nhiều-nhiều**
+- ✅ Cần tìm **đường đi ngắn nhất** (Dijkstra)
+- ✅ Cần kiểm tra **kết nối** giữa 2 điểm
+- ✅ Mô hình hóa **mạng lưới** (mạng xã hội, bản đồ, internet)
+- ❌ Dữ liệu phân cấp 1 chiều → dùng **Tree**
+- ❌ Dữ liệu tuần tự → dùng **Array/Linked List**
+
+---
+
+*← Quay lại [Trees](/notes/ds-trees) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Trie →](/notes/ds-trie)*

@@ -1,0 +1,344 @@
+---
+title: "Linked Lists (Danh sách Liên kết) - Thêm xóa nhanh như chớp"
+date: 2026-03-02T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Linked List là gì?
+
+Hãy tưởng tượng một **đoàn tàu**: mỗi toa tàu chứa **hành khách** (dữ liệu) và có **móc nối** tới toa tiếp theo. Muốn thêm toa mới? Chỉ cần **móc vào** — không cần dịch chuyển toa nào cả!
+
+**Linked List** = chuỗi các **node** (nút), mỗi node chứa:
+- **Data**: dữ liệu thực sự
+- **Pointer (next)**: "mũi tên" trỏ tới node tiếp theo
+
+```
+  Head                                    Tail
+  ┌────────────┐     ┌────────────┐     ┌────────────┐
+  │ Data: "A"  │     │ Data: "B"  │     │ Data: "C"  │
+  │ next: ───────→   │ next: ───────→   │ next: null │
+  └────────────┘     └────────────┘     └────────────┘
+```
+
+---
+
+## 🔄 So sánh với Array
+
+| Tiêu chí | Array | Linked List |
+|----------|-------|-------------|
+| Bộ nhớ | **Liên tiếp** (cạnh nhau) | **Rải rác** (ở bất kỳ đâu) |
+| Truy cập index | O(1) — nhanh | O(n) — phải duyệt từ đầu |
+| Thêm/xóa đầu | O(n) — chậm, phải dịch | O(1) — nhanh, chỉ đổi pointer |
+| Thêm/xóa giữa | O(n) | O(1) nếu biết vị trí node |
+| Kích thước | Cố định hoặc phải copy | Linh hoạt, thêm bao nhiêu cũng được |
+
+---
+
+## 📋 Các loại Linked List
+
+### 1. Singly Linked List (Đơn)
+Mỗi node chỉ trỏ tới node **tiếp theo** (1 chiều).
+
+```
+A → B → C → D → null
+```
+
+### 2. Doubly Linked List (Đôi)
+Mỗi node trỏ tới **cả trước và sau** (2 chiều).
+
+```
+null ← A ⇄ B ⇄ C ⇄ D → null
+```
+
+**Ưu điểm Doubly**: Duyệt ngược được. **Nhược điểm**: Tốn thêm bộ nhớ cho pointer `prev`.
+
+---
+
+## ⏱️ Time Complexity
+
+| Thao tác | Singly | Doubly |
+|----------|--------|--------|
+| Truy cập (Access) | O(n) | O(n) |
+| Tìm kiếm (Search) | O(n) | O(n) |
+| Thêm đầu (Prepend) | O(1) ✨ | O(1) ✨ |
+| Thêm cuối (Append) | O(1)* | O(1) ✨ |
+| Xóa đầu | O(1) ✨ | O(1) ✨ |
+| Xóa cuối | O(n) | O(1) ✨ |
+
+*\* nếu lưu con trỏ tail*
+
+---
+
+## 💻 Code mẫu: Singly Linked List
+
+### JavaScript
+
+```javascript
+// ===== SINGLY LINKED LIST - JAVASCRIPT =====
+
+class Node {
+    constructor(value) {
+        this.value = value;
+        this.next = null;  // Pointer tới node tiếp theo
+    }
+}
+
+class LinkedList {
+    constructor() {
+        this.head = null;  // Node đầu tiên
+        this.tail = null;  // Node cuối cùng
+        this.length = 0;
+    }
+
+    // Thêm vào cuối - O(1)
+    append(value) {
+        const newNode = new Node(value);
+        if (!this.head) {
+            this.head = newNode;
+            this.tail = newNode;
+        } else {
+            this.tail.next = newNode;  // Node cuối trỏ tới node mới
+            this.tail = newNode;       // Cập nhật tail
+        }
+        this.length++;
+    }
+
+    // Thêm vào đầu - O(1)
+    prepend(value) {
+        const newNode = new Node(value);
+        newNode.next = this.head;  // Node mới trỏ tới head cũ
+        this.head = newNode;       // Cập nhật head
+        if (!this.tail) this.tail = newNode;
+        this.length++;
+    }
+
+    // Xóa đầu - O(1)
+    deleteFirst() {
+        if (!this.head) return null;
+        const value = this.head.value;
+        this.head = this.head.next;  // Head mới = node thứ 2
+        this.length--;
+        if (this.length === 0) this.tail = null;
+        return value;
+    }
+
+    // Tìm kiếm - O(n)
+    find(value) {
+        let current = this.head;
+        while (current) {
+            if (current.value === value) return current;
+            current = current.next;  // Đi tới node tiếp theo
+        }
+        return null;  // Không tìm thấy
+    }
+
+    // In danh sách
+    print() {
+        const values = [];
+        let current = this.head;
+        while (current) {
+            values.push(current.value);
+            current = current.next;
+        }
+        console.log(values.join(" → ") + " → null");
+    }
+
+    // Đảo ngược Linked List - Câu hỏi phỏng vấn kinh điển!
+    reverse() {
+        let prev = null;
+        let current = this.head;
+        this.tail = this.head;  // Head cũ thành tail mới
+
+        while (current) {
+            const next = current.next;  // Lưu node tiếp theo
+            current.next = prev;        // Đảo chiều mũi tên
+            prev = current;             // Tiến prev lên
+            current = next;             // Tiến current lên
+        }
+        this.head = prev;  // Prev cuối cùng = head mới
+    }
+}
+
+// --- Sử dụng ---
+const list = new LinkedList();
+list.append("🍎");
+list.append("🍌");
+list.append("🍇");
+list.prepend("🫐");
+
+list.print();  // 🫐 → 🍎 → 🍌 → 🍇 → null
+
+list.reverse();
+list.print();  // 🍇 → 🍌 → 🍎 → 🫐 → null
+```
+
+### Python
+
+```python
+# ===== SINGLY LINKED LIST - PYTHON =====
+
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.next = None  # Pointer tới node tiếp theo
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.length = 0
+
+    # Thêm vào cuối - O(1)
+    def append(self, value):
+        new_node = Node(value)
+        if not self.head:
+            self.head = new_node
+            self.tail = new_node
+        else:
+            self.tail.next = new_node
+            self.tail = new_node
+        self.length += 1
+
+    # Thêm vào đầu - O(1)
+    def prepend(self, value):
+        new_node = Node(value)
+        new_node.next = self.head
+        self.head = new_node
+        if not self.tail:
+            self.tail = new_node
+        self.length += 1
+
+    # Tìm kiếm - O(n)
+    def find(self, value):
+        current = self.head
+        while current:
+            if current.value == value:
+                return current
+            current = current.next
+        return None
+
+    # Đảo ngược - O(n)
+    def reverse(self):
+        prev = None
+        current = self.head
+        self.tail = self.head
+
+        while current:
+            next_node = current.next
+            current.next = prev
+            prev = current
+            current = next_node
+        self.head = prev
+
+    # In danh sách
+    def print_list(self):
+        values = []
+        current = self.head
+        while current:
+            values.append(str(current.value))
+            current = current.next
+        print(" → ".join(values) + " → None")
+
+# --- Sử dụng ---
+ll = LinkedList()
+ll.append("🍎")
+ll.append("🍌")
+ll.append("🍇")
+ll.prepend("🫐")
+ll.print_list()  # 🫐 → 🍎 → 🍌 → 🍇 → None
+
+ll.reverse()
+ll.print_list()  # 🍇 → 🍌 → 🍎 → 🫐 → None
+```
+
+### Rust
+
+```rust
+// ===== SINGLY LINKED LIST - RUST =====
+
+#[derive(Debug)]
+struct Node<T> {
+    value: T,
+    next: Option<Box<Node<T>>>,
+}
+
+#[derive(Debug)]
+struct LinkedList<T> {
+    head: Option<Box<Node<T>>>,
+    length: usize,
+}
+
+impl<T: std::fmt::Display + Clone> LinkedList<T> {
+    fn new() -> Self {
+        LinkedList { head: None, length: 0 }
+    }
+
+    // Thêm vào đầu - O(1)
+    fn prepend(&mut self, value: T) {
+        let new_node = Box::new(Node {
+            value,
+            next: self.head.take(), // Lấy head cũ làm next
+        });
+        self.head = Some(new_node);
+        self.length += 1;
+    }
+
+    // Xóa đầu - O(1)
+    fn delete_first(&mut self) -> Option<T> {
+        self.head.take().map(|node| {
+            self.head = node.next;
+            self.length -= 1;
+            node.value
+        })
+    }
+
+    // In danh sách
+    fn print(&self) {
+        let mut current = &self.head;
+        while let Some(node) = current {
+            print!("{} → ", node.value);
+            current = &node.next;
+        }
+        println!("None");
+    }
+}
+
+fn main() {
+    let mut list = LinkedList::new();
+    list.prepend("🍇");
+    list.prepend("🍌");
+    list.prepend("🍎");
+    list.prepend("🫐");
+
+    list.print();  // 🫐 → 🍎 → 🍌 → 🍇 → None
+
+    list.delete_first();
+    list.print();  // 🍎 → 🍌 → 🍇 → None
+}
+```
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Tại sao dùng Linked List? |
+|------------|---------------------------|
+| **Undo/Redo** | Mỗi hành động = 1 node, duyệt qua lại |
+| **Playlist nhạc** | Bài trước ← bài hiện tại → bài sau |
+| **Browser history** | Quay lại / tiến tới trang web |
+| **Image viewer** | Ảnh trước ← ảnh hiện tại → ảnh sau |
+| **Blockchain** | Mỗi block chứa hash trỏ tới block trước |
+
+---
+
+## 🎯 Khi nào nên dùng Linked List?
+
+- ✅ Cần **thêm/xóa đầu** thường xuyên (O(1))
+- ✅ **Không cần truy cập ngẫu nhiên** theo index
+- ✅ Không biết trước **kích thước** dữ liệu
+- ❌ **Không nên** dùng khi cần truy cập nhanh theo index → dùng **Array**
+- ❌ **Không nên** dùng khi dữ liệu nhỏ → Array đơn giản và nhanh hơn
+
+---
+
+*← Quay lại [Array & String](/notes/ds-arrays) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Stack & Queue →](/notes/ds-stacks-queues)*

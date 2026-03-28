@@ -1,0 +1,127 @@
+---
+title: "Bitwise Operations & Tricks - Phép toán cấp bit siêu tốc độ"
+date: 2026-03-19T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Bitwise là gì?
+
+Máy tính không hiểu số `10` hay `25`. Tận cùng bên dưới, mọi thứ đều là dãy số **Nhị phân (Binary)** gồm các số `0` và `1` (các bit). 
+
+**Bitwise Operations** (Thao tác mức Bit) là các phép toán can thiệp trực tiếp vào từng bit `0` và `1` này. Vì nó thao tác thẳng theo cách máy tính hoạt động mà không qua biên dịch phức tạp, đây là những phép tính **nhanh nhất** mà bạn có thể viết!
+
+---
+
+## ⚙️ Các phép toán Bitwise cơ bản
+
+Hiểu nhanh: `0` là **Sai (False)**, `1` là **Đúng (True)**.
+
+| Tên | Ký hiệu | Ý nghĩa | Ví dụ (`A = 5` tức `0101`, `B = 3` tức `0011`) |
+|-----|---------|----------|-----------------------------------------------|
+| **AND** | `&` | Cả 2 là 1 → 1.<br/>Còn lại → 0 | `0101 & 0011 = 0001` (Tức là `1`) |
+| **OR** | `\|` | Chỉ cần 1 cái là 1 → 1 | `0101 \| 0011 = 0111` (Tức là `7`) |
+| **XOR** | `^` | Hai bit CÙNG loại → 0.<br/>KHÁC loại → 1. | `0101 ^ 0011 = 0110` (Tức là `6`) |
+| **NOT** | `~` | Đảo bit: 0→1, 1→0 | `~0101 = 1010` |
+| **Dịch trái** | `<<` | Đẩy bit sang trái, thêm 0 ở cuối | `5 << 1` → `0101` thành `1010` (Thành `10`) |
+| **Dịch phải** | `>>` | Đẩy bit sang phải, bỏ bit cuối | `5 >> 1` → `0101` thành `0010` (Thành `2`) |
+
+---
+
+## ✨ 5 "Tricks" Bitwise cực đỉnh cho phỏng vấn
+
+Thay vì viết các phép toán thông thường, Bitwise giúp bạn có những cách giải "ảo ma" chỉ với 1 dòng code.
+
+### 1. Kiểm tra số Chẵn hay Lẻ (Chỉ 1 thao tác!)
+Số nhị phân của số lẻ luôn có bit cuối cùng là `1`. (VD: 5 là `101`, 4 là `100`).
+*Trick:* Dùng toán tử `AND 1` (`& 1`).
+```javascript
+// Dùng % thông thường:
+if (n % 2 === 0) // Chẵn
+
+// Dùng Bitwise (nhanh hơn x10 lần phần cứng siêu nhỏ)
+if ((n & 1) === 0) { console.log("Là số Chẵn!"); }
+if ((n & 1) === 1) { console.log("Là số Lẻ!"); }
+```
+
+### 2. Nhân hoặc Chia cho 2 (Dịch bit)
+Mỗi lần dịch bit bằng việc nhân/chia cho cơ số 2. Rất hữu ích khi tính toán số lớn.
+*Trick:* `<< 1` là nhân 2, `>> 1` là chia 2 (bỏ phần thập phân).
+
+```python
+x = 10
+# Nhân 2
+print(x << 1)  # 20 (như 10 * 2^1)
+print(x << 3)  # 80 (như 10 * 2^3)
+
+# Chia 2 lấy nguyên
+print(x >> 1)  # 5
+```
+
+### 3. Đảo dấu số nguyên âm/dương (2's Complement)
+*Trick:* Lấy `NOT` (`~`) rồi cộng thêm `1`.
+
+```rust
+let x = 7;
+let negative_x = (!x) + 1; // Trong Rust NOT là ! thay vì ~
+println!("{}", negative_x); // -7
+```
+
+### 4. Tìm số dư thừa (Số xuất hiện 1 lần)
+**Bài toán kinh điển:** Cho mảng `[4, 1, 2, 1, 2]`. Mọi số đều xuất hiện 2 lần, ngoại trừ một số! Tìm số đó.
+*Trick toán học:* Dùng **XOR** (`^`). 
+- Quy tắc 1: Hai số giống nhau XOR với nhau = 0 (`A ^ A = 0`)
+- Quy tắc 2: Số nào XOR với 0 = chính nó (`A ^ 0 = A`)
+- Do đó: `4 ^ 1 ^ 2 ^ 1 ^ 2` = `4 ^ (1^1) ^ (2^2)` = `4 ^ 0 ^ 0` = `4` ! O(n) Time, O(1) Space.
+
+```javascript
+// O(n) thời gian, O(1) không gian nhớ! Không cần Map hằng Hash Table.
+function findSingleNumber(arr) {
+    let result = 0;
+    for (let num of arr) {
+        result ^= num; // XOR dồn
+    }
+    return result;
+}
+
+console.log(findSingleNumber([4, 1, 2, 1, 2])); // 4
+```
+
+### 5. Swapping (Đổi chỗ) 2 biến không cần bộ nhớ tạm
+Cũng dùng đặc tính của XOR! (Dù hiện nay có Rest/Spread hoặc Tuple lẹ hơn, nhưng đây là trick thú vị).
+
+```python
+A = 5
+B = 10
+
+A = A ^ B
+B = A ^ B
+A = A ^ B
+
+print(A) # 10
+print(B) # 5
+```
+
+---
+
+## 🎭 Bitmask - Tuyệt kỹ quy hoạch động
+
+**Bitmask (Mặt nạ bit)** là kỹ thuật dùng một SỐ NGUYÊN để lưu trữ một MẢNG BOOLEAN!
+
+Ví dụ bạn có 1 cái túi đụng 4 món đồ, món thứ 0 và món thứ 2 được lấy → Mảng Boolean là `[True, False, True, False]`. 
+Thay vì khởi tạo mảng này, ta dùng luôn số nhị phân `0101` (đọc ngược lại là index 0 là 1, index 2 là 1), tức là số `5`!
+- Để kiểm tra món `i` có trong túi không: `if ((mask & (1 << i)) != 0)`
+- Để thêm món `i` vào túi: `mask = mask | (1 << i)`
+- Để lấy món `i` ra khỏi túi: `mask = mask & ~(1 << i)`
+
+**Kỹ thuật này siêu việt** cho các bài toán sinh tổ hợp con (subsets) hoặc các bài toán Quy Hoạch Động Trạng Thái (DP with Bitmask), giúp tiết kiệm khủng khiếp dung lượng bộ nhớ từ O(N) Array thành 1 số dạng `Integer`.
+
+---
+
+## ✅ Ưu điểm của Bitwise
+- Vốn dĩ là ngôn ngữ thiết kế phần cứng: Cực nhanh.
+- Giảm mem cực tốt so với dùng Array.
+- Ít mã nguồn (code 1 dòng ngắn gọn).
+
+---
+
+*← Quay lại [Greedy Algorithms](/notes/algo-greedy) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Mathematical Algorithms →](/notes/algo-mathematical)*

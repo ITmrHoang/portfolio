@@ -1,0 +1,86 @@
+---
+title: "Advanced Dynamic Programming (Quy hoạch động nâng cao)"
+date: 2026-03-23T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Khi Basic DP là chưa đủ
+
+Nếu Quy hoạch động (DP) cơ bản như dãy Fibonacci, Cắt thanh sắt, hay Balo (Knapsack) chỉ dùng mảng 1D hoặc 2D đơn giản, thì **Advanced DP** đưa bạn vào thế giới của các trạng thái cực kỳ dị biệt.
+
+Dưới đây là 3 kỹ thuật DP hạng nặng thường gặp trong các kỳ thi Lập trình thi đấu (CP) và phỏng vấn tại các công ty lớn như Google, Meta.
+
+---
+
+## 🎭 1. Bitmask DP (Quy hoạch động trạng thái Bit)
+
+**Khi nào dùng?** Khi bài toán có tập hợp các vật phẩm nhỏ (thường $N \le 20$) và bạn cần quản lý **trạng thái được chọn/chưa chọn** của tất cả chúng cùng lúc.
+
+Thay vì dùng Mảng Boolean `[True, False, True]`, ta dùng số nguyên nhị phân `101` (số 5) làm **Index cho mảng DP**!
+
+### Ví dụ: Bài toán Người bán hàng (TSP - Traveling Salesperson Problem)
+**Yêu cầu:** Tìm đường đi ngắn nhất qua $N$ thành phố, mỗi thành phố thăm đúng 1 lần rồi quay về điểm xuất phát.  
+*Cách ngây thơ (Backtracking):* $O(N!)$ — Chỉ chạy được $N = 10$.  
+*Cách Bitmask DP:* $O(N^2 2^N)$ — Chạy được $N = 20$.
+
+**Trạng thái DP:**
+`dp[mask][u]` = Chi phí nhỏ nhất để đi qua các thành phố được đánh dấu bit `1` trong `mask`, và hiện tại đang đứng ở thành phố `u`.
+
+**Công thức chuyển trạng thái:**
+Từ `mask` hiện tại, thử đi tới thành phố `v` (chưa có trong `mask`).
+`mask_mới = mask | (1 << v)`
+`dp[mask_mới][v] = min(dp[mask_mới][v], dp[mask][u] + cost[u][v])`
+
+---
+
+## 🔢 2. Digit DP (Quy hoạch động chữ số)
+
+**Khi nào dùng?** Khi bài toán yêu cầu: *"Đếm số lượng các số nguyên trong khoảng $[L, R]$ thỏa mãn một tính chất X nào đó"*. Với $R$ cực lớn (ví dụ $10^{18}$), bạn không thể lặp `for i từ L đến R`.
+
+**Tính chất X ví dụ:**
+- Số lượng chữ số '3' bằng số lượng chữ số '7'.
+- Tổng các chữ số chia hết cho 10.
+- Số không chứa 2 chữ số giống nhau nằm cạnh nhau.
+
+**Ý tưởng cốt lõi:**
+Thay vì xây dựng giá trị số, ta **xây dựng từng chữ số** từ trái sang phải.
+Giải $Count(R) - Count(L-1)$.
+
+**Trạng thái DP thường gặp:**
+`dp[index][is_limit][...other_state]`
+- `index`: Vị trí chữ số đang xét (từ trái sang).
+- `is_limit`: Chữ số hiện tại có bị giới hạn bởi cận trên $R$ hay không? (Nếu đang bám sát số max $R$, chữ số tiếp theo chỉ được chạy từ 0 đến $R[index]$, nếu không thì chạy từ 0 đến 9).
+- `...other_state`: Tổng các chữ số hiện tại, số lần xuất hiện của chữ số cần đếm, v.v.
+
+---
+
+## 🌳 3. Tree DP (Quy hoạch động trên Cây)
+
+**Khi nào dùng?** Khi bài toán cho một Đồ thị dạng Cây (không có chu trình) và yêu cầu tính toán một giá trị tối ưu bằng cách gom dữ liệu từ dưới lá (leaves) lên gốc (root).
+
+**Kỹ thuật chính:** Dùng **DFS (Duyệt theo chiều sâu)**. Trạng thái của node cha luôn được tính toán dựa trên các kết quả trả về từ node con.
+
+### Ví dụ: Max Independent Set on Tree
+**Yêu cầu:** Cho một cây, hãy chọn ra một tập các đỉnh có tổng trọng số lớn nhất sao cho **không có 2 đỉnh nào kề nhau** (không có đỉnh nào nối trực tiếp với nhau).
+
+**Trạng thái DP:** Mỗi node `u` có 2 trạng thái:
+- `dp[u][0]`: Tổng lớn nhất trong cây con gốc `u` NẾU **không chọn** `u`.
+- `dp[u][1]`: Tổng lớn nhất trong cây con gốc `u` NẾU **chọn** `u`.
+
+**Công thức chuyển (khi DFS từ `u` xuống `v`):**
+- Nếu KHÔNG chọn `u`: Con `v` có thể được chọn hoặc không. 
+  `dp[u][0] += max(dp[v][0], dp[v][1])`
+- Nếu CHỌN `u`: Con `v` BẮT BUỘC KHÔNG được chọn.
+  `dp[u][1] += dp[v][0]`
+
+---
+
+## 💡 Lời khuyên khi học Advanced DP
+
+1. **Vẽ bảng/Trạng thái ra giấy:** Đừng cố hình dung toàn bộ trong đầu. Viết rõ ý nghĩa của `dp[i][j][k] = ?` trước khi code.
+2. **Tìm Base Case:** Luôn xác định trạng thái khởi tạo (ví dụ `dp[0][0] = 1`).
+3. **Từ Memoization sang Tabulation:** Nên code Đệ quy có nhớ (Memoization + DFS) trước cho dễ hiểu logic (như Tree DP và Digit DP rất khó code vòng lặp for), sau đó mới tối ưu thành Mảng Tabulation nếu cần.
+
+---
+
+*← Quay lại [Mathematical Algorithms](/notes/algo-mathematical) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Advanced Graph Algorithms →](/notes/algo-advanced-graph)*

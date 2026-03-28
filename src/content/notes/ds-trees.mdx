@@ -1,0 +1,419 @@
+---
+title: "Trees & Binary Search Tree (Cây & BST) - Dữ liệu phân cấp"
+date: 2026-03-12T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Tree là gì?
+
+Hãy tưởng tượng **cây gia phả** của gia đình bạn: ông bà ở trên, bố mẹ ở giữa, con cháu ở dưới. Mỗi người kết nối với nhau theo quan hệ **cha-con**.
+
+**Tree (Cây)** trong lập trình cũng như vậy:
+- Dữ liệu **phi tuyến tính** — không xếp hàng mà phân thành **nhánh**
+- Mỗi phần tử gọi là **node** (nút)
+- Node trên cùng = **Root** (gốc)
+- Node không có con = **Leaf** (lá)
+
+```
+            ┌───┐
+            │ A │  ← Root (gốc)
+            └─┬─┘
+         ┌────┴────┐
+       ┌─┴─┐     ┌─┴─┐
+       │ B │     │ C │  ← Children (con)
+       └─┬─┘     └─┬─┘
+      ┌──┴──┐      │
+    ┌─┴─┐ ┌─┴─┐  ┌─┴─┐
+    │ D │ │ E │  │ F │  ← Leaves (lá)
+    └───┘ └───┘  └───┘
+```
+
+### Thuật ngữ cần biết
+
+| Thuật ngữ | Nghĩa |
+|-----------|--------|
+| **Root** | Node gốc, không có cha |
+| **Parent** | Node cha |
+| **Child** | Node con |
+| **Leaf** | Node lá, không có con |
+| **Edge** | Đường nối giữa 2 node |
+| **Height** | Khoảng cách từ root đến leaf xa nhất |
+| **Depth** | Khoảng cách từ root đến node hiện tại |
+
+---
+
+## 🌲 Binary Tree (Cây nhị phân)
+
+Cây nhị phân là cây mà **mỗi node có tối đa 2 con**: trái (left) và phải (right).
+
+### Các loại Binary Tree
+
+| Loại | Đặc điểm |
+|------|----------|
+| **Full** | Mỗi node có 0 hoặc 2 con |
+| **Complete** | Tất cả tầng đầy, tầng cuối lấp từ trái sang |
+| **Perfect** | Tất cả tầng đầy đủ, tất cả leaf cùng depth |
+| **Balanced** | Chiều cao trái và phải chênh lệch ≤ 1 |
+
+---
+
+## 🔍 Binary Search Tree (BST) - Cây tìm kiếm nhị phân
+
+BST là Binary Tree đặc biệt với **quy tắc sắp xếp**:
+- Node **trái** < Node **cha** < Node **phải**
+
+```
+           ┌────┐
+           │ 10 │
+           └──┬─┘
+       ┌──────┴──────┐
+     ┌─┴─┐         ┌─┴──┐
+     │ 5 │         │ 15 │
+     └─┬─┘         └──┬─┘
+   ┌───┴───┐     ┌────┴────┐
+ ┌─┴─┐  ┌─┴─┐ ┌─┴──┐  ┌──┴─┐
+ │ 3 │  │ 7 │ │ 12 │  │ 20 │
+ └───┘  └───┘ └────┘  └────┘
+
+ Tìm số 7: 10→trái→5→phải→7 ✅ (chỉ 3 bước!)
+```
+
+### ⏱️ Time Complexity (BST)
+
+| Thao tác | Balanced | Unbalanced (trường hợp xấu) |
+|----------|----------|------------------------------|
+| Tìm kiếm | O(log n) | O(n) |
+| Thêm | O(log n) | O(n) |
+| Xóa | O(log n) | O(n) |
+
+> ⚠️ BST không cân bằng → giống Linked List → O(n)! Vì vậy cần giữ cây **balanced**.
+
+---
+
+## 🔄 Tree Traversal (Duyệt cây)
+
+Có 3 cách duyệt cây (rất quan trọng trong phỏng vấn!):
+
+```
+        ┌───┐
+        │ 1 │
+        └─┬─┘
+     ┌────┴────┐
+   ┌─┴─┐     ┌─┴─┐
+   │ 2 │     │ 3 │
+   └─┬─┘     └───┘
+  ┌──┴──┐
+┌─┴─┐ ┌─┴─┐
+│ 4 │ │ 5 │
+└───┘ └───┘
+```
+
+| Cách duyệt | Thứ tự | Kết quả | Nhớ bằng |
+|-------------|--------|---------|----------|
+| **In-order** | Trái → Root → Phải | 4, 2, 5, 1, 3 | BST → ra thứ tự tăng dần! |
+| **Pre-order** | Root → Trái → Phải | 1, 2, 4, 5, 3 | Sao chép cây |
+| **Post-order** | Trái → Phải → Root | 4, 5, 2, 3, 1 | Xóa cây |
+
+---
+
+## 💻 Code mẫu: Binary Search Tree
+
+### JavaScript
+
+```javascript
+// ===== BINARY SEARCH TREE - JAVASCRIPT =====
+
+class TreeNode {
+    constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class BST {
+    constructor() {
+        this.root = null;
+    }
+
+    // Thêm node - O(log n)
+    insert(value) {
+        const newNode = new TreeNode(value);
+        if (!this.root) {
+            this.root = newNode;
+            return;
+        }
+
+        let current = this.root;
+        while (true) {
+            if (value < current.value) {
+                // Đi sang trái
+                if (!current.left) {
+                    current.left = newNode;
+                    return;
+                }
+                current = current.left;
+            } else {
+                // Đi sang phải
+                if (!current.right) {
+                    current.right = newNode;
+                    return;
+                }
+                current = current.right;
+            }
+        }
+    }
+
+    // Tìm kiếm - O(log n)
+    search(value) {
+        let current = this.root;
+        while (current) {
+            if (value === current.value) return true;
+            if (value < current.value) current = current.left;
+            else current = current.right;
+        }
+        return false;
+    }
+
+    // In-order: Trái → Root → Phải (ra thứ tự tăng dần!)
+    inOrder(node = this.root, result = []) {
+        if (node) {
+            this.inOrder(node.left, result);
+            result.push(node.value);
+            this.inOrder(node.right, result);
+        }
+        return result;
+    }
+
+    // Pre-order: Root → Trái → Phải
+    preOrder(node = this.root, result = []) {
+        if (node) {
+            result.push(node.value);
+            this.preOrder(node.left, result);
+            this.preOrder(node.right, result);
+        }
+        return result;
+    }
+
+    // Post-order: Trái → Phải → Root
+    postOrder(node = this.root, result = []) {
+        if (node) {
+            this.postOrder(node.left, result);
+            this.postOrder(node.right, result);
+            result.push(node.value);
+        }
+        return result;
+    }
+}
+
+// --- Sử dụng ---
+const tree = new BST();
+[10, 5, 15, 3, 7, 12, 20].forEach(v => tree.insert(v));
+
+console.log("In-order:", tree.inOrder());    // [3, 5, 7, 10, 12, 15, 20]
+console.log("Pre-order:", tree.preOrder());   // [10, 5, 3, 7, 15, 12, 20]
+console.log("Post-order:", tree.postOrder()); // [3, 7, 5, 12, 20, 15, 10]
+console.log("Tìm 7:", tree.search(7));        // true
+console.log("Tìm 99:", tree.search(99));      // false
+```
+
+### Python
+
+```python
+# ===== BINARY SEARCH TREE - PYTHON =====
+
+class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+class BST:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, value):
+        if not self.root:
+            self.root = TreeNode(value)
+            return
+        current = self.root
+        while True:
+            if value < current.value:
+                if not current.left:
+                    current.left = TreeNode(value)
+                    return
+                current = current.left
+            else:
+                if not current.right:
+                    current.right = TreeNode(value)
+                    return
+                current = current.right
+
+    def search(self, value):
+        current = self.root
+        while current:
+            if value == current.value:
+                return True
+            elif value < current.value:
+                current = current.left
+            else:
+                current = current.right
+        return False
+
+    def in_order(self, node=None, first_call=True):
+        if first_call:
+            node = self.root
+        result = []
+        if node:
+            result += self.in_order(node.left, False)
+            result.append(node.value)
+            result += self.in_order(node.right, False)
+        return result
+
+# --- Sử dụng ---
+tree = BST()
+for v in [10, 5, 15, 3, 7, 12, 20]:
+    tree.insert(v)
+
+print("In-order:", tree.in_order())   # [3, 5, 7, 10, 12, 15, 20]
+print("Tìm 7:", tree.search(7))      # True
+print("Tìm 99:", tree.search(99))    # False
+```
+
+### Rust
+
+```rust
+// ===== BINARY SEARCH TREE - RUST =====
+
+type Link = Option<Box<TreeNode>>;
+
+struct TreeNode {
+    value: i32,
+    left: Link,
+    right: Link,
+}
+
+struct BST {
+    root: Link,
+}
+
+impl BST {
+    fn new() -> Self {
+        BST { root: None }
+    }
+
+    fn insert(&mut self, value: i32) {
+        Self::insert_node(&mut self.root, value);
+    }
+
+    fn insert_node(node: &mut Link, value: i32) {
+        match node {
+            None => {
+                *node = Some(Box::new(TreeNode {
+                    value,
+                    left: None,
+                    right: None,
+                }));
+            }
+            Some(n) => {
+                if value < n.value {
+                    Self::insert_node(&mut n.left, value);
+                } else {
+                    Self::insert_node(&mut n.right, value);
+                }
+            }
+        }
+    }
+
+    fn search(&self, value: i32) -> bool {
+        Self::search_node(&self.root, value)
+    }
+
+    fn search_node(node: &Link, value: i32) -> bool {
+        match node {
+            None => false,
+            Some(n) => {
+                if value == n.value { true }
+                else if value < n.value { Self::search_node(&n.left, value) }
+                else { Self::search_node(&n.right, value) }
+            }
+        }
+    }
+
+    fn in_order(&self) -> Vec<i32> {
+        let mut result = Vec::new();
+        Self::in_order_node(&self.root, &mut result);
+        result
+    }
+
+    fn in_order_node(node: &Link, result: &mut Vec<i32>) {
+        if let Some(n) = node {
+            Self::in_order_node(&n.left, result);
+            result.push(n.value);
+            Self::in_order_node(&n.right, result);
+        }
+    }
+}
+
+fn main() {
+    let mut tree = BST::new();
+    for v in [10, 5, 15, 3, 7, 12, 20] {
+        tree.insert(v);
+    }
+    println!("In-order: {:?}", tree.in_order());
+    println!("Tìm 7: {}", tree.search(7));    // true
+    println!("Tìm 99: {}", tree.search(99));  // false
+}
+```
+
+---
+
+## 🏔️ Binary Heap & Priority Queue
+
+**Binary Heap** là cây nhị phân hoàn chỉnh (complete) với quy tắc:
+- **Max Heap**: Node cha ≥ node con (root = lớn nhất)
+- **Min Heap**: Node cha ≤ node con (root = nhỏ nhất)
+
+**Priority Queue** dùng Heap để luôn lấy phần tử **ưu tiên cao nhất** trước.
+
+| So sánh | Queue thường | Priority Queue |
+|---------|-------------|----------------|
+| Lấy ra | Phần tử đến trước | Phần tử ưu tiên cao nhất |
+| Ví dụ | Xếp hàng mua vé | Cấp cứu (bệnh nặng trước) |
+
+---
+
+## 🌳 Advanced Tree Techniques (Nâng cao)
+
+Khi bạn tham gia lập trình thi đấu (Competitive Programming) hoặc giải các bài toán "hạng nặng", cấu trúc cây cơ bản là chưa đủ. Dưới đây là các kỹ thuật siêu chuyên sâu (Master level):
+
+1. **Heavy-Light Decomposition (HLD)**: Cắt một cây thành nhiều đường thẳng (paths). Giúp truy vấn và cập nhật trên đường đi giữa 2 node trên cây trong thời gian `O(log² n)`.
+2. **Euler Tour Technique (Cây trải phẳng)**: Duyệt cây bằng DFS và ghi lại thời gian (cách thăm). Biến một cây thành một **Mảng phẳng** (Array) để dễ dàng dùng Segment Tree truy vấn cây con!
+3. **Centroid Decomposition**: Tìm trọng tâm (Centroid) của cây để chia cây thành các cây con cân bằng. Cực kỳ mạnh khi giải các bài toán "đếm số lượng đường đi" thỏa mãn điều kiện nào đó trong `O(n log n)`.
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Loại Tree |
+|------------|-----------|
+| **Hệ thống file** (folder/file) | General Tree |
+| **DOM (HTML)** | General Tree |
+| **Database indexing** | B-Tree, B+ Tree |
+| **Autocomplete** | Trie |
+| **Nén dữ liệu** (Huffman) | Binary Tree |
+| **Priority Queue** | Binary Heap |
+| **Quyết định AI** | Decision Tree |
+
+---
+
+## 🎯 Khi nào dùng Tree?
+
+- ✅ Dữ liệu có quan hệ **phân cấp** (cha-con)
+- ✅ Cần **tìm kiếm nhanh** → BST: O(log n)
+- ✅ Cần lấy phần tử **lớn nhất/nhỏ nhất** → Heap
+- ❌ Dữ liệu **phẳng**, không phân cấp → dùng Array/Hash Table
+
+---
+
+*← Quay lại [Stacks & Queues](/notes/ds-stacks-queues) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Graphs →](/notes/ds-graphs)*

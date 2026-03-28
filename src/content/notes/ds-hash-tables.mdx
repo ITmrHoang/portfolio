@@ -1,0 +1,298 @@
+---
+title: "Hashing & Heap - Tìm kiếm siêu tốc và Hàng đợi ưu tiên"
+date: 2026-03-04T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Hash Table là gì?
+
+Hãy tưởng tượng bạn đến **thư viện** và muốn tìm sách "Harry Potter". Thay vì đi dọc **từng kệ** (như Array), thủ thư nói: *"Harry Potter ở kệ H, ngăn 42"*. Bạn đi thẳng tới — tìm **ngay lập tức**!
+
+**Hash Table** hoạt động y hệt:
+- Lưu dữ liệu dạng **cặp key-value** (khóa-giá trị)
+- Dùng **hàm băm (hash function)** để biến key → vị trí lưu trữ
+- Tìm kiếm **siêu nhanh O(1)** — không cần duyệt từng phần tử!
+
+```
+  Key        Hash Function       Index    Value
+  "name"  →   hash("name")   →   [2]  →  "Hoàng"
+  "age"   →   hash("age")    →   [5]  →  28
+  "city"  →   hash("city")   →   [1]  →  "HCM"
+```
+
+---
+
+## 🔑 Các khái niệm quan trọng
+
+### Hash Function (Hàm băm)
+
+Hàm băm nhận vào một **key** và trả về một **số nguyên** (index) — cho biết dữ liệu sẽ được lưu ở đâu.
+
+**Đặc điểm hàm băm tốt:**
+- Cùng key → **luôn ra cùng index** (deterministic)
+- Tính toán **nhanh**
+- Phân bố **đều** (ít trùng index)
+
+### Collision (Va chạm)
+
+Khi hai key khác nhau cho ra **cùng một index** → gọi là **collision**.
+
+```
+hash("name") → index 2
+hash("team") → index 2   ← Collision! Cùng index!
+```
+
+**Cách xử lý collision:**
+
+| Phương pháp | Cách hoạt động |
+|-------------|----------------|
+| **Separate Chaining** | Mỗi index chứa một linked list → thêm vào list |
+| **Open Addressing (Linear Probing)** | Nếu index đã có → tìm ô trống tiếp theo |
+
+---
+
+## ⏱️ Time Complexity
+
+| Thao tác | Trung bình | Trường hợp xấu (nhiều collision) |
+|----------|------------|----------------------------------|
+| **Tìm kiếm** (Lookup) | O(1) | O(n) |
+| **Thêm** (Insert) | O(1) | O(n) |
+| **Xóa** (Delete) | O(1) | O(n) |
+
+> 💡 Trường hợp xấu nhất (O(n)) rất hiếm nếu hàm băm tốt và bảng đủ lớn.
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== HASH TABLE TRONG JAVASCRIPT =====
+// JavaScript dùng Object hoặc Map làm Hash Table
+
+// --- Cách 1: Dùng Object (đơn giản nhất) ---
+const student = {
+    name: "Hoàng",
+    age: 22,
+    major: "Computer Science"
+};
+
+// Truy cập (O(1))
+console.log(student.name);       // "Hoàng"
+console.log(student["age"]);     // 22
+
+// Thêm key-value mới (O(1))
+student.gpa = 3.8;
+
+// Xóa (O(1))
+delete student.gpa;
+
+// Kiểm tra key tồn tại
+console.log("name" in student);  // true
+
+// --- Cách 2: Dùng Map (mạnh hơn) ---
+const phoneBook = new Map();
+
+// Thêm (O(1))
+phoneBook.set("Hoàng", "0901234567");
+phoneBook.set("Lan", "0912345678");
+phoneBook.set("Minh", "0923456789");
+
+// Tìm kiếm (O(1)) - Siêu nhanh!
+console.log(phoneBook.get("Hoàng"));  // "0901234567"
+
+// Kiểm tra tồn tại
+console.log(phoneBook.has("Lan"));  // true
+
+// Kích thước
+console.log(phoneBook.size);  // 3
+
+// Duyệt tất cả
+phoneBook.forEach((phone, name) => {
+    console.log(`${name}: ${phone}`);
+});
+
+// Xóa (O(1))
+phoneBook.delete("Minh");
+
+// --- Ví dụ thực tế: Đếm ký tự ---
+function countChars(str) {
+    const count = {};
+    for (const char of str) {
+        count[char] = (count[char] || 0) + 1;
+    }
+    return count;
+}
+
+console.log(countChars("hello"));
+// { h: 1, e: 1, l: 2, o: 1 }
+```
+
+### Python
+
+```python
+# ===== HASH TABLE TRONG PYTHON =====
+# Python dùng dict (dictionary) làm Hash Table
+
+# 1. Tạo dictionary
+student = {
+    "name": "Hoàng",
+    "age": 22,
+    "major": "Computer Science"
+}
+
+# 2. Truy cập (O(1))
+print(student["name"])      # "Hoàng"
+print(student.get("age"))   # 22 (an toàn hơn, trả None nếu không có key)
+
+# 3. Thêm key-value mới (O(1))
+student["gpa"] = 3.8
+
+# 4. Xóa (O(1))
+del student["gpa"]
+
+# 5. Kiểm tra key tồn tại
+print("name" in student)  # True
+
+# 6. Duyệt tất cả
+for key, value in student.items():
+    print(f"{key}: {value}")
+
+# --- Ví dụ thực tế: Đếm ký tự ---
+def count_chars(text):
+    count = {}
+    for char in text:
+        count[char] = count.get(char, 0) + 1
+    return count
+
+print(count_chars("hello"))
+# {'h': 1, 'e': 1, 'l': 2, 'o': 1}
+
+# --- Ví dụ: Tìm phần tử đầu tiên không lặp ---
+def first_unique(text):
+    count = count_chars(text)
+    for char in text:
+        if count[char] == 1:
+            return char
+    return None
+
+print(first_unique("aabcbd"))  # "c"
+```
+
+### Rust
+
+```rust
+// ===== HASH TABLE TRONG RUST =====
+// Rust dùng HashMap từ thư viện std::collections
+
+use std::collections::HashMap;
+
+fn main() {
+    // 1. Tạo HashMap
+    let mut student: HashMap<&str, &str> = HashMap::new();
+
+    // 2. Thêm key-value (O(1))
+    student.insert("name", "Hoàng");
+    student.insert("age", "22");
+    student.insert("major", "Computer Science");
+
+    // 3. Truy cập (O(1))
+    if let Some(name) = student.get("name") {
+        println!("Tên: {}", name);  // "Hoàng"
+    }
+
+    // 4. Kiểm tra key tồn tại
+    println!("Có 'name'? {}", student.contains_key("name"));  // true
+
+    // 5. Xóa (O(1))
+    student.remove("major");
+
+    // 6. Duyệt tất cả
+    for (key, value) in &student {
+        println!("{}: {}", key, value);
+    }
+
+    // --- Ví dụ thực tế: Đếm ký tự ---
+    let text = "hello";
+    let mut count: HashMap<char, i32> = HashMap::new();
+
+    for ch in text.chars() {
+        // entry() API rất hay - tạo mới nếu chưa có
+        *count.entry(ch).or_insert(0) += 1;
+    }
+
+    println!("{:?}", count);
+    // {'h': 1, 'e': 1, 'l': 2, 'o': 1}
+}
+```
+
+---
+
+## ⛰️ Bonus: Heap (Priority Queue)
+
+Mặc dù Hash Table cực kỳ giỏi trong việc tìm kiếm giá trị, nhưng nó **không có thứ tự**. Nếu bạn luôn muốn tìm ra phần tử **lớn nhất** hoặc **nhỏ nhất** trong một tập hợp dữ liệu thay đổi liên tục thì sao?
+
+Đó là lúc **Heap (Đống)** tỏa sáng!
+
+- **Min Heap:** Nút gốc (Top) luôn là phần tử nhỏ nhất.
+- **Max Heap:** Nút gốc (Top) luôn là phần tử lớn nhất.
+- **Time Complexity:** Xem đỉnh `O(1)`, Thêm `O(log n)`, Xóa đỉnh `O(log n)`.
+- **Ứng dụng:** Hàng đợi ưu tiên (bệnh nhân cấp cứu ưu tiên vào trước), thuật toán tìm đường (Dijkstra), hoặc bài toán tìm "Top K phần tử" (ví dụ: 10 học sinh điểm cao nhất).
+
+Trong thư viện chuẩn:
+- **C++:** `priority_queue`
+- **Python:** `heapq`
+- **Java:** `PriorityQueue`
+- **Rust:** `BinaryHeap`
+
+---
+
+## 🔄 Hash Table vs Array
+
+| Tiêu chí | Array | Hash Table |
+|----------|-------|------------|
+| Truy cập | Bằng index (số) | Bằng key (bất kỳ) |
+| Tìm kiếm | O(n) — chậm | O(1) — nhanh |
+| Thứ tự | Có thứ tự | Không đảm bảo thứ tự |
+| Bộ nhớ | Ít hơn | Nhiều hơn (hash function + chống collision) |
+| Khi nào dùng | Dữ liệu theo thứ tự | Tìm kiếm nhanh theo key |
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+| Tình huống | Cách dùng |
+|------------|-----------|
+| **Cache trình duyệt** | URL → nội dung trang (truy cập nhanh) |
+| **Danh bạ điện thoại** | Tên → số điện thoại |
+| **Đếm từ trong văn bản** | Từ → số lần xuất hiện |
+| **Database indexing** | Primary key → record dữ liệu |
+| **Kiểm tra trùng lặp** | Lưu phần tử đã gặp vào Set (biến thể Hash Table) |
+| **Cấu hình ứng dụng** | Key config → giá trị |
+
+---
+
+## ✅ Ưu điểm & ❌ Nhược điểm
+
+| ✅ Ưu điểm | ❌ Nhược điểm |
+|-------------|---------------|
+| Tìm kiếm cực nhanh O(1) | Không có thứ tự |
+| Thêm/xóa nhanh O(1) | Tốn bộ nhớ hơn Array |
+| Key linh hoạt (string, number...) | Collision làm giảm hiệu suất |
+| Rất phổ biến, hỗ trợ mọi ngôn ngữ | Hash function kém → chậm như O(n) |
+
+---
+
+## 🎯 Khi nào nên dùng Hash Table?
+
+- ✅ Cần **tìm kiếm nhanh** theo key
+- ✅ Cần **đếm** số lần xuất hiện
+- ✅ Cần **kiểm tra trùng lặp** nhanh
+- ✅ Cần **ánh xạ** (mapping) giữa hai loại dữ liệu
+- ❌ **Không nên** dùng khi cần dữ liệu **có thứ tự** → dùng Array
+- ❌ **Không nên** dùng khi dữ liệu rất ít → Array đơn giản hơn
+
+---
+
+*← Quay lại [Stack & Queue](/notes/ds-stacks-queues) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Greedy Algorithms →](/notes/algo-greedy)*

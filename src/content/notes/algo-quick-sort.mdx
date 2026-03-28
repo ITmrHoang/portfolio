@@ -1,0 +1,197 @@
+---
+title: "Quick Sort (Sắp xếp nhanh) - Vua của các giải thuật sắp xếp"
+date: 2026-03-10T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Quick Sort là gì?
+
+Hãy tưởng tượng bạn sắp xếp **một lớp học theo chiều cao**. Bạn chọn **một bạn bất kỳ** (gọi là pivot). Rồi bảo:
+- Ai **thấp hơn** pivot → đứng **bên trái**
+- Ai **cao hơn** pivot → đứng **bên phải**
+- Lặp lại cho mỗi nhóm cho đến khi xong!
+
+**Quick Sort** dùng chiến lược **Divide and Conquer** giống Merge Sort nhưng chia theo **pivot** thay vì chia đôi.
+
+```
+Chọn pivot = 5:
+[8, 3, 1, 5, 9, 2, 7]
+     ↓ partition
+[3, 1, 2]  [5]  [8, 9, 7]
+   trái    pivot    phải
+
+Đệ quy trái: pivot=1 → [1] [3, 2] → [1] [2, 3]
+Đệ quy phải: pivot=9 → [8, 7] [9] → [7, 8] [9]
+
+Kết quả: [1, 2, 3, 5, 7, 8, 9] ✅
+```
+
+---
+
+## ⏱️ Time Complexity
+
+| Trường hợp | Big O | Khi nào? |
+|-------------|-------|----------|
+| **Tốt nhất** | O(n log n) | Pivot chia đều |
+| **Trung bình** | O(n log n) | Ngẫu nhiên |
+| **Xấu nhất** | O(n²) ⚠️ | Pivot luôn min/max (mảng đã sorted) |
+| **Space** | O(log n) | In-place + call stack |
+| **Stable** | ❌ Không | |
+
+> 💡 Thực tế, Quick Sort **nhanh hơn** Merge Sort nhờ cache locality và ít overhead hơn.
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== QUICK SORT - JAVASCRIPT =====
+
+function quickSort(arr, low = 0, high = arr.length - 1) {
+    if (low < high) {
+        // 1. Partition: tìm vị trí đúng của pivot
+        const pivotIndex = partition(arr, low, high);
+        
+        // 2. Đệ quy sắp xếp 2 nửa
+        quickSort(arr, low, pivotIndex - 1);   // Nửa trái
+        quickSort(arr, pivotIndex + 1, high);   // Nửa phải
+    }
+    return arr;
+}
+
+function partition(arr, low, high) {
+    const pivot = arr[high];  // Chọn phần tử cuối làm pivot
+    let i = low - 1;  // Index của phần tử nhỏ hơn pivot
+    
+    for (let j = low; j < high; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            [arr[i], arr[j]] = [arr[j], arr[i]];  // Swap
+        }
+    }
+    
+    // Đặt pivot vào vị trí đúng
+    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+    return i + 1;  // Trả về vị trí pivot
+}
+
+// --- Test ---
+const nums = [8, 3, 1, 5, 9, 2, 7];
+console.log(quickSort(nums));
+// [1, 2, 3, 5, 7, 8, 9]
+```
+
+### Python
+
+```python
+# ===== QUICK SORT - PYTHON =====
+
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    
+    pivot = arr[-1]  # Chọn phần tử cuối làm pivot
+    left = [x for x in arr[:-1] if x <= pivot]    # Nhỏ hơn pivot
+    right = [x for x in arr[:-1] if x > pivot]   # Lớn hơn pivot
+    
+    return quick_sort(left) + [pivot] + quick_sort(right)
+
+print(quick_sort([8, 3, 1, 5, 9, 2, 7]))
+# [1, 2, 3, 5, 7, 8, 9]
+
+
+# --- Phiên bản In-place (tiết kiệm bộ nhớ) ---
+def quick_sort_inplace(arr, low=0, high=None):
+    if high is None:
+        high = len(arr) - 1
+    
+    if low < high:
+        pivot_index = partition(arr, low, high)
+        quick_sort_inplace(arr, low, pivot_index - 1)
+        quick_sort_inplace(arr, pivot_index + 1, high)
+
+def partition(arr, low, high):
+    pivot = arr[high]
+    i = low - 1
+    
+    for j in range(low, high):
+        if arr[j] < pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+    
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    return i + 1
+
+nums = [8, 3, 1, 5, 9, 2, 7]
+quick_sort_inplace(nums)
+print(nums)  # [1, 2, 3, 5, 7, 8, 9]
+```
+
+### Rust
+
+```rust
+// ===== QUICK SORT - RUST =====
+
+fn quick_sort(arr: &mut [i32]) {
+    let len = arr.len();
+    if len <= 1 { return; }
+    
+    let pivot_index = partition(arr);
+    
+    let (left, right) = arr.split_at_mut(pivot_index);
+    quick_sort(left);
+    quick_sort(&mut right[1..]);  // Bỏ qua pivot
+}
+
+fn partition(arr: &mut [i32]) -> usize {
+    let len = arr.len();
+    let pivot = arr[len - 1];
+    let mut i: usize = 0;
+    
+    for j in 0..len - 1 {
+        if arr[j] < pivot {
+            arr.swap(i, j);
+            i += 1;
+        }
+    }
+    
+    arr.swap(i, len - 1);
+    i
+}
+
+fn main() {
+    let mut numbers = vec![8, 3, 1, 5, 9, 2, 7];
+    quick_sort(&mut numbers);
+    println!("{:?}", numbers);
+    // [1, 2, 3, 5, 7, 8, 9]
+}
+```
+
+---
+
+## 🔄 Quick Sort vs Merge Sort
+
+| Tiêu chí | Quick Sort | Merge Sort |
+|----------|-----------|------------|
+| Average | O(n log n) | O(n log n) |
+| Worst case | O(n²) ⚠️ | O(n log n) ✨ |
+| Space | O(log n) in-place ✨ | O(n) |
+| Stable | ❌ | ✅ |
+| Thực tế | **Nhanh hơn** (cache) | Ổn định hơn |
+| Dùng ở | C qsort(), Java Arrays.sort() (primitives) | Python, Java (objects) |
+
+---
+
+## 🎯 Khi nào dùng Quick Sort?
+
+- ✅ Cần sắp xếp **nhanh nhất** trên thực tế
+- ✅ Bộ nhớ hạn chế (in-place, O(log n) space)
+- ✅ Dữ liệu ngẫu nhiên (ít gặp worst case)
+- ❌ Dữ liệu **đã sorted** → chọn pivot ngẫu nhiên hoặc dùng Merge Sort
+- ❌ Cần **stable sort** → dùng Merge Sort
+
+---
+
+*← Quay lại [Merge Sort](/notes/algo-merge-sort) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Searching Algorithms →](/notes/algo-searching)*

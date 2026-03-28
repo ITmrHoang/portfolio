@@ -1,0 +1,59 @@
+---
+title: "Approximation & Randomized Algorithms - Thuật toán Lấy xấp xỉ & Gieo Xúc Xắc Cứu Rỗi"
+date: 2026-03-30T00:00:00Z
+topic: "DSA"
+---
+
+## 😱 Khi Máy Tính Bất Lực Tuyệt Vọng
+
+Có một phân lớp các bài toán quái đản tên là **NP-Hard**. Sự thật nghiệt ngã: Các nhà khoa học máy tính thế giới chứng minh rằng bạn KHÔNG THỂ giải lũ này để Lấy Đáp Án Hoàn Hảo 100% trong thời gian Hợp lý Đa thức (Polynomial `O(N^k)`).
+Để mò ra phương án tốt nhất, bạn bắt buộc chạy Đệ Quy Quay Lui $O(2^N)$ hay $O(N!)$. Khi $N = 100$, mất 10 tỷ năm.
+
+Ví dụ: Bài Toán Người Bán Hàng TSP, Đóng Thùng Đồ (Bin Packing), hay Vẽ Tô Màu Đồ Thị Tách Khối...
+
+Thì lúc này khoa học nảy ra 2 chiêu Cuối cùng của võ học **SỐNG CHUNG LŨ**: Lấy xấp xỉ (Approximation) và Gieo Nhân Phẩm Ra Đáp Án ngẫu nhiên (Randomized).
+
+---
+
+## 📏 1. Approximation Algorithms (Thuật Toán Xấp Xỉ)
+
+Cốt lõi: *"Tao không đi tìm Đáp án Cực Đỉnh Nhất nữa. Thay vào đó, tao đảm bảo tạo ra Đáp Án Đủ Tốt Nhanh, sai lầm không quá mức Giới hạn X!"*.
+
+**Chỉ số Xấp Xỉ (Approximation Ratio - $\rho$):**
+Nếu đáp án đúng thần thánh là `OPT`, thì kết quả của bạn chạy ra `ALG` sẽ luôn nằm trong vùng:
+$$ \frac{\text{ALG}}{\text{OPT}} \le \rho $$
+
+### Ví dụ Vĩ đại: Đóng Cặp (Vertex Cover)
+*Bài toán (NP-Hard):* Đỉnh đồ thị thành phố. Phải cắm đồn cảnh sát ở các đỉnh hẻm sao cho Mọi Con Đường Trọng yếu đều bị kiểm soát bởi Ít Nhất 1 bốt! Bắt bạn chọn Bốt Ít Nhất. Tìm bốt ít nhất là thảm họa.
+
+*Thuật Toán Trẻ Trâu Xấp Xỉ $2$ (Approximation Factor = 2):*
+1. Quất mẹ bất kỳ 1 cạnh hẻm $U-V$ nào. Bê cả `U` và `V` làm Đồn cảnh sát. Vứt tất cả các hẻm dính tới con $U$ và $V$ ra khỏi sổ.
+2. Quất tiếp 1 cành hẻm khác... làm tới khi Bảng rỗng.
+**Chứng minh siêu bựa:** Kết quả tốn nhiều đồn cảnh sát của bạn luôn $\le 2 \times$ kết quả tối ưu của Vị Thần Hoàn Hảo. Bạn đẻ xong chạy $O(V+E)$ cực sướng thay vì tỷ năm.
+
+---
+
+## 🎲 2. Randomized Algorithms (Kỹ Thuật Xúc Xắc Bàng Môn)
+
+Dùng mã Random sinh ngẫu nhiên cho Logic thay thế cấu trúc rườm rà khô cằn.
+
+Có 2 Đại Diện Trường Phái trong võ lâm Code Ngẫu Nhiên:
+- **Monte Carlo:** Chạy bao NHANH gọn sướng. Nhưng kết quả CÓ TỈ LỆ NHỎ SAI LẾCH (Xác suất ối zồi). Ví dụ: *Kiểm tra nguyên tố Fermat/Miller-Rabin siêu cấp. Chỉ chạy random kiểm 5 cành. Xác suất trả về sai là 0.000000004% (Bạn trúng Vietlott dễ hơn bị lỗi Code này!)*
+- **Las Vegas:** Kết quả RA LÀ CHẮC CHẮN ĐÚNG KHÔNG SAI NỬA CHỮ. NHƯNG Thời gian chạy CÓ BIẾN ĐỘNG MAY RỦI. Ví dụ cực sáng giá: *QuickSort gốc! Bốc Random tâm chốt Pivot. Nếu hên thì cực nhanh `O(N log N)`, xui tận mạng bốc dính cùi liên miên rớt xuống hẻm xéo `O(N^2)`*.
+
+### Minh Giám Thần Tốc: Karger's Min-Cut Random
+Ông Karger đập đi học thuyết Min-Cut Mạng Luồng Cổ Lỗ Khù bằng một cục Xúc Xắc và Đồ Cắt Hình:
+1. Đồ thị chằng chịt, tớ Nhắm Mắt lấy Tụ Điểm Ngẫu Nhiên Nhất. Bốc 1 cành $U-V$ rồi TRỌNG LỰC NGÂN HÀ Nhồi 2 nốt $U-V$ ép vào Nhau Thành đúng Một Cục!
+2. Lập lại trò Nén Đồ Thị này cho tới khi Giữa Vòng Tử Sinh chỉ Quanh quẩn 2 CỤC KHỔNG LỒ. Con ranh Giới giữa chúng Chính là Min Cut!
+- Tính xác suất cắt trúng Chân Ái là $2/N(N-1)$.
+- Cho bot chạy lặp Đi Lặp Lại vài ngàn lần liên tục nhai nát máy... ĐẢM BẢO Tìm thấy Min Cut với Tốc độ Nhanh Mù Lòe Hơn là Cài mạng Luồng DFS MaxFlow dông dài!
+
+---
+
+## 🏆 KẾT LUẬN TỔNG QUAN DSA MODULE
+
+Bạn vừa đi qua chặng cuối Tột Bậc của Môn học Algorithms khoa máy tính. Từ mảng quẹt cơ bản, lượn qua Đồ thị Graph mê lộ tới các Bảng Dynamic Phép Thuật, hay Các thủ thuật lấp liếm NP-Hard Bằng Random! Hẹn gặp bạn ở các Bài toán Đại Hội Coding!
+
+---
+
+*← Quay lại [Game Theory](/notes/algo-game-theory) | [Tổng quan DSA](/notes/dsa-overview)*

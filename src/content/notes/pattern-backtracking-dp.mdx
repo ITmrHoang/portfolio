@@ -1,0 +1,117 @@
+---
+title: "Pattern: Backtracking & DP - Phá Đảo Các Bài Toán Đếm & Tìm Đường"
+date: 2026-04-05T00:00:00Z
+topic: "DSA"
+---
+
+## 🔙 1. Subsets & Backtracking (Quay lui Tìm Mọi Cách)
+
+Nếu bài toán không yêu cầu tìm Đường đi Ngắn nhất, mà yêu cầu in ra **TẤT CẢ** các trường hợp có thể xảy ra. Chào mừng bạn đến với thế giới của O(2^N) và O(N!).
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Yêu cầu tìm tất cả các **Tập con (Subsets)**, **Hoán vị (Permutations)**, **Tổ hợp (Combinations)**.
+- Đề bài: Xếp N Hậu, Giải Sudoku, Sinh chuỗi ngoặc đúng (Generate Parentheses).
+- Độ dài kích thước đề bài thường CỰC KỲ BÉ ($N \le 20$). Nếu lớn hơn, chạy Backtracking sẽ TLE (Time Limit Exceeded).
+
+### ⚙️ Template Backtracking Tuyệt Đỉnh
+Thuật toán luôn xây dựng quanh 3 bước:
+**CHỌN (Choose) -> ĐỆ QUY (Explore) -> HỦY BỎ LỰA CHỌN (Un-choose / Backtrack)**.
+
+```javascript
+/* Bài toán: In ra tất cả các tập con của mảng [1, 2, 3] */
+function subsets(nums) {
+    let result = [];
+    
+    function backtrack(start, currentSubset) {
+        // Đưa MỘT BẢN SAO của mảng đang chứa vào kết quả
+        result.push([...currentSubset]);
+        
+        for (let i = start; i < nums.length; i++) {
+            currentSubset.push(nums[i]);        // 1. CHỌN
+            backtrack(i + 1, currentSubset);    // 2. KHÁM PHÁ (đệ quy)
+            currentSubset.pop();                // 3. QUAY LUI (Dọn dẹp hối hận)
+        }
+    }
+    
+    backtrack(0, []);
+    return result;
+}
+```
+
+> **Tuyệt kỹ:** Nếu bài toán có phần tử Trùng lặp (Duplicates), hãy `Sort` mảng trước. Trong vòng `for` thêm dòng `if (i > start && nums[i] === nums[i-1]) continue;` để chém đứt gốc cụm trùng lặp!
+
+---
+
+## 🎒 2. DP 0/1 Knapsack (Balo Tối Ưu)
+
+Biến thể Khét Lẹt nhất của Quy hoạch động. Bài toán có một thùng chứa HỮU HẠN, làm sao nhét mớ đồ vật vào để TỐI ĐA hóa giá trị.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Cho mảng Trọng lượng `Weights` và Giá trị `Values`. Một Sức Cân `C` (Capacity).
+- Chia một mảng thành 2 nửa có Tổng Bằng Nhau (Subset Sum - coi Capacity là Tổng/2).
+- Các dạng Biến thể:
+  1. **0/1 Knapsack:** Mỗi đồ vật chỉ được nhét đúng 1 LẦN.
+  2. **Unbounded Knapsack:** Mỗi đồ vật được nhét BẤT TẬN (ví dụ Coin Change).
+
+### ⚙️ Logic nhận diện Balo Gốc (0/1 Knapsack)
+Tại MỖI MÓN ĐỒ, ta chỉ có đúng 2 Lựa chọn: **Bỏ vào Balo** ĐỂ ăn điểm Hoặc **Vứt mẹ đi** để nhường dung lượng cho món sau ngon hơn.
+
+- Công thức 2D Cổ điển: `dp[i][w] = max(BỏMón[i], KhôngBỏ[i])`
+- TỐI ƯU SIÊU TỐC bằng 1D Array (Dùng 1 Mảng `dp[C+1]`):
+  _Bí quyết: Duyệt Món Đồ từ đầu đến cuối, Duyệt Khối Lượng từ Mập lùi về Ốm!_
+
+```python
+def knapsack(weights, profits, capacity):
+    # Khởi tạo dp dung lượng C = 0
+    dp = [0] * (capacity + 1)
+    n = len(weights)
+    
+    # Xét Từng Đồ Vật 1
+    for i in range(n):
+        # DUYỆT NGƯỢC TỪ SỨC CÂN CAO NHẤT XUỐNG! (Chỉ áp dụng cho 0/1 Knapsack)
+        for c in range(capacity, weights[i] - 1, -1):
+            dp[c] = max(dp[c], profits[i] + dp[c - weights[i]])
+            
+    return dp[capacity]
+```
+
+---
+
+## 🪞 3. DP Palindrome (Chuỗi Đối Xứng)
+
+Dạng bài Chuỗi đối xứng là nỗi ác mộng nếu không biết cách Dựng Bảng (Tabulation) hoặc Đệ Quy Trung Tâm.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Cụm từ "Palindromic Subsequence" (Chuỗi con đối xứng gián đoạn) -> **Xài DP**.
+- Cụm từ "Palindromic Substring" (Chuỗi con liên tiếp đối xứng) -> **Expand From Center** (Mở rộng từ rốn).
+
+### ⚙️ Expand From Center (Dễ thở hơn DP Substring)
+```cpp
+int longestPalindromeSubstring(string s) {
+    int maxLen = 0;
+    // Chạy từng điểm chót, nở rộng bụng ra 2 bên
+    for(int i = 0; i < s.size(); i++) {
+        // Core Odd (Rốn 1 ký tự): "aba"
+        extend(s, i, i, maxLen);
+        // Core Even (Rốn rỗng, trục giữa 2 ký tự): "abba"
+        extend(s, i, i + 1, maxLen);
+    }
+    return maxLen;
+}
+void extend(const string& s, int j, int k, int& maxLen) {
+    while(j >= 0 && k < s.size() && s[j] == s[k]) {
+        maxLen = max(maxLen, k - j + 1);
+        j--; k++;
+    }
+}
+```
+
+### ⚙️ Palindromic Subsequence (DP Đẳng Cấp)
+Tìm chiều dài dãy con đối xứng ngắt quãng dài nhất. `s = "bbbab"` -> KQ: `4` ("bbbb").
+- Trạng thái: Lấy Trái `i`, Lấy Phải `j`.
+- Nếu `s[i] == s[j]` -> Được 2 Ký Tự Đầu Đuôi -> `dp[i][j] = 2 + dp[i+1][j-1]` (Xoáy vào ruột giữa).
+- Nếu `s[i] != s[j]` -> Hoặc vứt Đầu, Hoặc vứt Đuôi, Lấy cái Lớn Hơn -> `max(dp[i+1][j], dp[i][j-1])`.
+
+---
+
+*← Quay lại [Pattern: Tree & Graph](/notes/pattern-tree-graph) | [Tổng quan DSA](/notes/dsa-overview)*

@@ -1,0 +1,90 @@
+---
+title: "Segment Tree & Fenwick Tree - Siêu cây thao tác dải dữ liệu"
+date: 2026-03-24T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Khi Mảng bình thường bất lực!
+
+Cho một mảng $A$ có $10^5$ học sinh ghi điểm thi. 
+Giám thị ra lệnh hai việc thực hiện xen kẽ liên tục ( $10^5$ lần lệnh):
+- **Cập nhật:** Sửa điểm của học sinh vị trí thứ `i` (+ tăng thêm `X` điểm).
+- **Truy vấn:** Hỏi Tổng điểm của học sinh từ vị trí `L` tới vị trí `R`.
+
+Nếu dùng mảng gộp (Prefix Sum): Truy vấn `O(1)` nhưng lúc Update phải sửa lại một nùi mảng phía sau tốn `O(N)`.
+Lúc này ta cần **Tree cấu trúc** hỗ trợ Cả 2 tác vụ Query + Update với độ nhanh bằng nhau → Sự ra đời của **Fenwick Tree (BIT)** và **Segment Tree**.
+
+---
+
+## 🪓 1. Fenwick Tree / Binary Indexed Tree (BIT)
+
+Cách giải quyết thanh nhã nhưng đòi hỏi óc tinh tế cao về nhị phân. Điểm đặc trưng nhất của BIT: **Viết code rất nhanh (5 phút)**, chay **cực nhanh**.
+
+**BIT** là một mảng phụ trợ $F$ độ lớn y hệt mảng chính $N+1$.
+Sự kỳ diệu: Phân đoạn quản lý tổng được định hình bởi bit thấp nhất (Least Significant Bit - `LSB`) của cái Label!
+- Ô số `8` ($1000_2$): LSB là 8 → Nên nó sẽ tự nhận quản lý TỔNG LƯỢNG MÁU của 8 thằng đằng trước từ [1..8].
+- Ô số `10` ($1010_2$): LSB là 2 → Quản lý tổng khu [9..10].
+
+**Thao tác UPDATE điểm ở vị trí $X$:**
+Bạn tự bò lên cây, cộng thêm $X$ vào ông quản lý của bạn, và các ông to hơn.
+```js
+function add(idx, val) {
+    for(; idx <= n; idx += idx & -idx) // Lấy LSB nhờ idx & -idx
+        tree[idx] += val;
+}
+```
+
+**Thao tác GET SUM (Lấy tổng đoạn từ [1..X]):**
+Lấy kết quả từ vị trí $X$, rồi chặt đứt LSB đi lùi lùi xuống lấy tổng từ các người quản lý nhỏ.
+```js
+function query(idx) {
+    let sum = 0;
+    for(; idx > 0; idx -= idx & -idx)
+        sum += tree[idx];
+    return sum;
+}
+```
+*Lấy dải đoạn rỗng tính sum [L,R] = `query(R) - query(L - 1)`.*
+
+### Hạn chế lớn nhất:
+Fenwick Tree cực mạnh dùng cho TỔNG. Mà hơi phế khi tính MIN/MAX hoặc các thao tác chồng ghép phức tạp.
+
+---
+
+## 🌲 2. Segment Tree (IT - Cây khoảng)
+
+Đại Vũ Khí của giới CP. Đụng bài Range phức tạp nào cũng vác đi giải quyết được. Từ Tổng, Min, Max, đếm Số chắn lẻ, Đếm lượng 0 1, v.v.
+
+**Cấu trúc cây:**
+- Mỗi Node biểu diễn MỘT ĐOẠN $[L, R]$ chứa kết quả gom của đoạn đó.
+- Nút Gốc là kết quả của đoạn bự $[1, N]$.
+- Tách nhỏ: Nút Cha $[L, R]$ có 2 nút con. Một quản lý nửa đầu $[L, Giữa]$, Nút kia quản lý nửa chót $[Giữa+1, R]$. Phản ứng Đệ quy nhị phân!
+
+### Lợi Thế Lazy Propagation (Bít Lười Update)
+Lỡ giám khảo bảo: *Hãy tăng điểm số cho tất cả học sinh từ phòng số 1 đến 50,000 lên 10 điểm!*
+Dùng BIT (viết kiểu Point Update) phải cập nhật n lần (chết mẹ). 
+
+Sử dụng **Lazy Segment Tree**: 
+Thay vì cắm đầu chạy đệ quy sửa thẳng thừng xuống 5 vạn Node lá (O(N)), bạn đi xuống Nút Đại Diện quản lý Cả dải [1, 50k] kia, Ghi một mảnh Tờ Giấy Chú Thích vào đó: *"Tao nợ tụi con 10 củ, lúc nào tụi bây cần update giá thì tao chuyển khoản xuống sau!"* = Nghỉ Update (O(logN)). Tốc độ tăng kinh hồn!
+
+**Độ Phức Tạp Segment Tree:**
+- Xây Dựng Cây: `O(N)`
+- Point Update / Range Update (Lazy): `O(log N)`
+- Range Query: `O(log N)`
+- Bộ nhớ: Đòi Mảng dài gấp `4 * N` chiều dài gốc. `O(N)` lớn!
+
+---
+
+## ⚖️ Đấu Trí Chọn Lựa
+
+| Tiêu Chí | Fenwick Tree (BIT) | Segment Tree |
+|---------|--------------------|--------------|
+| Tác dụng chính | Tính nhanh Range Sum, Đếm đảo ngịch | Mọi thứ (Min, Max, GCD, ... ) |
+| Không gian bộ nhớ | Ít `1 x N` | Nhiều `4 x N` |
+| Code Dễ / Khó | Rất dễ, 10 dòng | Khó, dài thường >50 dòng |
+| Tốc độ | Cực lẹ (chỉ Bitwise) | Chậm hơn xíu (Đệ quy nhiều) |
+| Lời Khuyên Hướng Dẫn | Dùng BIT làm đầu tàu cho bài Tổng | Chỉ dùng ST khi BIT bỏ cuộc |
+
+---
+
+*← Quay lại [Sparse Table](/notes/ds-sparse-table) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Computational Geometry →](/notes/algo-comp-geometry)*

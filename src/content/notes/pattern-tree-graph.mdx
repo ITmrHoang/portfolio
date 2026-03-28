@@ -1,0 +1,82 @@
+---
+title: "Pattern: Cây & Đồ thị - Nhận diện BFS, DFS & Topo"
+date: 2026-04-04T00:00:00Z
+topic: "DSA"
+---
+
+## 🌳 1. Tree & Graph DFS / BFS (Duyệt chiều sâu/rộng)
+
+Không phải hỏi bài duyệt cây In-order đơn thuần, LeetCode bọc đồ thị và cây vào những bài toán logic phức tạp cực hay.
+
+### 🕵️‍♂️ Khi nào xài BFS (Lan tỏa Nước loang)
+Dùng Cấu Trúc Hàng Đợi (**Queue**). Tư duy xét theo từng **Tầng (Level)**.
+- Bài toán Bắt tìm **Đường Đi Ngắn Nhất (Shortest Path)** trong ma trận (Matrix Đảo, Lưới).
+- Duyệt cây theo Tầng (Level Order Traversal).
+- Trạng thái nhảy theo độ khó ít nhất. Minimum Jumps, Word Ladder. Khởi gốc biến thành các đỉnh kế có chi phí +1 đều xài BFS siêu xịn. Độ xa gốc của BFS CỤC BỘ luôn TỐI TÂN NHẤT.
+
+```rust
+// Mô hình Level Order BFS quét Tầng Node Cây Sinh Tử
+fn level_order(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
+    let mut result = Vec::new();
+    if root.is_none() { return result; }
+    
+    let mut q = VecDeque::new();
+    q.push_back(root.unwrap());
+    
+    while !q.is_empty() {
+        let level_size = q.len(); // Bắt giữ chính xác số đỉnh tại Tầng Này! Cực Quan Trọng!
+        let mut current_level = Vec::new();
+        
+        for _ in 0..level_size {
+            let node = q.pop_front().unwrap();
+            let b = node.borrow();
+            current_level.push(b.val);
+            
+            if let Some(ref l) = b.left { q.push_back(l.clone()); }
+            if let Some(ref r) = b.right { q.push_back(r.clone()); }
+        }
+        result.push(current_level);
+    }
+    result
+}
+```
+
+### 🕵️‍♂️ Khi nào xài DFS (Đi tới đáy vực)
+Sử dụng Đệ quy (Stack Call Của Hệ Thống). Rất sướng và dẻo dai code 1 hàm đẻ nhánh.
+- **Tree Path Sum:** Rớt đỉnh dọc biên tìm dải gốc lá.
+- Truy vấn Vùng Kín trong Đồ Thị Island (Ma Trận). Tìm Kích cỡ Vùng đất (Màu loang vết thương).
+- **Backtracking!** Toàn Bộ Tổ Hợp / Hoán Vị (Xem trong mảng Pattern Backtracking phía sau).
+- **LCA (Lowest Common Ancestor)** hoặc Dữ liệu móc ngược Đỉnh Từ Lá Trả Lên Cho Gốc. 
+
+---
+
+## 🏗️ 2. Topological Sort Pattern (Xếp mâm Cổ)
+
+100% Cứ ra đề thấy Thằng Này Bắt Buộc Làm Xong Mới Cho Phép Thằng Kia Đi. Thì không có thứ cùi bắp nào bằng **Vẽ Đồ Thị Có Hướng (Directed Graph)** quét đỉnh bậc vô (In-Degree).
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+Từ khóa đặc trưng:
+- *"Xây B phải build A"*, *"Học Môn 2 Phải pass Môn 1"*, *"Task này phụ thuộc (depends on) task trước."*.
+- Đồ thị Ràng Buộc Hướng, Vô Chu Trình (DAG). Xác định XEM CÓ THỂ HOÀN THÀNH TOÀN BỘ PROJECT KHÔNG (Dò chu trình - Cycle Detection)? Điểm Chết Deadlock?
+
+### ⚙️ Template KAHN 3 BƯỚC THẦN THÁNH
+1. Duyệt List Ràng Buộc (Prerequisites Array) vẽ Map Adjacency Đỉnh -> [Các Đỉnh con hướng ra], Cùng Lúc Đêm Mảng Bậc Vô `InDegree[đỉnh]++`.
+2. Hốt TẤT CẢ thằng `InDegree == 0` (Thằng chả nợ môn nào/ đéo phụ thuộc ai) Đút Vô `Queue` Hàng Chờ Rảnh Việc.
+3. Rút thằng K từ `Queue` Vào Mảng Result. Xong Việc của Thằng K thì Tha còng cho Bọn Lệ Thuộc (Đỉnh con R). `InDegree[R]--`. Bỗng Dưng con R thấy Bậc về `0` (Sạch nợ)? Nhét Tọt ngay R Vào Queue Nối Tiếp! Xong bước 3 lặp lại.
+
+- ĐẾM SIZE của Mảng Kết Quả. Nếu $< N$ → Phát giác Chu Trình Chết Ngắc (Có đứa Nợ Gối đầu 1 Đống không Về Đích Đươc!). 
+
+---
+
+## 🧩 3. Union Find / DSU (Biệt đội Siêu Đặc Nhiệm)
+
+Thay vĩ quét Đồ Thị cực khổ, DSU tạo Hợp Trí các Node Vô Hướng (Graph Component). Rất nhẹ, rất nhanh O(1).
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Lệnh: Gom Vùng (Union), Phá ranh, Gom Kết bè... *"A cho B mượn tiền, C chung nhóm B, thế A chửi C không?"*
+- Từ khóa: Nhóm liên thông, Thành phố cô lập, Bạn của bạn là bạn...
+- Gói Đỉnh Vô Nhóm Chung: Redundant Connection (Dây Cáp Kéo Thừa Làm Chập Mạng). Mày Đang Cùng Lớp tao mà lại kéo Cấu Thêm Link Nối Là Dư Thừa!
+
+---
+
+*← Quay lại [Stack & Heap Patterns](/notes/pattern-stack-heap) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Pattern: Backtracking & DP →](/notes/pattern-backtracking-dp)*

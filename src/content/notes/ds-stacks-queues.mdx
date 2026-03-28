@@ -1,0 +1,437 @@
+---
+title: "Stacks & Queues (Ngăn xếp & Hàng đợi) - LIFO và FIFO"
+date: 2026-03-03T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Stack và Queue là gì?
+
+Hai cấu trúc dữ liệu này cực kỳ đơn giản nhưng **cực kỳ hữu ích**. Hãy tưởng tượng:
+
+### Stack (Ngăn xếp) = **Chồng đĩa** 🍽️
+- Bạn **xếp đĩa** lên trên cùng → lấy cũng từ **trên cùng**
+- **LIFO**: Last In, First Out (Vào sau, Ra trước)
+- Ví dụ: Ctrl+Z (Undo), nút Back trình duyệt
+
+```
+        ┌───────┐
+        │  Top  │  ← Thêm/Lấy ở đây
+        ├───────┤
+        │   C   │
+        ├───────┤
+        │   B   │
+        ├───────┤
+        │   A   │  ← Bottom (đáy)
+        └───────┘
+    Push (thêm) ↑↓ Pop (lấy ra)
+```
+
+### Queue (Hàng đợi) = **Xếp hàng mua vé** 🎫
+- Người đến **trước** được phục vụ **trước**
+- **FIFO**: First In, First Out (Vào trước, Ra trước)
+- Ví dụ: Hàng đợi in ấn, xử lý đơn hàng
+
+```
+    Enqueue (vào)                     Dequeue (ra)
+        →   ┌───┬───┬───┬───┐   →
+            │ D │ C │ B │ A │
+        →   └───┴───┴───┴───┘   →
+           Back              Front
+```
+
+---
+
+## ⏱️ Time Complexity
+
+| Thao tác | Stack | Queue |
+|----------|-------|-------|
+| **Thêm** (Push/Enqueue) | O(1) | O(1) |
+| **Lấy ra** (Pop/Dequeue) | O(1) | O(1) |
+| **Xem đỉnh** (Peek/Front) | O(1) | O(1) |
+| **Tìm kiếm** (Search) | O(n) | O(n) |
+
+> 💡 Cả Stack và Queue đều có thao tác chính O(1) — siêu nhanh!
+
+---
+
+## 📌 Stack - Các thao tác
+
+| Thao tác | Mô tả |
+|----------|--------|
+| **push(item)** | Thêm phần tử lên đỉnh |
+| **pop()** | Lấy phần tử ở đỉnh ra |
+| **peek()** | Xem phần tử đỉnh (không lấy ra) |
+| **isEmpty()** | Kiểm tra stack rỗng? |
+
+## 📌 Queue - Các thao tác
+
+| Thao tác | Mô tả |
+|----------|--------|
+| **enqueue(item)** | Thêm phần tử vào cuối hàng |
+| **dequeue()** | Lấy phần tử ở đầu hàng ra |
+| **front/peek()** | Xem phần tử đầu hàng |
+| **isEmpty()** | Kiểm tra queue rỗng? |
+
+---
+
+## 💻 Code mẫu: Stack
+
+### JavaScript
+
+```javascript
+// ===== STACK - JAVASCRIPT =====
+
+class Stack {
+    constructor() {
+        this.items = [];
+    }
+
+    // Thêm lên đỉnh - O(1)
+    push(item) {
+        this.items.push(item);
+    }
+
+    // Lấy ra từ đỉnh - O(1)
+    pop() {
+        if (this.isEmpty()) return "Stack rỗng!";
+        return this.items.pop();
+    }
+
+    // Xem đỉnh - O(1)
+    peek() {
+        return this.items[this.items.length - 1];
+    }
+
+    isEmpty() {
+        return this.items.length === 0;
+    }
+
+    size() {
+        return this.items.length;
+    }
+
+    print() {
+        console.log("Stack:", this.items.join(" | "));
+    }
+}
+
+// --- Ví dụ: Kiểm tra ngoặc hợp lệ ---
+function isValidBrackets(str) {
+    const stack = new Stack();
+    const pairs = { ")": "(", "]": "[", "}": "{" };
+
+    for (const char of str) {
+        if ("([{".includes(char)) {
+            stack.push(char);  // Mở ngoặc → push
+        } else if (")]}".includes(char)) {
+            if (stack.pop() !== pairs[char]) {
+                return false;  // Không khớp!
+            }
+        }
+    }
+    return stack.isEmpty();  // Stack phải rỗng
+}
+
+console.log(isValidBrackets("({[]})"));  // true ✅
+console.log(isValidBrackets("({[)]}"));  // false ❌
+console.log(isValidBrackets("(("));      // false ❌
+```
+
+### Python
+
+```python
+# ===== STACK - PYTHON =====
+
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        if self.is_empty():
+            return "Stack rỗng!"
+        return self.items.pop()
+
+    def peek(self):
+        return self.items[-1] if not self.is_empty() else None
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+    def size(self):
+        return len(self.items)
+
+# --- Ví dụ: Đảo ngược chuỗi ---
+def reverse_string(text):
+    stack = Stack()
+    for char in text:
+        stack.push(char)
+
+    result = ""
+    while not stack.is_empty():
+        result += stack.pop()
+    return result
+
+print(reverse_string("Hello"))  # "olleH"
+
+# --- Ví dụ: Kiểm tra ngoặc hợp lệ ---
+def is_valid_brackets(s):
+    stack = Stack()
+    pairs = {")": "(", "]": "[", "}": "{"}
+
+    for char in s:
+        if char in "([{":
+            stack.push(char)
+        elif char in ")]}":
+            if stack.is_empty() or stack.pop() != pairs[char]:
+                return False
+    return stack.is_empty()
+
+print(is_valid_brackets("({[]})"))  # True ✅
+print(is_valid_brackets("({[)]}"))  # False ❌
+```
+
+### Rust
+
+```rust
+// ===== STACK - RUST =====
+
+struct Stack<T> {
+    items: Vec<T>,
+}
+
+impl<T: std::fmt::Display> Stack<T> {
+    fn new() -> Self {
+        Stack { items: Vec::new() }
+    }
+
+    fn push(&mut self, item: T) {
+        self.items.push(item);
+    }
+
+    fn pop(&mut self) -> Option<T> {
+        self.items.pop()
+    }
+
+    fn peek(&self) -> Option<&T> {
+        self.items.last()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
+    fn size(&self) -> usize {
+        self.items.len()
+    }
+}
+
+fn is_valid_brackets(s: &str) -> bool {
+    let mut stack = Stack::new();
+    for c in s.chars() {
+        match c {
+            '(' | '[' | '{' => stack.push(c),
+            ')' => if stack.pop() != Some('(') { return false; },
+            ']' => if stack.pop() != Some('[') { return false; },
+            '}' => if stack.pop() != Some('{') { return false; },
+            _ => {}
+        }
+    }
+    stack.is_empty()
+}
+
+fn main() {
+    println!("{}", is_valid_brackets("({[]})")); // true ✅
+    println!("{}", is_valid_brackets("({[)]}")); // false ❌
+}
+```
+
+---
+
+## 💻 Code mẫu: Queue
+
+### JavaScript
+
+```javascript
+// ===== QUEUE - JAVASCRIPT =====
+
+class Queue {
+    constructor() {
+        this.items = [];
+    }
+
+    // Thêm vào cuối hàng - O(1)
+    enqueue(item) {
+        this.items.push(item);
+    }
+
+    // Lấy ra từ đầu hàng - O(1) amortized
+    dequeue() {
+        if (this.isEmpty()) return "Queue rỗng!";
+        return this.items.shift();
+    }
+
+    // Xem phần tử đầu hàng
+    front() {
+        return this.items[0];
+    }
+
+    isEmpty() {
+        return this.items.length === 0;
+    }
+
+    size() {
+        return this.items.length;
+    }
+}
+
+// --- Ví dụ: Xử lý đơn hàng ---
+const orderQueue = new Queue();
+
+// Khách đặt hàng (vào hàng đợi)
+orderQueue.enqueue("Đơn #1: Phở bò");
+orderQueue.enqueue("Đơn #2: Bún chả");
+orderQueue.enqueue("Đơn #3: Cơm tấm");
+
+console.log("Đang xử lý:", orderQueue.dequeue());
+// "Đơn #1: Phở bò" (đến trước, phục vụ trước!)
+
+console.log("Tiếp theo:", orderQueue.front());
+// "Đơn #2: Bún chả"
+```
+
+### Python
+
+```python
+# ===== QUEUE - PYTHON =====
+from collections import deque
+
+class Queue:
+    def __init__(self):
+        self.items = deque()  # deque nhanh hơn list cho queue
+
+    def enqueue(self, item):
+        self.items.append(item)
+
+    def dequeue(self):
+        if self.is_empty():
+            return "Queue rỗng!"
+        return self.items.popleft()  # O(1) với deque!
+
+    def front(self):
+        return self.items[0] if not self.is_empty() else None
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+    def size(self):
+        return len(self.items)
+
+# --- Ví dụ: Xử lý đơn hàng ---
+order_queue = Queue()
+order_queue.enqueue("Đơn #1: Phở bò")
+order_queue.enqueue("Đơn #2: Bún chả")
+order_queue.enqueue("Đơn #3: Cơm tấm")
+
+print(f"Đang xử lý: {order_queue.dequeue()}")
+# "Đơn #1: Phở bò"
+
+# --- Ví dụ: Hot Potato Game ---
+def hot_potato(names, num):
+    """Truyền khoai tây nóng - ai cầm cuối cùng bị loại"""
+    queue = Queue()
+    for name in names:
+        queue.enqueue(name)
+
+    while queue.size() > 1:
+        for _ in range(num):
+            # Truyền: lấy đầu hàng, đưa về cuối
+            queue.enqueue(queue.dequeue())
+        # Loại người đang cầm
+        eliminated = queue.dequeue()
+        print(f"❌ Loại: {eliminated}")
+
+    return queue.dequeue()
+
+winner = hot_potato(["An", "Bình", "Chi", "Dũng", "Em"], 3)
+print(f"🏆 Người thắng: {winner}")
+```
+
+### Rust
+
+```rust
+// ===== QUEUE - RUST =====
+use std::collections::VecDeque;
+
+fn main() {
+    // Rust có VecDeque sẵn, hoạt động như Queue
+    let mut queue: VecDeque<&str> = VecDeque::new();
+
+    // Enqueue (thêm vào cuối)
+    queue.push_back("Đơn #1: Phở bò");
+    queue.push_back("Đơn #2: Bún chả");
+    queue.push_back("Đơn #3: Cơm tấm");
+
+    // Dequeue (lấy từ đầu) - O(1)
+    if let Some(order) = queue.pop_front() {
+        println!("Đang xử lý: {}", order);
+        // "Đơn #1: Phở bò"
+    }
+
+    // Peek (xem đầu hàng)
+    if let Some(next) = queue.front() {
+        println!("Tiếp theo: {}", next);
+        // "Đơn #2: Bún chả"
+    }
+
+    println!("Còn {} đơn trong hàng đợi", queue.len());
+}
+```
+
+---
+
+## 🔄 Stack vs Queue
+
+| Tiêu chí | Stack (LIFO) | Queue (FIFO) |
+|----------|-------------|--------------|
+| Nguyên tắc | Vào sau, ra trước | Vào trước, ra trước |
+| Ví dụ đời thật | Chồng đĩa, Ctrl+Z | Xếp hàng, hàng đợi in |
+| Thêm ở | Đỉnh (top) | Cuối (back) |
+| Lấy ở | Đỉnh (top) | Đầu (front) |
+| Dùng trong | DFS, undo/redo, call stack | BFS, xử lý task, scheduling |
+
+---
+
+## 🌍 Ứng dụng thực tế
+
+### Stack
+| Tình huống | Giải thích |
+|------------|-----------|
+| **Undo/Redo** | Mỗi hành động push vào stack, Ctrl+Z = pop |
+| **Call Stack** | Hàm gọi hàm → xếp chồng, return → pop ra |
+| **Kiểm tra ngoặc** | Push mở ngoặc, pop khi gặp đóng ngoặc |
+| **Duyệt DFS** | Dùng stack để nhớ đường đi |
+| **Chuyển đổi cơ số** | Chia liên tục, push dư, pop ra ngược |
+
+### Queue
+| Tình huống | Giải thích |
+|------------|-----------|
+| **Hàng đợi in ấn** | Tài liệu gửi trước in trước |
+| **Xử lý request** | Server xử lý request theo thứ tự đến |
+| **BFS** | Duyệt theo tầng, node nào vào trước duyệt trước |
+| **Message Queue** | RabbitMQ, Kafka xử lý message tuần tự |
+| **CPU Scheduling** | Process nào đến trước chạy trước |
+
+---
+
+## 🎯 Khi nào dùng?
+
+- ✅ **Stack**: Khi cần xử lý theo thứ tự **ngược** (LIFO) — undo, back, đệ quy
+- ✅ **Queue**: Khi cần xử lý theo thứ tự **thuận** (FIFO) — hàng đợi, BFS, scheduling
+- ❌ Cần truy cập phần tử ở giữa → dùng **Array** hoặc **Linked List**
+
+---
+
+*← Quay lại [Linked List](/notes/ds-linked-lists) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Hashing & Heap →](/notes/ds-hash-tables)*

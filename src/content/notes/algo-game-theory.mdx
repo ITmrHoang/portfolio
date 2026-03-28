@@ -1,0 +1,64 @@
+---
+title: "Game Theory & Nim Game - Thuyết Trò Chơi Toán Học"
+date: 2026-03-29T00:00:00Z
+topic: "DSA"
+---
+
+## ♟ Thuyết trò chơi là gì?
+
+Đừng nhầm nó với thiết kế lập trình Video Game (như Unity, Unreal Engine)!
+
+**Game Theory (Lý thuyết trò chơi tổ hợp)** trong khoa học máy tính là toán học áp dụng để giải các bài "Trò Chơi" giữa hai đối thủ ảo (Alice và Bob) mà ở đó:
+1. Thông tin là MINH BẠCH 100% (Không ai giấu bài, ai cũng thấy mọi nước cờ trên bàn).
+2. Không có yếu tố May Rủi (Bốc xúc xắc, lật bài random).
+3. Đấu trí cực hạng, cả hai luôn sử dụng chiến lược **Hoàn Hảo Nhất (Optimal Play)**. Nếu thua chắc, họ sẽ dồn ép đối thủ mượt mà nhất có thể.
+
+Bài toán yêu cầu bạn dự đoán: *"Nếu cả hai tự chơi nước bốc khôn ngoan nhất, với vị trí hiện tại trên bàn cờ, Alice Mở tay trước thì Ai Sẽ Thắng?"*
+
+---
+
+## 🪨 1. Trò Chơi Kinh Điển của mọi thời đại: The Game of Nim
+
+Luật game bốc đá:
+- Trên bàn có $N$ đống đá. (ví dụ đống 1 có: 5 viên, đống 2 có: 8 viên, đống 3 có: 10 viên...).
+- Hai người luân phiên nhau bốc đá ra khỏi bàn.
+- Ở lượt của mình, người chơi ĐƯỢC PHÉP CHỌN CHÍNH XÁC MỘT ĐỐNG ĐÁ BẤT KỲ, và bốc TỪ ĐÓ đi lượng đá tùy thích (từ 1 viên cho tới vét cạn cả cái đống đó).
+- Kẻ nào đến lượt mình mà không còn viêm đá nào để bốc (bàn trống không) — **BỊ XỬ THUA**. (Tức người bắt viên đá cuối cùng là Người Thắng).
+
+Thay vì phải chạy Brute Force Đệ quy chọc cây DFS to khổng lồ $O(\text{trạng_thái})$, Game Nim được một nhà toán học kỳ tài (C.L. Bouton, 1901) khám phá ra bí mật chỉ bằng **Phép tính Bitwise XOR (`^`)**!
+
+### Bí Quyết Thần Thánh của Nim (Nim-Sum)
+Bạn đem tất cả số lượng đá trong mọi đống cho XOR lại với nhau! Gọi đây là $S = A_1 \oplus A_2 \oplus \dots \oplus A_n$.
+
+- Hiện tại đến lượt bạn đá, mà cái mớ hỗn độn tổng NIM SUM $S = 0$ (Cân Bằng): Bạn đang ở tình thế **BẤT LỢI (Losing State)**! Nếu đối phương siêu việt, bạn chắc chắn Nhe Răng Chết. Bất kỳ viên đá nào bạn bốc ra, hệ thống sẽ BỊ LỆCH khỏi mức 0. Đối thủ sẽ lại bốc chỉnh dòng cân bằng Nim Sum về 0 mà kẹp chết bạn!
+- Nếu $S \neq 0$ (Mất Cân Bằng): Tin vui! Bạn đang ở thế **THẮNG ĐẬM (Winning State)**. Sứ mạng của bạn là bốc một lượng đá thích hợp sao cho chọc cái CỤC Nim Sum kia tụt mẹ về Số 0 (Để thảy trái bom Cân bằng Nim = 0 đó qua cái lượt của Đối thủ!).
+
+Đó! Bạn vừa phá đảo một trò chơi chỉ bằng đúng 1 câu lệnh `XOR` duyệt O(N) vòng.
+
+---
+
+## 🎲 2. Định lý Sprauge-Grundy (SG) - Vô ngã của Trò Chơi
+
+Nhưng lỡ thi đấu CP vòng cao vác ra một game quái gở hơn thì sao?
+- *"Cho cái bàn cờ, mã di chuyển góc L nhưng đéo được lùi"* 
+- *"Đóng đinh lấy xúc xắc lùi chéo chia 2..."*
+
+Nếu Game không còn là Bốc Đống Đá bình thường nữa thì Nim-Sum phá sản?
+KHÔNG BAO GIỜ! **Định lý Sprague-Grundy** phát biểu rằng:
+> **Mọi trò chơi đối kháng ngẫu nhiên tổ hợp (Impartial Game) đều có thể BIẾN ĐỔI CHÍNH XÁC 100% về trò bốc đá NIM truyền thống!**
+
+### Hàm Grundy (G-function) chạy bằng Toán học đệ quy:
+Với mỗi Trạng thái Sân bóng $X$, ta xem từ $X$ có thể đá ra các trạng thái nào tiếp theo $X_1, X_2, \dots$
+Tính chỉ số Grundy: $G(X) = \text{MEX}( G(X_1), G(X_2), \dots )$.
+
+**MEX (Minimum Excluded)** của một tập các số nguyên: Là con số CỰC NHỎ nhất $\ge 0$ mà chả có mặt chó nào trong cái Tập đó!
+- $\text{MEX}( \{1, 2, 3\} )$ là `0`.
+- $\text{MEX}( \{0, 1, 3, 4\} )$ là `2`.
+- $\text{MEX}( \emptyset )$ là `0` (Node thua cạn).
+
+Nhờ vào phép màu Grundy Tính Bằng Cây Đệ Quy Động, nguyên một thế Game kinh dị biến thành đúng Một Cục Đá Áo!
+Lúc này trên bàn có nhiều Thế Cờ phụ ghép lại? Đơn giản, tính Grundy Tụi nó, rồi đập VÀO DÒNG `XOR` TÍNH NIM SUM NHƯ MỘT GAME BỐC ĐÁ BT!
+
+---
+
+*← Quay lại [Network Flow](/notes/algo-network-flow) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Approximation & Randomized Alg. →](/notes/algo-approx-random)*

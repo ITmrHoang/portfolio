@@ -1,0 +1,166 @@
+---
+title: "Mathematical Algorithms - Số học siêu cấp trong DSA"
+date: 2026-03-20T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Mathematical Algorithms là gì?
+
+Đôi khi, để giải một bài toán lập trình, bạn **không cần** dùng cấu trúc dữ liệu phức tạp nào cả. Tất cả những gì bạn cần là một **Định lý Toán học**!
+
+Các giải thuật toán học (Mathematical Algorithms) giúp bạn giải quyết các vấn đề liên quan đến: Số nguyên tố (Prime Numbers), Ước chung lớn nhất (GCD), Lũy thừa nhanh (Fast Exponentiation), và Số học Modular (Modulo).
+
+---
+
+## 🔢 1. Kiểm tra Số nguyên tố (Prime Number) siêu tốc
+
+Số nguyên tố là số chỉ chia hết cho `1` và chính nó (ví dụ: 2, 3, 5, 7, 11).
+
+### Cách cơ bản O(n)
+```javascript
+function isPrime(n) {
+    if (n <= 1) return false;
+    for (let i = 2; i < n; i++) {
+        if (n % i === 0) return false;
+    }
+    return true;
+}
+```
+
+### Cách tối ưu O(√n)
+Bạn không cần kiểm tra đến `n`, chỉ cần kiểm tra đến **Căn bậc 2** của `n` (`Math.sqrt(n)`).
+Ví dụ: `n = 36`. Các cặp nhân: `1x36, 2x18, 3x12, 4x9, 6x6`. Bất kỳ ước số nào lớn hơn 6 (căn 36) đều đã được kiểm tra bởi số nhỏ hơn (phía trước)!
+
+```javascript
+function isPrimeFast(n) {
+    if (n <= 1) return false;
+    if (n <= 3) return true;
+    
+    // Loại trước bội của 2 và 3 để vòng lặp chạy nhanh hơn
+    if (n % 2 === 0 || n % 3 === 0) return false;
+    
+    // Bắt đầu từ 5, bước nhảy là 6 (vì các số nguyên tố >3 đều có dạng 6k ± 1)
+    for (let i = 5; i * i <= n; i += 6) {
+        if (n % i === 0 || n % (i + 2) === 0) return false;
+    }
+    return true;
+}
+```
+
+---
+
+## 🕸️ 2. Sàng Eratosthenes (Sieve of Eratosthenes)
+
+**Bài toán:** In ra TẤT CẢ các số nguyên tố từ `1` đến `N`.
+Nếu gọi hàm `isPrimeFast` `N` lần → Độ phức tạp là $O(N \sqrt{N})$. Quá chậm nếu $N = 10^7$!
+
+**Thuật toán Sàng (Sieve):** 
+1. Tạo mảng boolean `N+1` phần tử, ban đầu cho là `true` (tất cả là số nguyên tố).
+2. Duyệt từ `2` đến `N`: Nếu số `P` là nguyên tố, đánh dấu TẤT CẢ **bội số** của `P` là `false` (vì chúng chia hết cho P).
+3. Những số vẫn còn `true` chính là số nguyên tố!
+
+*Time Complexity:* $O(N \log(\log N))$ — Cực kỳ nhanh!
+
+```python
+def sieve_of_eratosthenes(n):
+    primes = [True] * (n + 1)
+    p = 2
+    while (p * p <= n):
+        # Nếu primes[p] không thay đổi, nó là nguyên tố
+        if primes[p]:
+            # Cập nhật tất cả bội số của p thành False
+            for i in range(p * p, n + 1, p):
+                primes[i] = False
+        p += 1
+        
+    return [p for p in range(2, n + 1) if primes[p]]
+
+print(sieve_of_eratosthenes(30))
+# [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+```
+
+---
+
+## ➗ 3. Thuật toán Euclid: Tìm Ước Chung Lớn Nhất (GCD)
+
+GCD - Greatest Common Divisor của $A$ và $B$ là số lớn nhất chia hết cho cả hai.
+Thuật toán Euclid dùng phép chia lấy dư (`%`) liên tục để tìm GCD trong thời gian siêu ngắn $O(\log(\min(A, B)))$.
+
+> Ý tưởng: `GCD(A, B) = GCD(B, A % B)`. Dừng khi B = 0.
+
+```rust
+// Tìm Ước chung lớn nhất (Greatest Common Divisor)
+fn gcd(mut a: i64, mut b: i64) -> i64 {
+    while b != 0 {
+        let temp = b;
+        b = a % b;
+        a = temp;
+    }
+    a
+}
+
+// Bội chung nhỏ nhất (Least Common Multiple)
+fn lcm(a: i64, b: i64) -> i64 {
+    (a / gcd(a, b)) * b // Tránh tràn số học
+}
+
+fn main() {
+    println!("GCD(48, 18) = {}", gcd(48, 18)); // 6
+    println!("LCM(4, 6) = {}", lcm(4, 6));     // 12
+}
+```
+
+---
+
+## 🚀 4. Lũy thừa Nhanh (Fast Exponentiation / Binary Exponentiation)
+
+Tính $A^N$ (A mũ N). Phép tính thông thường `A * A * ... * A` mất thời gian $O(N)$.
+Nhưng nếu $N = 1,000,000,000$, code của bạn sẽ bị Time Limit Exceeded!
+
+**Giải pháp:** Chia để trị!
+- Nếu N chẵn: $A^N = (A^{N/2}) \times (A^{N/2})$
+- Nếu N lẻ: $A^N = A \times (A^{N-1})$
+
+Độ phức tạp giảm từ $O(N)$ xuống **$O(\log N)$**!
+
+```javascript
+/* Tính a^n một cách siêu tốc */
+function fastPower(a, n) {
+    if (n === 0) return 1;
+    
+    let half = fastPower(a, Math.floor(n / 2));
+    
+    if (n % 2 === 0) {
+        return half * half;
+    } else {
+        return half * half * a;
+    }
+}
+
+console.log(fastPower(2, 10)); // 1024
+```
+
+---
+
+## 🧩 5. Số học Modular (Modulo Arithmetic)
+
+Trong các bài toán CP (Competitive Programming), kết quả có thể khổng lồ (vượt quá `2^64-1`). Đề bài thường yêu cầu: *"Trả về kết quả modulo $10^9 + 7$"*.
+
+**Quy tắc Modulo Cần Thuộc Lòng:**
+- Cộng: `(A + B) % M = ((A % M) + (B % M)) % M`
+- Nhân: `(A * B) % M = ((A % M) * (B % M)) % M`
+- Trừ: `(A - B) % M = ((A % M) - (B % M) + M) % M` (Cộng thêm M để tránh số âm ở một số ngôn ngữ như C++/Java/JS)
+- Chia: Không được tính modulo trực tiếp! Phải dùng **Nghịch đảo modulo (Modular Multiplicative Inverse)** dựa trên Định lý Fermat nhỏ.
+
+---
+
+## 🌍 Tại sao cần các thuật toán này?
+
+Bạn nghĩ toán học chỉ dùng ở trường? Sai bét!
+1. **Mật mã học (Cryptography):** Toàn bộ giao thức HTTPS và mã hóa RSA bảo vệ thẻ tín dụng của bạn dựa trên việc: Chọn 2 số nguyên tố siêu khổng lồ rồi nhân lại. (Dùng Sàng Eratosthenes và Lũy thừa nhanh).
+2. **Blockchain & Crypto:** Sinh chữ ký số và ví cần rất nhiều Modulo Arithmetic trên các đường cong Elliptic (Elliptic Curve).
+3. **Đồ họa Game:** Phân giải màn hình, tỉ lệ khung hình (Aspect Ratio) sử dụng thuật toán tính GCD liên tục.
+
+---
+
+*← Quay lại [Bitwise Operations](/notes/algo-bitwise) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Advanced Dynamic Programming →](/notes/algo-advanced-dp)*

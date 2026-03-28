@@ -1,0 +1,143 @@
+---
+title: "Pattern: LinkedList & Intervals - Fast/Slow Pointers & Phân đoạn"
+date: 2026-04-02T00:00:00Z
+topic: "DSA"
+---
+
+## 🐢 1. Fast & Slow Pointers (Thuật toán Rùa & Thỏ)
+
+Còn gọi là **Floyd's Cycle-Finding Algorithm**, giải quyết mọi phiền phức dính tới Danh sách liên kết (Linked List) hay mảng theo dạng "chuỗi". Thay vì 2 con trỏ chạy ngược chiều như Array, Pattern này sử dụng hai con trỏ xuất phát từ Đầu, nhưng chạy với **vận tốc khác nhau**.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Các bài toán liên quan đến Linked List có **Chu trình (Loop / Cycle)**.
+- Yêu cầu tìm **vị trí đặc biệt** của Linked List nhưng **Không được xài thêm Ký ức (Space `O(1)`)** (VD: Điểm giữa, Tìm node thứ K từ dưới lên).
+
+### ⚙️ Template Kiểm tra Chu trình (Cycle)
+- `Slow`: Nhích 1 bước.
+- `Fast`: Nhảy 2 bước.
+Nếu đường đi có tạo Vòng Lặp, thằng Fast nhảy nhanh cỡ nào rồi cũng bị cuốn vào vòng lặp và đâm sầm đít cắn vào thằng Slow!
+
+```javascript
+function hasCycle(head) {
+    let slow = head;
+    let fast = head;
+    
+    while (fast !== null && fast.next !== null) {
+        slow = slow.next;        // Đi 1 bước
+        fast = fast.next.next;   // Chạy 2 bước
+        
+        if (slow === fast) {
+            return true; // Má ơi dính vòng lặp!
+        }
+    }
+    return false; // Fast tới vạch đích -> Đường thẳng
+}
+```
+
+> 🎯 **Ứng dụng khủng:** Phân đôi rạch ròi 1 Linked List! `Slow` đi 1, `Fast` đi 2. Khi `Fast` chạm đất lề cuối cùng, `Slow` đang đứng chính xác chóc ở Điểm Giữa! (Trung điểm).
+
+---
+
+## 🔁 2. In-place Reversal of a LinkedList (Đảo bão táp tại chỗ)
+
+Đây không hẳn là Thuật toán, mà là kỹ năng Xoay Trục Con Trỏ tối thượng trong Phỏng vấn!
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Yêu cầu **Đảo ngược chiều (Reverse)** toàn bộ hoặc **một đoạn con** danh sách liên kết.
+- Yêu cầu Không gian O(1) (bắt chéo tại chỗ).
+
+### ⚙️ Trục xoay 3 mũi (Prev - Curr - Next)
+Lần lượt bẻ từng mũi tên `next` của Node hiện tại chĩa ngược về Node phía trước.
+
+```python
+def reverse_linked_list(head):
+    prev = None
+    curr = head
+    
+    while curr is not None:
+        next_temp = curr.next  # 1. Nhớ khúc đằng sau, k là rớt mất!
+        curr.next = prev       # 2. Xoay súng bắn ngược về thằng đằng sau (prev)
+        prev = curr            # 3. Kéo thằng đằng sau nhích lên thế chỗ curr
+        curr = next_temp       # 4. Curr nhảy lên chỗ đã lưu lúc nãy!
+        
+    return prev # Trả về Head mới!
+```
+
+---
+
+## 🖇️ 3. Merge Intervals (Hợp nhất các Phân đoạn)
+
+Rất phổ biến ở hệ điều hành xếp lịch Meeting Room. Mỗi đoạn có `[start, end]`.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Mảng của mảng/tuple chứa các khoảng thời gian (Intervals).
+- Yêu cầu Gộp (Merge), tìm phần Lấn cắt (Overlap), Tính thời gian bao trùm rỗng khúc nào...
+
+### ⚙️ Quy trình phá đảo
+MỌI Bài Interval đều phải bắt đầu bằng **Cú Sắp Xếp (Sort)** theo thời gian `start` đầu vào. Không Sort thì thua!
+
+Trục logic gộp 2 khoảng `A` và `B` (Đã sort A lên trước):
+- Khi nào chồng lấn (Overlap)? Khi `B.start <= A.end` (Lịch thằng B dính vô giờ chưa nghỉ của cữ A).
+- Hợp nhất tụi nó: `C = [A.start, max(A.end, B.end)]`.
+
+```cpp
+vector<vector<int>> merge(vector<vector<int>>& intervals) {
+    if (intervals.empty()) return {};
+    
+    // Ưu tiên số 1: Sort! (Sắp theo item[0])
+    sort(intervals.begin(), intervals.end());
+    
+    vector<vector<int>> merged;
+    merged.push_back(intervals[0]); // Đút thằng đầu tiên vào rổ
+    
+    for (int i = 1; i < intervals.size(); i++) {
+        // Rút ra móc so với thằng mới nhất dính trong Rổ Merged
+        auto& last_merged = merged.back();
+        
+        if (intervals[i][0] <= last_merged[1]) {
+            // Có chồng lấn -> Banh cái đít thằng trên cùng bự ra
+            last_merged[1] = max(last_merged[1], intervals[i][1]);
+        } else {
+            // Không chồng lấn -> Cất hẳn bộ lịch mới vào Rổ
+            merged.push_back(intervals[i]);
+        }
+    }
+    
+    return merged;
+}
+```
+
+---
+
+## 🛞 4. Cyclic Sort (Sắp xếp vòng tròn)
+
+Giải quyệt TẤT TẦN TẬT các bài toán lủng mảng, bị thiếu số.
+
+### 🕵️‍♂️ Dấu hiệu nhận biết
+- Đề bài cho Mảng gồm $N$ phần tử mà giá trị của nó chỉ NẰM TRỌNG TRONG KHOẢNG từ `1` đến `N`. Hoặc `0` đến `N`.
+- Hàng tá số bị thiếu quăng lộn xộn, tìm số lậu...
+- Đòi độ phức tạp $O(N)$ Space $O(1)$. Nhìn là lôi Cyclic ra đâm.
+
+### ⚙️ Nghệ thuật đẩy khách vào đúng phòng
+Value = 3 thì đấm nó chui tọt vào ghế số (Index = 2). Cứ Tráo Đổi (Swap) dồn dồn liên hoàn không nghỉ tới khi phòng nào cũng đúng Khách Số đó.
+
+```javascript
+function cyclicSort(nums) {
+    let i = 0;
+    while (i < nums.length) {
+        let correctIndex = nums[i] - 1; // Số 1 phải vào phòng số 0
+        if (nums[i] > 0 && nums[i] <= nums.length && nums[i] !== nums[correctIndex]) {
+            // Cút về đúng phòng mài! (Swap)
+            [nums[i], nums[correctIndex]] = [nums[correctIndex], nums[i]];
+        } else {
+            // Nếu khách này đã đúng số, hoặc đồ phế phẩm -> qua phòng xét khách mới
+            i++;
+        }
+    }
+}
+```
+Sau 1 cú này, Mọi Số Ngay Hàng Kẻ Chỉ. Đi rà 1 luợt `for`, Phòng Số X mà nhét tên Y? Tên Khách Khuyết chính là Phòng Thiếu!
+
+---
+
+*← Quay lại [Array & String Patterns](/notes/pattern-array-string) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Pattern: Stack & Heap →](/notes/pattern-stack-heap)*

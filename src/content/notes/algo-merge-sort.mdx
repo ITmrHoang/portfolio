@@ -1,0 +1,192 @@
+---
+title: "Merge Sort (Sắp xếp trộn) - Chia để trị, nhanh O(n log n)"
+date: 2026-03-09T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Merge Sort là gì?
+
+Hãy tưởng tượng bạn cần **sắp xếp 1000 bài thi**. Một mình làm rất chậm. Nhưng nếu bạn:
+1. **Chia** 1000 bài thành 2 chồng × 500
+2. Mỗi chồng lại **chia** tiếp → 4 chồng × 250
+3. Cứ chia cho đến khi mỗi chồng chỉ có **1 bài** (đã sorted!)
+4. Rồi **trộn** (merge) các chồng lại theo thứ tự
+
+Đó chính là **Merge Sort** — chiến lược **Divide and Conquer** (Chia để trị)!
+
+```
+         [38, 27, 43, 3, 9, 82, 10]
+                    /        \
+         [38, 27, 43, 3]    [9, 82, 10]
+           /        \         /      \
+       [38, 27]  [43, 3]   [9, 82]  [10]
+        /   \     /   \     /   \      |
+      [38] [27] [43] [3]  [9] [82]  [10]   ← Chia đến 1 phần tử
+        \   /     \   /     \   /      |
+       [27, 38]  [3, 43]  [9, 82]   [10]   ← Merge!
+          \        /          \       /
+      [3, 27, 38, 43]     [9, 10, 82]      ← Merge!
+              \                /
+       [3, 9, 10, 27, 38, 43, 82]           ← Done! ✅
+```
+
+---
+
+## ⏱️ Time Complexity
+
+| Trường hợp | Big O |
+|-------------|-------|
+| **Tốt nhất** | O(n log n) |
+| **Trung bình** | O(n log n) |
+| **Xấu nhất** | O(n log n) ✨ **Luôn ổn định!** |
+| **Space** | O(n) ← Cần thêm bộ nhớ |
+| **Stable** | ✅ Có |
+
+> 💡 Merge Sort **luôn** O(n log n) — không phụ thuộc vào dữ liệu đầu vào!
+
+---
+
+## 💻 Code mẫu
+
+### JavaScript
+
+```javascript
+// ===== MERGE SORT - JAVASCRIPT =====
+
+function mergeSort(arr) {
+    // Base case: 1 phần tử → đã sorted
+    if (arr.length <= 1) return arr;
+    
+    // 1. CHIA đôi mảng
+    const mid = Math.floor(arr.length / 2);
+    const left = mergeSort(arr.slice(0, mid));   // Đệ quy nửa trái
+    const right = mergeSort(arr.slice(mid));       // Đệ quy nửa phải
+    
+    // 2. TRỘN hai nửa đã sorted
+    return merge(left, right);
+}
+
+function merge(left, right) {
+    const result = [];
+    let i = 0, j = 0;
+    
+    // So sánh từng phần tử, lấy phần tử nhỏ hơn
+    while (i < left.length && j < right.length) {
+        if (left[i] <= right[j]) {
+            result.push(left[i]);
+            i++;
+        } else {
+            result.push(right[j]);
+            j++;
+        }
+    }
+    
+    // Thêm phần còn lại
+    return [...result, ...left.slice(i), ...right.slice(j)];
+}
+
+// --- Test ---
+console.log(mergeSort([38, 27, 43, 3, 9, 82, 10]));
+// [3, 9, 10, 27, 38, 43, 82]
+```
+
+### Python
+
+```python
+# ===== MERGE SORT - PYTHON =====
+
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+print(merge_sort([38, 27, 43, 3, 9, 82, 10]))
+# [3, 9, 10, 27, 38, 43, 82]
+```
+
+### Rust
+
+```rust
+// ===== MERGE SORT - RUST =====
+
+fn merge_sort(arr: &mut Vec<i32>) {
+    let len = arr.len();
+    if len <= 1 { return; }
+    
+    let mid = len / 2;
+    let mut left = arr[..mid].to_vec();
+    let mut right = arr[mid..].to_vec();
+    
+    merge_sort(&mut left);
+    merge_sort(&mut right);
+    
+    merge(&left, &right, arr);
+}
+
+fn merge(left: &[i32], right: &[i32], result: &mut Vec<i32>) {
+    let (mut i, mut j, mut k) = (0, 0, 0);
+    
+    while i < left.len() && j < right.len() {
+        if left[i] <= right[j] {
+            result[k] = left[i];
+            i += 1;
+        } else {
+            result[k] = right[j];
+            j += 1;
+        }
+        k += 1;
+    }
+    
+    while i < left.len() {
+        result[k] = left[i];
+        i += 1; k += 1;
+    }
+    while j < right.len() {
+        result[k] = right[j];
+        j += 1; k += 1;
+    }
+}
+
+fn main() {
+    let mut numbers = vec![38, 27, 43, 3, 9, 82, 10];
+    merge_sort(&mut numbers);
+    println!("{:?}", numbers);
+    // [3, 9, 10, 27, 38, 43, 82]
+}
+```
+
+---
+
+## 🎯 Khi nào dùng Merge Sort?
+
+- ✅ Cần hiệu suất **ổn định** (luôn O(n log n))
+- ✅ Cần **stable sort** (giữ thứ tự phần tử bằng nhau)
+- ✅ Sắp xếp **Linked List** (không cần truy cập ngẫu nhiên)
+- ✅ Dữ liệu quá lớn → **external sorting** (sort trên đĩa cứng)
+- ❌ Bộ nhớ hạn chế → dùng **Quick Sort** (in-place)
+- ❌ Dữ liệu nhỏ → **Insertion Sort** nhanh hơn
+
+---
+
+*← Quay lại [Insertion Sort](/notes/algo-insertion-sort) | [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Quick Sort →](/notes/algo-quick-sort)*

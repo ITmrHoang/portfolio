@@ -1,0 +1,52 @@
+---
+title: "LeetCode Patterns - 15 Khuôn mẫu Đánh Bại Mọi Bài Toán"
+date: 2026-03-31T00:00:00Z
+topic: "DSA"
+---
+
+## 🤔 Tại sao 1000 bài LeetCode lại quy về 15 Patterns?
+
+Khi giải bài tập trên LeetCode, HackerRank hay thi Codeforces, sai lầm lớn nhất của người học là **cố nhớ từng bài một**. Với hàng ngàn bài tập, việc học thuộc lòng là bất khả thi!
+
+Tuy nhiên, giới lập trình viên đã phát hiện ra rằng: Hầu hết các bài toán đều tuân theo **15 khuôn mẫu (Patterns)** quy luật. Giống như chơi cờ vua, bạn không cần thuộc mọi thế cờ, bạn chỉ cần thuộc các đòn đánh chiến thuật. Khi đối diện một bài toán mới, bạn chỉ việc "Quét Radar" xem câu văn của bài toán có chứa **"Dấu hiệu nhận biết"** nào, từ đó lôi ra Pattern tương ứng để đập nát bài toán trong chớp mắt!
+
+---
+
+## 🧭 Tổng hợp 15 Patterns Quyền Lực nhất
+
+Bạn có thể lưu trang này lại làm "Bùa chú" trước những buổi Phỏng vấn vòng Whiteboard hoặc Live Coding căng thẳng.
+
+### 🧩 Nhóm Array & String (Xử lý Mảng và Chuỗi)
+Khắc phục các vòng lặp `O(N^2)` bằng phép biến hóa `O(N)`.
+1. **[Sliding Window (Cửa sổ trượt)](/notes/pattern-array-string):** Yêu cầu tìm các Chuỗi con, Mảng con liên tiếp thỏa mãn độ lớn / tổng điều kiện... (Dãi kẹo liên tiếp bự nhất, Chuỗi dài nhất không có ký tự lặp).
+2. **[Two Pointers (Hai con trỏ)](/notes/pattern-array-string):** Mảng đã cho Đã Được Sắp Xếp hoặc yêu cầu tìm Cặp 2 số (Pairs), gom nước biển (Trapping Rain Water).
+3. **[Prefix Sum (Mảng cộng dồn)](/notes/pattern-array-string):** Tính chênh lệch, đếm số lượng Mảng con có Tổng bằng K chính xác tới từng Micro giây.
+
+### 🔗 Nhóm Thao Tác Trực Tiếp (Link & Space O(1))
+Xử lý lách luật cực thông minh không cần tốn Bộ Nhớ phụ (No Extra Memory).
+4. **[Fast & Slow Pointers (Rùa & Thỏ)](/notes/pattern-linkedlist-intervals):** Bài toán Linked List có dính Chu Trình (Cycle), Tìm Tâm Điểm Giữa mảng, Chạy vòng lặp vô hạn.
+5. **[In-place Reversal (Xoay trục tại chỗ)](/notes/pattern-linkedlist-intervals):** Lật ngược mớ hỗn độn Linked List (hoặc 1 khúc của nó) không cấp phát biến tạm. Rút đứt từng liên kết chĩa ngược lại.
+6. **[Cyclic Sort (Sắp xếp vòng cung)](/notes/pattern-linkedlist-intervals):** Yêu cầu bài toán nằm đúng trong biên độ `[1, N]`. Yêu cầu tìm số mất tích O(N). Đẩy rớt từng phần tử về đúng Ghế Số Vị Trí của chúng.
+
+### 🌲 Nhóm Mảng Chồng Chéo (Intervals) & Phân rã Trạng Thái
+7. **[Merge Intervals (Gộp phân đoạn)](/notes/pattern-linkedlist-intervals):** Họ nhà bài "Meeting Rooms". Khoản thời gian chồng lấn. Nhớ luôn phải Sort cái Đầu Vô `start` trước!
+8. **[Monotonic Stack (Stack đơn điệu)](/notes/pattern-stack-heap):** Bài toán "Tìm phần tử to hơn/nhỏ hơn Tương lai gần nhất" (Next Greater Element, Daily Temperatures). Chỉ giữ Stack theo thứ tự Xếp tầng Dần.
+9. **[Top 'K' Elements (Khắc tinh Heap)](/notes/pattern-stack-heap):** Tìm K phần tử Bự nhất / Nhỏ nhất / Xuất hiện cực nhiều. **BÍ KÍP:** Tìm Lớn nhất thì nhét chật ních vô `MIN_HEAP`.
+
+### 🧭 Nhóm Đồ Thị Quét Kính (Graph & Tree)
+10. **[Tree BFS (Lan Tỏa Cấp Độ)](/notes/pattern-tree-graph):** Yêu cầu bài "Lấy thông tin Vòm Cây theo Từng Tầng". Hoặc Đồ thị "Tìm đường thoái lui Ngắn Nhất, Ít Chướng ngại Nhất". Xài Queue!
+11. **[Tree DFS (Hố Đen Sâu Thẳm)](/notes/pattern-tree-graph):** Gom góp dữ kiện tính Tổng Dọc Đường Path Sum. Đo đạc sức mạnh Node Con truyền cất lên tay Node Cha.
+12. **[Topological Sort (Kahn's Sort)](/notes/pattern-tree-graph):** Các bài cắm cờ Phụ Thuộc (A làm trước, B nối đuôi). Khai bào In-Degree và Trừ dần.
+13. **[Union Find (DSU - Ranh giới băng đảng)](/notes/pattern-tree-graph):** Gom Vùng. Phá chu trình thừa thãi. A quen B, B chơi C, A tự động bảo kê C.
+
+### 🎭 Nhóm Tư Duy Tính Toán Toàn Vẹn
+14. **[Subsets & Backtracking (Phá Lưới Mọi Cách)](/notes/pattern-backtracking-dp):** Bài hỏi in "Mọi hoán vị", "Toàn bộ tập con", giải Bàn Cờ Hậu. Lặp Bọc Chọn - Đệ Quy - Khai Tử Xóa Trạng Thái.
+15. **[0/1 Knapsack & DP (Balo Ma Thuật)](/notes/pattern-backtracking-dp):** Cho danh sách Món Đồ Đi kèm Cân Nặng và Giá Trị. Một túi rỗng cực đại. Có Chọn đồ không? Xé Cây thành DP 1D đỉnh điểm Tối Đa Hóa Lợi Nhuận.
+
+---
+
+> 🎉 **Bạn đã sẵn sàng?** Hãy nhấp vào các đường link được đóng ngoặc đơn Xanh bên trên để bóc tách Từng Dòng Code Khai Mở Thần Tính của từng Pattern! Đập nát mọi phỏng vấn!
+
+---
+
+*← Quay lại [Tổng quan DSA](/notes/dsa-overview) | Tiếp theo: [Pattern: Array & String](/notes/pattern-array-string)*
