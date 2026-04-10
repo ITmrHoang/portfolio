@@ -1,0 +1,348 @@
+---
+title: "Iterator Pattern"
+date: 2026-04-12T17:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Iterator (Trình lặp đi lặp lại)** là một mẫu thiết kế hành vi (Behavioral Pattern) cho phép bạn duyệt qua (traverse) từng tuần tự yếu tố của một danh sách hoặc tập hợp (Collections) cấu trúc dữ liệu cực kỳ phức tạp (như Tree, Graph, Stack, HashTable) mà không hề lộ lọt hay bắt buộc người dùng (Client) phải thấu hiểu những nền móng cấu trúc phức tạp ẩn giấu đằng sau lớp vỏ của nó.
+
+## 2. Mục đích
+- Bốc tách toàn bộ cấu trúc mã vòng lặp (loop semantics) dư thừa hỗn loạn ra khỏi tập hợp Dữ Liệu gốc rễ. 
+- Mọi Mảnh Data Bự (Collection) hoàn toàn rảnh rỗi. Nó uỷ quyền cái "Lưỡi Cày Lặp" cho một Ông Chuyên Gia Vét Đáy mang tên "Iterator", ai muốn quét Data thì đẻ ra Iterator mà cày, chứ Collection Cốt Ngược không cần sinh Hàm Duyệt.
+- Kẻ Xài Hàm (Client Code) chả cần hiểu Tree là cái gì, Graph Chèo ra sao, Cứ gọi Iterator `hasNext()`, `getNext()` là Moi Móc được Toàn Bộ Căn Rễ Đáy Cấu Cạn.
+
+## 3. Khi nào ứng dụng
+- Quản lý Máy In Hòm Thư, Cây Gia Phả Cấu Trúc File Rễ. Ở File Explorer, Iterator đi múc ra từng File trong từng Fodel nhỏ Mõm một cách theo chiều Rắn Bò hoặc Lướt Mảng Không Cần Dừng Cục Đất (DFS/BFS traversal). 
+- Các Mạng Mẽo App Facebook Newsfeed Load Dữ liệu, Iterator cắn dở cuộn xuống Cào Data, Cào Dữ Liệu Gọi Tiếp Chạm Rút (Paging/Scrolling).
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân chuẩn Single Responsibility (SRP): Khối Dữ Liệu Nhẹ Bóng, Vệ Sinh Chỉ Chứa Data Phẳng Nhẵn Không Có Vành Hàm Loop Rác Bám Đuôi.
+- Tuân chuẩn OCP Nóng Rất Hoàn Mỹ: Thiết Kết Thêm Các Kiểu Duyệt (Duyệt Lùi, Duyệt Bước Đôi, Duyệt DFS) Cực Trội Chưa Từng Tháy Mà Chép App Gốc Nguyên.
+- Tốc Trạm Nhanh Quét Song Song (Parallel Iterator): 10 Đứa Quẹt Mở Cùng 1 Thúng Collection Thoải Góc Trái Không Đè Ép!
+
+**Nhược điểm:**
+- Cấu Trúc Khá Kềnh Càng Rác Đáy Với Mạng Nhỏ. Áp Vào Cái Mảng Có Vài Số Mà Mang Pattern Này Chém Gà Bằng Đao Rồng Giết Vi Khuẩn ! Quá Rườm Rà.
+- Máy Duyệt Đơn Thuần Array Quá Đỉnh Ở Tự Nhiên (For / Foreach), Áp Cấu Này Mất Gốc Băng Tốc!
+
+---
+
+## 5. Ví dụ minh họa (Máy Duyệt Bộ Sưu Tập Bài Hát)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Bộ Rỗng Vỏ Cấu Kéo Máy Duyệt Mầm Lồi
+interface Iterator<T> {
+    hasNext(): boolean;
+    next(): T;
+}
+
+// Bảng Xé Code Khai Chuẩn Gốc Nguồn Vĩ Đại Cho Phép Sinh Thẻ Lặp
+interface SongCollection {
+    createIterator(): Iterator<String>;
+}
+
+// NGƯỜI ĐƯỢC ỦY THÁC CHẠY RUỘT KÉO DATA LÕI MỀM 
+class PlaylistIterator implements Iterator<String> {
+    private collection: Playlist;
+    private position: number = 0; // Trạm Móc Cào Cấu Trục Vị Trí Hiện Tại Biến Đổi 
+
+    constructor(collection: Playlist) {
+        this.collection = collection;
+    }
+
+    public hasNext(): boolean {
+        // Nổ Còi Mắt Radar Xem Còn Mạch Nào Đứng Sau Chấp Không
+        return this.position < this.collection.getItems().length;
+    }
+
+    public next(): String {
+        // Gắn Lòi Con Nóng Đẩy Position Nhảy Móc Sợi Lệnh Khắp
+        const songToPlay = this.collection.getItems()[this.position];
+        this.position += 1;
+        return songToPlay;
+    }
+}
+
+// KHO MÁY LƯU CHỨA NÂNG CHỐNG DỮ LIỆU ĐÁNG GIÁ MẬT KINH DOANH APP NÓNG
+class Playlist implements SongCollection {
+    private items: String[] = [];
+
+    public addSong(song: String): void {
+        this.items.push(song);
+    }
+    public getItems(): String[] {
+        return this.items;
+    }
+
+    // Cơ Sở Tạo Kép Truyền Rễ Vươn Ông Lặp Lôi Đáy (Cú Chạm Điển Hình Pattern Mọi Mảng Cuốn Code Chứa !!)
+    public createIterator(): Iterator<String> {
+        return new PlaylistIterator(this);
+    }
+}
+
+const myNhacTre = new Playlist();
+myNhacTre.addSong("Cắt Đôi Nổi Sầu EDM Tắt Nhịp Lật Ráp");
+myNhacTre.addSong("Nhạc Phi Phi Quẩy Sóng Chìm Bar Vinahouse");
+myNhacTre.addSong("Lạc Trôi Rã Đầu Phá Văng Đĩa Test Khủng");
+
+// Ống Bơm Cạn Mở Đường (Thằng Client Khách Đếch Cần Biết Playlist Viết Chứa Bảng Hash Hay Array Trong Bụng !)
+const mayDuyetNhac = myNhacTre.createIterator();
+
+console.log("\n[Tiến Hành Hệ Đẩy Máy Lột Iterator Bắt Tín Hiệu Cuốn Lệnh Cuốn]:");
+while (mayDuyetNhac.hasNext()) {
+    console.log(" -> Đầu Đọc Đang Cào Đãi Từ Tính Đĩa Đọc Cáp Phát Thép Giòn Ra Loa Bật Bài => ", mayDuyetNhac.next());
+}
+```
+
+### ☕ Java
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+// Interf Bụng Gốc Đẩy Cọc
+interface CoreIterator {
+    boolean hasNext();
+    Object next();
+}
+
+// Bụng Vách Chốt Rừng Không Lật Mã
+interface AggregatorContainer {
+    CoreIterator getIterator();
+}
+
+// Họng Chép Mã Sổ Điển Vỡ Gặp Cặp Nghẽn (Mảng Tên) Khắc
+class NameRepository implements AggregatorContainer {
+    public String names[] = {"Long Kéo", "Hổ Vang", "Sư Tử Cáo", "Chó Chết Chết Bão Cốt Đỉnh"};
+    
+    // Gửi Mầm Hàm Trọng Trích Ổ Máy Quét Băng (Design Tâm Mọi Điểm)
+    public CoreIterator getIterator() {
+        return new NameIterator();
+    }
+    
+    // Cõng Tát Nested Class Góp Cuộn Lõi Máy Cán (Private Vệ Mật Code Sạch)
+    private class NameIterator implements CoreIterator {
+        int index; // Báo Móc Giữ Tọa Vị Dây Nịt Cuốn Đo Cặn Độ Thường Mút 0
+        
+        public boolean hasNext() {
+            if(index < names.length) { return true; }
+            return false;
+        }
+        
+        public Object next() {
+            if(this.hasNext()) { return names[index++]; } // Húp Móc Lõi Kéo Bước Cắt Rỉ Láp!
+            return null;
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        NameRepository databaseVault = new NameRepository();
+        
+        System.out.println("\n[Súng Còi Móc Cuốn Mồi Nòng Hệ List Java]: Lột Cạy Cực Khẽ Kho Bản Danh Sách Quăng Ra Code Lớn Rỗng Bóc Cáp Đáy Ruột Rớt -> ");
+        // Nổ Mã Cho Gọi Ông Giáo Duyệt Mướn !
+        for(CoreIterator iter = databaseVault.getIterator(); iter.hasNext();) {
+            String target = (String)iter.next();
+            System.out.println("     --> Trinh Sát Áp Phát Lọc Lưới Tên Rơi: " + target);
+        }
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Lớp Trói Hạt Hệ Tích (Phím Tối Python Dựng Code Magic Thép Ảo)
+class TeamMembers:
+    def __init__(self):
+        self._members = []
+
+    def add(self, name):
+        self._members.append(name)
+
+    # Magic Method __iter__ Chính Là Máy Lắp Iterator Của Python Rừng Mật Code Rỗng
+    def __iter__(self):
+        return TeamIterator(self._members)
+
+# Gã Râu Rậm Móc Cào Chảo Nặng Python Lọc File (Iterator Cơ Bộ Thừa Cước Lắp Gài Ốc)
+class TeamIterator:
+    def __init__(self, collection):
+        self._collection = collection
+        self._index = 0  # Dày Khỏi Trống Cháy
+
+    def __iter__(self):
+        return self
+
+    def __next__(self): # Kỹ Tuật Magic Phương Móc Cuối Cấu Code Đỉnh 
+        if self._index < len(self._collection):
+            item = self._collection[self._index]
+            self._index += 1
+            return item
+        else:
+            # Ngắt Phát Tắt Dòng Sóng Rã Trạm Loop Bằng Lỗi Lắp Họng Chứa
+            raise StopIteration()
+
+office_group = TeamMembers()
+office_group.add("Anh Hoàng Đỏ Thằng Kê Sếp Mốc")
+office_group.add("Cô Linh Nhân Viên Cạn Máu Rót Nhọt Rống Khóc")
+office_group.add("Cú Mèo Chạy Tool Đêm Ngầm Code Rụng Xương Gãy Code")
+
+print("\n--- HỆ MÁY IN LOOP ĐOÀN ĐỘI CHẠY KHỞI THẮT NÒNG RÓT TẦNG LỚP TUỘT PYTHON ---")
+for person in office_group:
+    print(f" -> Lính Quét Tráo Máy Ngắm Súng Điểm Danh Đầu Lõm Rơi Nọc Độc Gắn: {person}")
+```
+
+### 🐘 PHP
+```php
+<?php
+// PHP Gọi Interface Iterator Đang Sẵn Áp Dòng Gốc Core ! Rất Hiệu Cứng! Code Thủng
+class MusicLibrary implements Iterator {
+    private $tracks = [];
+    private $position = 0;
+
+    public function __construct(array $songs) {
+        $this->tracks = $songs;
+        $this->position = 0; // Trọng Khóa Rìu Kẹp Ngàm Khởi Điểm
+    }
+
+    public function rewind() {
+        echo "Lùi Nhảy Cuốn Đĩa Băng Cát-Xét Cấu Sầm Về Mốc Khởi Số 0 Sạch Đít Chậu\n";
+        $this->position = 0;
+    }
+
+    public function current() { return $this->tracks[$this->position]; }
+    public function key() { return $this->position; }
+    
+    public function next() {
+        echo "Băm Chuyển Pịt Trái Nảy Cút Rót Nhún Sang Bãi Trại Kế Quán Nóng \n";
+        ++$this->position;
+    }
+
+    public function valid() {
+        return isset($this->tracks[$this->position]);
+    }
+}
+
+$nhacCheCuoi = new MusicLibrary(["Đĩa Bay Đi Đâu Lão Mòn Rỉ Nhạc Đáy", "Băng Chết Vấp Bãi Nổi Giông", "Gương Cùn Khóa Gỉ Nhạt Liễu Trống"]);
+
+echo "\n[THÁO BĂNG AUDIO VĂNG CODE NÉN THỐI LỖ PHP MƯỢT RÓT HỘP Iterator]: \n";
+// Foreach Áp Phép Gọi Toán PHP Trúc Nhả Các Hàm Tách Khứa Bên Trong ! Cực Dị !
+foreach ($nhacCheCuoi as $key => $song) {
+    echo "  >> (Vị Trí Vết $key) - Họa Mi Rống La Đẩy Gãy Micro: $song \n\n";
+}
+?>
+```
+
+### 🦀 Rust
+Rust trang bị Iterator mạnh nhất Quả Đất, gọi `Iterator` làm gốc phát rễ Map Filter Mảnh Xèo Xèo Gốc:
+```rust
+struct CustomArray {
+    items: Vec<String>,
+}
+
+// Bảng Struct Hứng Gói Tuột Rết 
+struct CustomArrayIterator<'a> {
+    array: &'a CustomArray,
+    index: usize,
+}
+
+// Mã Gốc Rust Ép Chỉ Khớp Thủng Interface (Trait `Iterator` ) Lọc Chéo Xâu Sợi Chỉ Căng Bỏ Cáp Rỗng Biến
+impl<'a> Iterator for CustomArrayIterator<'a> {
+    type Item = &'a String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index < self.array.items.len() {
+            let result = &self.array.items[self.index];
+            self.index += 1;
+            Some(result) // Sạch Nghẽn Bọc Code Bốc Giấy Áp Tách Đáy Không Tạp Nạn Null Cực Đỉnh
+        } else {
+            None // Nổ Bóng Lô Hổng Cụt Chỉ Báo Tuyến Gắn Vĩnh Rác Trọn
+        }
+    }
+}
+
+impl CustomArray {
+    fn iter(&self) -> CustomArrayIterator {
+        CustomArrayIterator { array: self, index: 0 }
+    }
+}
+
+fn main() {
+    let my_data = CustomArray {
+        items: vec![
+            "Mã Nguồn Rust Rỉ Tét".to_string(),
+            "Biến Reference Lõm Đáy Hủy Tốc Quát Mòn".to_string(),
+            "Borrow Checker Oánh Nát Rễ Khách Hỏng Chân Code Lủng Cụt".to_string(),
+        ],
+    };
+
+    println!("\n[RUST LỢ LUYỆN DUYỆT BỤC TRÚC CẮM DÂY TRUYỀN NƯỚC RÃO ĐỘNG LỰC TƯỚI MÁY MÚT NÚT LÕI MẠNH]:");
+    for item in my_data.iter() {
+        println!("   => Đạn Phun Nước Bắn Rát Góc Bục Tầng Tủ Nổi Điểm Code Tẩy Mốc Dọn Trống Trương: {}", item);
+    }
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+
+// Header Khai Báo Bọn Tuyến Ngầm Giả
+template <typename T>
+class Iterator {
+public:
+    virtual ~Iterator() {}
+    virtual bool hasNext() = 0;
+    virtual T next() = 0;
+};
+
+// Vũng Ngộp Dữ Liệu Đáng Kinh 
+class DataContainer {
+private:
+    std::vector<std::string> collection;
+public:
+    void push(const std::string& item) { collection.push_back(item); }
+    const std::vector<std::string>& getCollection() const { return collection; }
+
+    // Quái Thai Mầm Kéo Dạo Iterator (Lắp Góc Ngầm C++)
+    class ConcreteIterator : public Iterator<std::string> {
+    private:
+        const DataContainer* container;
+        size_t currentPos;
+    public:
+        ConcreteIterator(const DataContainer* c) : container(c), currentPos(0) {}
+        bool hasNext() override {
+            return currentPos < container->getCollection().size();
+        }
+        std::string next() override {
+            return container->getCollection()[currentPos++];
+        }
+    };
+
+    // Bơm Lệnh Cung Khách Bộ Khỏa Lấp
+    Iterator<std::string>* createIterator() const {
+        return new ConcreteIterator(this);
+    }
+};
+
+int main() {
+    DataContainer c;
+    c.push("Ốc Nhồi Đồng Đỏ Bẫy Phân Rã Khúc Ngập Data");
+    c.push("Rùa Lặn Chuỗi Hố Hầm Két Nước Trục");
+
+    std::cout << "\n[Tuyến Cạp C++ Duyệt Lặp Ảo Địch Thẳng Rỗng] Móc Nóc Tách Lớp Data Dày Xóa Đỉnh:\n";
+    Iterator<std::string>* it = c.createIterator();
+    while (it->hasNext()) {
+        std::cout << "   - Trích Truyền Tuyến Phẳng Máy Két Xuống Rìa Bờ Rớt Nghẹt Trắng (Data Lòi Lấp Mảnh) Lấy: " << it->next() << "\n";
+    }
+
+    delete it;
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

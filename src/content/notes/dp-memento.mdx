@@ -1,0 +1,354 @@
+---
+title: "Memento Pattern"
+date: 2026-04-12T20:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Memento (Vật kỷ niệm / Ký ức)** là một mẫu thiết kế hành vi (Behavioral Pattern) cho phép bạn chụp lại (snapshot) và lưu giữ trạng thái nội bộ của một đối tượng tại một thời điểm nhất định, và sau đó có thể khôi phục (restore) lại đối tượng về đúng trạng thái đó mà không làm lộ các chi tiết triển khai cấu trúc đóng gói bên trong của nó.
+
+## 2. Mục đích
+- Tạo cơ chế Hoàn tác (Undo) hoặc Khôi phục trạng thái (Rollback) vững chắc.
+- Ngăn chặn việc đối tượng quản lý Lịch sử (Caretaker) xâm phạm hoặc truy cập trực tiếp vào các biến private, dữ liệu nhạy cảm bên trong của đối tượng gốc (Originator) nhằm bảo vệ tính toàn vẹn (Encapsulation).
+- Tách biệt logic kinh doanh (Business Logic) khỏi logic quản lý các trạng thái hoạt động theo thời gian.
+
+## 3. Khi nào ứng dụng
+- Tính năng Undo/Redo (Hoàn tác) trong các phần mềm Text Editor (Word, Notepad++), lưu trạng thái đoạn text sau mỗi lần gõ, bấm Ctrl+Z để lùi lại "snapshot" trước đó.
+- Tính năng Lưu game (Save game / Checkpoint): Người chơi save game ở vị trí boss, nếu chết thì load lại đúng thông số HP, level, vũ khí từ tấm thẻ Memento lưu trước đó.
+- Giao dịch Cơ sở dữ liệu (Database Transactions) nơi bạn muốn `rollback` (hủy bỏ) lại toàn bộ lệnh nếu có lỗi văng ra giữa chừng.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Bảo toàn tuyệt đối tính đóng gói mã (Encapsulation). Không ai có thể trộm được dữ liệu trong memento nếu không phải là cha đẻ (Originator) tạo ra nó.
+- Tái cấu trúc lịch sử phiên bản cực kì ngăn nắp.
+
+**Nhược điểm:**
+- Gây hao tổn khổng lồ bộ nhớ RAM nếu đối tượng gốc chứa hàng Gigabyte dữ liệu và mỗi Snapshot đều lưu đè một bản vào danh sách Lịch sử vòng lặp.
+- Các ngôn ngữ tự động dọn rác (Garbage Collection) có thể mất tác dụng với Object bị lưu lại trong Memento mảng Lịch sử.
+
+---
+
+## 5. Ví dụ minh họa (Text Editor Undo)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Memento: Lớp Ký ức (Chỉ lưu trữ, không có hàm logic)
+class EditorMemento {
+    constructor(private readonly state: string) {}
+    
+    // Hàm này chỉ có Originator mới hiểu ý nghĩa
+    public getState(): string {
+        return this.state;
+    }
+}
+
+// Originator: Đối tượng Cốt lõi tạo ra Ký ức
+class TextEditor {
+    private content: string = "";
+
+    public type(words: string) {
+        this.content += words;
+        console.log(`[Trình soạn thảo] Nội dung hiện tại: "${this.content}"`);
+    }
+
+    // Chụp hình Ký ức
+    public save(): EditorMemento {
+        console.log("[Trình soạn thảo] Đang tiến hành lưu trạng thái hiện tại...");
+        return new EditorMemento(this.content);
+    }
+
+    // Nạp lại Ký ức cũ
+    public restore(memento: EditorMemento) {
+        this.content = memento.getState();
+        console.log(`[Trình soạn thảo] Đã khôi phục (Undo) về: "${this.content}"`);
+    }
+}
+
+// Caretaker: Người giữ thẻ Ký ức, chỉ lưu cất, không được đọc
+class HistoryManager {
+    private mementos: EditorMemento[] = [];
+    private origin: TextEditor;
+
+    constructor(editor: TextEditor) {
+        this.origin = editor;
+    }
+
+    public backup() {
+        // Lưu thẻ Memento vào kho
+        this.mementos.push(this.origin.save());
+    }
+
+    public undo() {
+        if (!this.mementos.length) {
+            console.log("[Quản lý Lịch sử] Không có trạng thái nào để lùi lại!");
+            return;
+        }
+        const memento = this.mementos.pop();
+        console.log("[Quản lý Lịch sử] Đang khôi phục lại Ký ức trước...");
+        if (memento) this.origin.restore(memento);
+    }
+}
+
+const editor = new TextEditor();
+const history = new HistoryManager(editor);
+
+editor.type("Xin chào! ");
+history.backup(); // Cất trạng thái 1
+
+editor.type("Đây là Memento. ");
+history.backup(); // Cất trạng thái 2
+
+editor.type("Đoạn text lỗi bị sai.");
+
+// Phát hiện gõ sai, bấm Ctrl+Z (Undo)
+history.undo(); // Khôi phục trạng thái 2
+history.undo(); // Khôi phục trạng thái 1
+```
+
+### ☕ Java
+```java
+import java.util.Stack;
+
+class GameMemento {
+    private final int level;
+    private final int health;
+
+    public GameMemento(int level, int health) {
+        this.level = level;
+        this.health = health;
+    }
+    public int getLevel() { return level; }
+    public int getHealth() { return health; }
+}
+
+class PlayerOriginator {
+    private int level = 1;
+    private int health = 100;
+
+    public void takeDamage(int dmg) {
+        health -= dmg;
+        System.out.println("Người chơi trúng đòn! Máu còn: " + health);
+    }
+
+    // Tạo Save Game
+    public GameMemento saveGame() {
+        System.out.println("...Đang lưu game (Checkpoint)...");
+        return new GameMemento(level, health);
+    }
+
+    // Load lại Game
+    public void loadGame(GameMemento memento) {
+        this.level = memento.getLevel();
+        this.health = memento.getHealth();
+        System.out.println("Đã tải game thành công. Level: " + level + " - Máu: " + health);
+    }
+}
+
+class SaveManager {
+    private Stack<GameMemento> history = new Stack<>();
+
+    public void addSave(GameMemento m) { history.push(m); }
+    public GameMemento getLatestSave() { return history.pop(); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        PlayerOriginator hero = new PlayerOriginator();
+        SaveManager memoryCard = new SaveManager();
+        
+        memoryCard.addSave(hero.saveGame()); // Lưu lúc khỏe mạnh
+        hero.takeDamage(80); // Bị quái cắn gần chết
+        
+        System.out.println("Mau dùng vật phẩm khôi phục!");
+        hero.loadGame(memoryCard.getLatestSave()); // Hồi sinh lại
+    }
+}
+```
+
+### 🐍 Python
+```python
+class Memento:
+    def __init__(self, state: str):
+        self._state = state
+
+    def get_saved_state(self) -> str:
+        return self._state
+
+class Document:
+    def __init__(self):
+        self._content = ""
+
+    def write(self, text: str):
+        self._content += text
+        print(f"Bản nháp hiện tại: {self._content}")
+
+    def create_memento(self) -> Memento:
+        return Memento(self._content)
+
+    def restore_memento(self, memento: Memento):
+        self._content = memento.get_saved_state()
+        print(f"Đã hoàn tác. Bản nháp quay về: {self._content}")
+
+class Caretaker:
+    def __init__(self, doc: Document):
+        self._history = []
+        self._document = doc
+
+    def save(self):
+        self._history.append(self._document.create_memento())
+        print("Caretaker: Đã cất ảnh chụp vào kho.")
+
+    def undo(self):
+        if not self._history:
+            return
+        memento = self._history.pop()
+        self._document.restore_memento(memento)
+
+doc = Document()
+manager = Caretaker(doc)
+
+doc.write("Chương 1. ")
+manager.save()
+
+doc.write("Đoạn rác...")
+manager.undo()
+```
+
+### 🐘 PHP
+```php
+<?php
+class Snapshot {
+    private $sqlQuery;
+    public function __construct($query) { $this->sqlQuery = $query; }
+    public function getState() { return $this->sqlQuery; }
+}
+
+class DatabaseTransaction {
+    private $query = "";
+
+    public function runQuery($text) {
+        $this->query .= $text . " ";
+        echo "[DB] Thực thi lệnh: " . $this->query . "\n";
+    }
+
+    public function commit() {
+        return new Snapshot($this->query);
+    }
+
+    public function rollback(Snapshot $snapshot) {
+        $this->query = $snapshot->getState();
+        echo "[DB] Đã Rollback. Trạng thái lệnh lùi về: " . $this->query . "\n";
+    }
+}
+
+$db = new DatabaseTransaction();
+$db->runQuery("INSERT INTO users");
+$savepoint = $db->commit(); // Lưu Checkpoint 
+
+$db->runQuery("DROP TABLE posts"); // Lệnh lỗi tai hại
+$db->rollback($savepoint); // Quay xe gấp!
+?>
+```
+
+### 🦀 Rust
+Rust không có garbage collection, việc lưu trữ Copy Memento được quản lý bộ nhớ trực tiếp.
+```rust
+#[derive(Clone)]
+struct Memento {
+    state_data: String,
+}
+
+struct CoreSystem {
+    state: String,
+}
+
+impl CoreSystem {
+    fn new() -> Self {
+        CoreSystem { state: "".to_string() }
+    }
+
+    fn change_data(&mut self, data: &str) {
+        self.state.push_str(data);
+        println!("Trạng thái hệ thống: {}", self.state);
+    }
+
+    // Chụp ảnh Memento
+    fn save_state(&self) -> Memento {
+        println!(">>> Đã sao chép Memento.");
+        Memento { state_data: self.state.clone() }
+    }
+
+    // Phục hồi từ thẻ memento
+    fn restore_state(&mut self, m: Memento) {
+        self.state = m.state_data;
+        println!("<<< Phục hồi hoàn tất. Hệ thống: {}", self.state);
+    }
+}
+
+fn main() {
+    let mut system = CoreSystem::new();
+    let mut history_stack: Vec<Memento> = Vec::new();
+
+    system.change_data("Phiên bản 1.0 ");
+    history_stack.push(system.save_state());
+
+    system.change_data("Phiên bản 1.1 Bug!");
+    
+    // Rút thẻ nhớ cuối cùng ra và phục hồi
+    if let Some(snapshot) = history_stack.pop() {
+        system.restore_state(snapshot);
+    }
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <string>
+#include <stack>
+#include <memory>
+
+class DrawingMemento {
+private:
+    std::string canvasState;
+public:
+    DrawingMemento(std::string state) : canvasState(state) {}
+    std::string getSavedState() const { return canvasState; }
+};
+
+class CanvasOriginator {
+private:
+    std::string drawings;
+public:
+    void drawShape(std::string shape) {
+        drawings += "[" + shape + "] ";
+        std::cout << "Bản vẽ: " << drawings << "\n";
+    }
+    
+    std::shared_ptr<DrawingMemento> save() {
+        std::cout << "--> Thao tác lưu Bản vẽ.\n";
+        return std::make_shared<DrawingMemento>(drawings);
+    }
+    
+    void restore(std::shared_ptr<DrawingMemento> m) {
+        drawings = m->getSavedState();
+        std::cout << "<-- Cú lùi lịch sử. Bản vẽ hiện tại: " << drawings << "\n";
+    }
+};
+
+int main() {
+    CanvasOriginator app;
+    std::stack<std::shared_ptr<DrawingMemento>> history;
+    
+    app.drawShape("Hình Tròn");
+    history.push(app.save());
+    
+    app.drawShape("Hình Vuông Lỗi");
+    app.restore(history.top());
+    
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

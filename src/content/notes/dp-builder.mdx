@@ -1,0 +1,340 @@
+---
+title: "Builder Pattern"
+date: 2026-04-12T04:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Builder** là một mẫu thiết kế khởi tạo (Creational Pattern) cho phép bạn tách rời quá trình xây dựng một đối tượng phức tạp (complex object) ra khỏi biểu diễn (representation) của nó. Điều này giúp bạn có thể tạo ra các định dạng hoặc phiên bản đối tượng khác nhau nhưng dùng chung một quy trình xây dựng (construction process).
+
+## 2. Mục đích
+- Khắc phục tình trạng "Telescoping Constructor" (Hàm khởi tạo nhồi nhét quá nhiều tham số, ví dụ `new House(4, 2, true, false, true)`).
+- Tránh việc sinh ra hàng loạt Subclass đè lên nhau chỉ để tạo ra các tổ hợp cấu hình (config) khác.
+- Đóng gói code chuyên đảm nhiệm xây dựng khởi tạo vào một đối tượng Builder riêng biệt.
+- Hỗ trợ xây dựng theo chuỗi (method chaining) giúp code sạch và dễ đọc hơn: `builder.setA().setB().setC().build()`.
+
+## 3. Khi nào ứng dụng
+- Khi đối tượng bạn muốn tạo ra chứa rất nhiều thuộc tính tùy chọn (optional parameters) và việc dùng constructor truyền thống trở nên rối rắm.
+- Khi cần tạo ra các bản thể đại diện khác nhau của một sản phẩm (Ví dụ: `HouseBuilder` có thể build `WoodHouse` hoặc `StoneHouse`).
+- Khi quy trình khởi tạo cần được thực thi qua nhiều bước cụ thể (multi-step construction) một cách tuần tự.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ SRP (Single Responsibility Principle) bằng cách tách logic xây dựng ra khỏi logic doanh nghiệp.
+- Cho phép xây dựng đối tượng theo từng bước, có thể tạm dừng hoặc gọi lại các bước.
+- Có thể dùng chung một quy trình xây dựng nhằm tạo thạo các biến thể đối tượng khác nhau.
+
+**Nhược điểm:**
+- Tăng độ phức tạp của mã nguồn tổng thể vì phải khởi tạo hàng loạt các lớp (class) Builder đi kèm với Class chính.
+
+---
+
+## 5. Ví dụ minh họa (House Builder)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Lớp sản phẩm căn bản (Ngôi nhà)
+class House {
+    public doors: number = 0;
+    public windows: number = 0;
+    public hasPool: boolean = false;
+    public hasGarage: boolean = false;
+}
+
+// Giao diện Khởi tạo với các bước xây dựng nhỏ
+interface Builder {
+    reset(): void;
+    buildDoors(num: number): this;
+    buildWindows(num: number): this;
+    buildPool(): this;
+    buildGarage(): this;
+}
+
+// Thợ Xây cụ thể chịu trách nhiệm cho ra Ngôi Nhà
+class ConcreteHouseBuilder implements Builder {
+    private house: House;
+
+    constructor() {
+        this.reset();
+    }
+
+    public reset(): void { this.house = new House(); }
+
+    public buildDoors(num: number): this {
+        this.house.doors = num;
+        return this; // Trả về con trỏ 'this' cho phép Chaining (Xâu chuỗi hàm)
+    }
+
+    public buildWindows(num: number): this {
+        this.house.windows = num;
+        return this;
+    }
+
+    public buildPool(): this {
+        console.log("-> Đang tiến hành đào Hồ Bơi cho căn biệt thự...");
+        this.house.hasPool = true;
+        return this;
+    }
+
+    public buildGarage(): this {
+        console.log("-> Đang thi công xây thêm Gara Bãi Đỗ Xe...");
+        this.house.hasGarage = true;
+        return this;
+    }
+
+    // Lấy thành quả và giải phóng Thợ Xây cho nhà kế tiếp
+    public getResult(): House {
+        console.log("--- Bàn Giao Căn Nhà Hoàn Thiện! ---");
+        const result = this.house;
+        this.reset();
+        return result;
+    }
+}
+
+// Khởi chạy quy trình xây dựng
+const builder = new ConcreteHouseBuilder();
+const luxuryHouse = builder
+    .buildDoors(4)
+    .buildWindows(10)
+    .buildPool()
+    .buildGarage()
+    .getResult();
+
+console.log(luxuryHouse);
+```
+
+### ☕ Java
+```java
+// Lớp ngôi nhà đóng kín
+class House {
+    private int doors;
+    private int windows;
+    private boolean hasPool;
+
+    // Hàm tạo giấu đi (private), chỉ mở cho Builder bên trong gọi
+    private House(HouseBuilder builder) {
+        this.doors = builder.doors;
+        this.windows = builder.windows;
+        this.hasPool = builder.hasPool;
+    }
+
+    // Static Builder Gắn liền với Class
+    public static class HouseBuilder {
+        private int doors;
+        private int windows;
+        private boolean hasPool;
+
+        public HouseBuilder setDoors(int doors) {
+            this.doors = doors;
+            return this;
+        }
+
+        public HouseBuilder setWindows(int windows) {
+            this.windows = windows;
+            return this;
+        }
+
+        public HouseBuilder setPool(boolean hasPool) {
+            System.out.println("Thợ Xây: Đã bổ sung Hồ Bơi vào thiết kế.");
+            this.hasPool = hasPool;
+            return this;
+        }
+
+        public House build() {
+            System.out.println("Thợ Xây: Chính thức xuất xưởng Ngôi Nhà.");
+            return new House(this);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        House house = new House.HouseBuilder()
+            .setDoors(2)
+            .setWindows(4)
+            .setPool(true)
+            .build();
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Lớp Căn Nhà
+class House:
+    def __init__(self):
+        self.doors = 0
+        self.windows = 0
+        self.has_pool = False
+
+# Thợ thi công chính
+class HouseBuilder:
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self._house = House()
+        
+    def set_doors(self, count: int):
+        self._house.doors = count
+        return self
+        
+    def set_windows(self, count: int):
+        self._house.windows = count
+        return self
+        
+    def set_pool(self):
+        print("Bản vẽ thiết kế: Kích hoạt tùy chọn đào Hồ Bơi mini.")
+        self._house.has_pool = True
+        return self
+        
+    def build(self) -> House:
+        print("Xây dựng thành công Căn Nhà. Đang chuẩn bị bàn giao chìa khóa...")
+        result = self._house
+        self.reset()
+        return result
+
+builder = HouseBuilder()
+villa = builder.set_doors(5).set_windows(10).set_pool().build()
+```
+
+### 🐘 PHP
+```php
+<?php
+// Đối tượng Cơ bản
+class House {
+    public $doors = 0;
+    public $hasPool = false;
+}
+
+// Xưởng thi công công trình
+class HouseBuilder {
+    private $house;
+
+    public function __construct() {
+        $this->house = new House();
+    }
+
+    public function setDoors($number) {
+        $this->house->doors = $number;
+        return $this;
+    }
+
+    public function setPool() {
+        echo "[Hệ thống] Đã thêm mảng xây dựng Khu vực Hồ bơi.\n";
+        $this->house->hasPool = true;
+        return $this;
+    }
+
+    public function build() {
+        echo "[Hệ thống] In bảng nghiệm thu Căn Nhà.\n";
+        return $this->house;
+    }
+}
+
+// Khách hàng order
+$builder = new HouseBuilder();
+$house = $builder->setDoors(6)->setPool()->build();
+var_dump($house);
+?>
+```
+
+### 🦀 Rust
+```rust
+#[derive(Debug)]
+struct House {
+    doors: u32,
+    windows: u32,
+    has_pool: bool,
+}
+
+// Template xây nhà Rust (Tách tham số linh hoạt)
+struct HouseBuilder {
+    doors: u32,
+    windows: u32,
+    has_pool: bool,
+}
+
+impl HouseBuilder {
+    fn new() -> Self {
+        HouseBuilder { doors: 0, windows: 0, has_pool: false }
+    }
+
+    fn set_doors(mut self, count: u32) -> Self {
+        self.doors = count;
+        self
+    }
+
+    fn set_windows(mut self, count: u32) -> Self {
+        self.windows = count;
+        self
+    }
+
+    fn set_pool(mut self, has: bool) -> Self {
+        println!("Rust Builder: Kích hoạt module tích hợp Hồ Bơi.");
+        self.has_pool = has;
+        self
+    }
+
+    // Hoàn thiện toàn bộ dữ liệu vào khối thành quả cuối cùng (Struct Object)
+    fn build(self) -> House {
+        println!("Rust Builder: Thành phẩm cấu trúc hoàn trịnh.");
+        House {
+            doors: self.doors,
+            windows: self.windows,
+            has_pool: self.has_pool,
+        }
+    }
+}
+
+fn main() {
+    let house = HouseBuilder::new()
+        .set_doors(4)
+        .set_windows(8)
+        .set_pool(true)
+        .build();
+    println!("{:?}", house);
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+
+// Sản phẩm cơ sở
+class House {
+public:
+    int doors = 0;
+    bool hasPool = false;
+};
+
+// Người thi công C++
+class HouseBuilder {
+private:
+    House house;
+public:
+    HouseBuilder& setDoors(int d) {
+        house.doors = d;
+        return *this;
+    }
+    HouseBuilder& setPool(bool has) {
+        std::cout << "[Thiết kế]: Vẽ thêm Hồ Bơi trên sơ đồ.\n";
+        house.hasPool = has;
+        return *this;
+    }
+    House build() {
+        std::cout << "[Nghiệm Thu]: Trao quyền kiểm soát Ngôi Nhà cho Client.\n";
+        return house;
+    }
+};
+
+int main() {
+    HouseBuilder builder;
+    House h = builder.setDoors(5).setPool(true).build();
+    std::cout << "Số cửa được lắp đặt: " << h.doors << "\n";
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

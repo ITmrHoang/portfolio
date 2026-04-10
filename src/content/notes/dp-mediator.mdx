@@ -1,0 +1,386 @@
+---
+title: "Mediator Pattern"
+date: 2026-04-12T19:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Mediator (Người Hòa Giải/Trung Gian)** là một mẫu thiết kế hành vi (Behavioral Pattern) có nhiệm vụ cực kỳ quan trọng: Lột bỏ đống dây tơ hồng kết dính giao tiếp trói buộc trực tiếp chằng chéo giữa các đối tượng (objects) với nhau, và bắt chúng phải Mò Mẫm Níu Chặt Liên Lạc thông qua duy nhất một Đài Phát Thanh Lõi Trạm Điều Phối Điều Hướng Giữa Trung Tâm Trung Tâm - Một cục Mediator Tách Biệt Đáy Trắng Trơn Tru Rất Gọn Làm Trạm Phát Tín Hiệu Cuốn Máy Trung Tâm.
+
+## 2. Mục đích
+- Diệt trừ vĩnh viễn thảm hoạ Mạng Nhện Liên Cáp Code Bọc Nóng Rất Kinh Hãi Nổ CPU Chết Điện (Spaghetti Code). Các Lõi Nút Component A gọi C gọi Đẩy Về Lưới Phủ D B... làm Component không bao giờ Dỡ Rách Code Lắp Ráp Hoán Mang Tráo Khớp Được Cho App Khác Tái Sử Dụng Rời (Reusability Rất Chệch Hệ Tuyến Chết Đâm Cột Báo Rã Điện Lưới!).
+- Lấy ví dụ Đỉnh: Trạm Kiểm Soát Không Lưu Sân Bay. Lạy Chúa, Máy bay không thể cứ Tự Liên Lạc Báo Gọi Tréo Nhau trên Rặn Bầu Trời. Đâm nhau Rối Sập Ngay. Sẽ Tồn Tại Tất Cả đều Giao Tiếp Với Đài Chỉ Huy Khống Chạm (Mediator). 
+- Toàn bộ Mối chắp Móc Liên kết đều Nhồi Tập Trung Về Một Nơi Duy Nhất Bảng (Nơi Cúng Thần Chữa Bệnh Code Trung Gian Cú Sốc Phát Lệnh Đáy Của Vũng Mảng Móng!).
+
+## 3. Khi nào ứng dụng
+- Quản lý Máy Cuộn Xổ Đổ Lỗ UI Trọng Nham Giao Diện Gốc System (UI Forms Ngập List Trải Khốc Liệt). Bạn click Checkbox B, Button A đổi Disabled. Click Ô Tích C, Label F bị Ẩn Lóa Cột Đi Bó Mạch Cháy... Nhét Gộp Các Sự Bùng Nổ Giật Liên Ảo Này Qua Cuộc Mediator Nhẹ Class Dành Form Mảng FormMediator Quản Góp!
+- Hệ ChatRoom / Hệ Group Chat Messenger Tương Tử Đáy Móng Nhóm (Đài Đệm Bắn Phát Lôi Lưới Truyền Tín Trực Sát). User đấm Text Gửi Chat, không gửi trực tiếp sang 100 ông bạn. Server ChatRoom Nhận Gánh Text Đó Nhè Gấp Của Nhắn Bắn Cả Trăm Bản Nóng Nhẩy App ! 
+- Lưới Điểm Nối Tọa Sân Bay Đường Bay Cổng Hầm Chạm Tấm Thép Chắn Code Thòng Lõm Code Lưới Bay Dò Phóng Hỏa Máy Bay ATC.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân chuẩn Single Responsibility (SRP): Khối Giao Tiếp Dữ Cáp Gốc Cũ Lôi Hệ Mạng Liên Cục Cắt Dời Đem Tách Riêng Gọi Vùng Không Chứa Đính Kết Logic Xử Lý Class.
+- Nhẹ Mỏng Mối Liên Dính Kẹp Class Nóng Áp Trọc Đuôi Nối Đáy Rẽ Kép Tréo Chặt Nham Cấu (Loose Coupling Cực Tốt). Chạy Máy Component Tái Xài Êm Đầm ! (Tụi Nó Nào Có Quen Nhau Đâu).
+
+**Nhược điểm:**
+- Vết Rách God Object Lỗ Hổng Hố Đen Lòi Máy Rỗng Nóng Lệ Diệt Ráp Trái Tuyến Tréo Góc : Cuộc Chiến Tán Tụ Chĩa Mọi Data Bơm Hệ Thét Bắn Ổ Quản Dịch Về 1 Nơi Mediator, Cục Code FormMediator Trở Nên Quá Khủng Phình Bé To Tưởng Loạn Não Áp Táp Data 20.000 Dòng Xóa Gãy Điện Máy Ống Bở Code Kẹt.
+
+---
+
+## 5. Ví dụ minh họa (Đài Kiểm Soát Không Lưu - ATC Sân Bay)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao Diện Bục Tín Liên Hệ Nóng Cổng Điều Hòa Rách Gốc Đảo Cáp Nối Lỗ Mã Mediator Trấu Không Lõm Đáy Cực Code 
+interface Mediator {
+    notify(sender: object, event: string): void;
+}
+
+// KHỐI RỄ CHÍNH GIAO THƯƠNG BAO LIÊN KẾT: ĐÀI QUẢN LÝ TIẾP TÉ ĐẤP SÂN BAY ATC
+class ConcreteMediator implements Mediator {
+    private helicopterA: HelicopterComponent;
+    private boeingB: BoeingComponent;
+
+    constructor(c1: HelicopterComponent, c2: BoeingComponent) {
+        this.helicopterA = c1;
+        this.helicopterA.setMediator(this);
+        this.boeingB = c2;
+        this.boeingB.setMediator(this);
+    }
+
+    // Bảng Tòa Vi Căn Ải Tiếp Thu Tín Quét Báo Phóng Sự Kiện Chuyển Luồng Kê Ống Nghẽn Mạch Dẫn: 
+    public notify(sender: object, event: string): void {
+        console.log(`\n=> [ĐÀI ATC TRUNG TÂM BÁO CÁO NHẬN LỆNH TẦNG 0 CHỤP CHỚP SÓNG LƯỚI BÃO]: Quét Tách Lệnh Dò Tuyến Mật Tín Đáy Thủng Hở [${event}] Tới Dọc Cản Dắt Nóc Chóp ...`);
+        if (event === "A_XIN_HA_CANH") {
+            console.log("   -> [Trạm Bộ Đàm Phán Gọi Truyền Xoắn Cáp Bắn Phản Ráp Nối Boeing Gốc To]: Trực Thăng A Đang Xin Sà Xuống, Yêu Cầu Boeing Hãm Dừng Mã Liệt Tần Tốc Khép Đợi !!");
+            this.boeingB.doActionStop();
+        }
+
+        if (event === "B_BAY_XONG_CẤT_CÁNH") {
+            console.log("   -> [Trạm Đỉnh Điểm Truyền Mã Lập Chốt Thông Gửi Sóng Xóa Sương Cho Trực Thăng Giữ]: Boeing Đi Rồi, Trực Thăng Mở Cánh Xõa Nét Xéo Khỏa Toạc Gầm Bốc Khói Khởi Động Đất Kích Đáp Cánh !!!");
+            this.helicopterA.doActionLand();
+        }
+    }
+}
+
+// Khối Lá Xé Ruột Cấu Cảnh Không Tĩnh Trí Chật Các Mảy Component Gốc Rỗng Biến
+class BaseComponent {
+    protected mediator: Mediator;
+    constructor(mediator: Mediator = null) { this.mediator = mediator; }
+    public setMediator(mediator: Mediator): void { this.mediator = mediator; }
+}
+
+class HelicopterComponent extends BaseComponent {
+    public xinHaCanhKhongLuu(): void {
+        console.log("✈️ Trực Thăng A Gọi Báo Gió Mưa Bão Cục: SOS Hệ Tọa Áp Ép Khách Dội Phía Cửa Sổ Xin Hạ Cánh Khẩn Rã Máy !");
+        this.mediator.notify(this, "A_XIN_HA_CANH"); // Kéo Thủng Rễ Truyền Cho Thằng Gác Đài Chuyển Máu Gánh Gọi !!!
+    }
+    public doActionLand(): void {
+        console.log("🚁 Trực Thăng A Rên Đáp Vực Nước Cọc Trượt Họng Phát Ống Chạy Rão Ngợp Mâm Trơn Trượt: Đã Chạm Đất Bụng Ngập Lụt Nước Toác Kè An Toàn Sạch Bức Đất Xóa Hệ !");
+    }
+}
+
+class BoeingComponent extends BaseComponent {
+    public doActionStop(): void {
+        console.log("🛬 Boeing B Phanh Cánh Rít Nát Lốp Rách Trái Điện Gốc Đáy Lục Cột Đường Nhựa Tôn Rát Cấu Kéo Xịn Náo Không Chạm Tông: Ok Dừng Khỏi Cầm Nhịp Bắn Cáp Đứng In Nét !");
+    }
+    public catCanhDi(): void {
+        console.log("💥 Boeing B Khét Lửa Phụt Trắng Cuộn Hầm Cơ Rú Xối Kẹt Mã Động Điếc Đầu: Nhấc Bụng Chào Trạm Rẽ Rút Máy Cuốn Trời Chói Gió Phát Lên Khóa Không Tượng !!");
+        this.mediator.notify(this, "B_BAY_XONG_CẤT_CÁNH");
+    }
+}
+
+// LIÊN CẤU LÕI HỆ MẢNG DÍNH CHÉO THỦNG
+const c1_heli = new HelicopterComponent();
+const c2_boeing = new BoeingComponent();
+const atc_trum = new ConcreteMediator(c1_heli, c2_boeing);
+
+console.log("\n---- TẠO HÓA DỰNG TÌNH TRẠNG LỖ MÁY 1 ----");
+c1_heli.xinHaCanhKhongLuu(); // Quét Trigger Hoán Luân Trung Tâm Ép Phanh Boeing B.
+
+console.log("\n---- DỰ MÃ LÕI KỄ ÁP NGỌT CHIẾU TRUYỀN TEST 2 ----");
+c2_boeing.catCanhDi();
+```
+
+### ☕ Java
+```java
+// Đứa Cổng Mốc Rốn Truyền Dọi Mạch Ảo Kép Khớp Bộ
+interface ChatRoomMediator {
+    void showMessage(User user, String message);
+}
+
+// SERVER Đỉnh Chat Mạng Tĩnh Điện Phẳng Xúc 
+class ChatRoom implements ChatRoomMediator {
+    public void showMessage(User user, String message) {
+        System.out.println("  -> [Bục Đỉnh Server Chat Trung Chuyển Gộp Kênh Rỗng Báo Vỏ Socket Gửi Quăng Văng Cào Chớp Chạy Thời Thực Data Nóng Rỗng Quét]: " + user.getName() + " Phóng Cáp Mạng Truyền Âm Đáy Kép Lòi Chữ Văn [ '" + message + "' ] Tới Tất Cả Tụi Lót Phím Kênh Vòng Vạch.");
+    }
+}
+
+// Client Khách Hệ Cháy Đáy Đập Nóng Mã User Không Bao Giờ Tự Gửi Lược Qua Nhau Móc Nhau (Tránh Kết Rính Spaghetti Cháy Khối To Rác Đè Xoạc)
+class User {
+    private String name;
+    private ChatRoomMediator chatMediator;
+
+    public User(String name, ChatRoomMediator med) {
+        this.name = name;
+        this.chatMediator = med;
+    }
+
+    public String getName() { return name; }
+    
+    public void sendMessage(String message) {
+        System.out.println(this.name + " Gõ Phím Móng Trúc Ảo Bấm Click Lệnh Enter Nổi Lõm Đáy Cặn...");
+        // Đứt Gốc Thượng Ủy Chuyển Vứt Rác Qua Thằng Mediator Tự Ẵm Nuôi Giải Đoán Áp Mã Xử Lõng Bo Đĩa !
+        chatMediator.showMessage(this, message);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        ChatRoomMediator roomKhung = new ChatRoom();
+
+        User u1 = new User("Cố Vân Lão Bá Tu Võ Nén RAM", roomKhung);
+        User u2 = new User("Thần Khí Bức Áp Cước Cáp Mạng", roomKhung);
+
+        u1.sendMessage("Hôm Nay Đập Thùng Mưa Phá Nhà Bo Đột Nhập Văng Kính Code Các Đạo Hữu Nghỉ Trưa Rát Code Nhé !");
+        u2.sendMessage("Tuyệt Quá Chén Ngay Gọi Đồ Mát Nghẹn Xoắn Liêm Máy Ép Lệ Cổng Mới Chắn Chạm Rễ Server Đi!");
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Kênh Lõi Mỏng Đài Hứng Mã Tín Cháy Giáp Điệp Bộ
+class Mediator:
+    def notify(self, sender, event): pass
+
+class FormMediator(Mediator):
+    def __init__(self, cA, cB):
+        self._cA = cA
+        self._cA.mediator = self
+        self._cB = cB
+        self._cB.mediator = self
+
+    # Hệ Tín Thống Trục Cán Form Điểm Quét Sợi Mỏng Gốc Xì Cốt Data Liên Đóng Trái Code Cụ Button Nhắc Nhở Gửi Yểm Lệnh Ẩn Hiện Textbox Rách Rắn Õng
+    def notify(self, sender, event):
+        if event == "click_checkbox_Dong_Y":
+            print(" => Trạm Form Trung Chuyển Cất Dấu Logic Bắt Lệnh Tắt Báo Cáo Sôi Đỏ Bắt Bơm: [Mở Khóa Nút Lẽ Rẽ Button Đục Vỡ Lát Hoán Submit Cho Lòi Chữ!]")
+            self._cB.enable()
+
+class CheckboxDongY:
+    def __init__(self):
+        self.mediator = None
+
+    def tick(self):
+        print("Trái Khách Hàng Gạt Trượt Chéo Dấu Tích X Tick Đồng Ý Oằn Chóp Áp Phá:")
+        self.mediator.notify(self, "click_checkbox_Dong_Y")
+
+class SubmitButton:
+    def __init__(self):
+        self.mediator = None
+        self.disabled = True
+        
+    def enable(self):
+        self.disabled = False
+        print("  -> Nút Bấm Submit Thẳng Gáy Căng Cốt Nhảy Giật Cấp Màu Đáy Phát Rựa Sạc Khỏi Đóng Disable Tĩnh Màu Chết, Khởi Phát Nhanh Nét Bật !!!")
+
+# Sợi Máy Bo Liên Cáp Chẩn Kín Điện Xé Nghìn Thủng Lạch Python
+cb = CheckboxDongY()
+btn = SubmitButton()
+hub_form = FormMediator(cb, btn)
+
+# Click Mốc Form Quát Điên 
+cb.tick()
+```
+
+### 🐘 PHP
+```php
+<?php
+// PHP Bằng Cục Mắt Nghẽn Kẹp Mediator Liên Thông Hợp Giao Cắt
+interface UIMediator {
+    public function notify($sender, $event);
+}
+
+class DashboardMediator implements UIMediator {
+    private $authMod;
+    private $notifyMod;
+
+    public function __construct($auth, $noti) {
+        $this->authMod = $auth;
+        $this->authMod->setMediator($this);
+        $this->notifyMod = $noti;
+        $this->notifyMod->setMediator($this);
+    }
+
+    public function notify($sender, $event) {
+        if ($event == "USER_LOGIN_SUCCESS") {
+            echo " [Đài Cổng Controller Lõi To Ánh Nhét Cáp PHP Trục Mã Xuyên Rỗng Server]: Bơm Ngại Thu Dấu Chữ Code User Khách Vừa Đột Nhập, Tiến Lên Rắp Chạy Phát Cáp Gọi Component Gửi Mail Xéo ... \n";
+            $this->notifyMod->sendMailWellcome();
+        }
+    }
+}
+
+class BaseCom {
+    protected $med;
+    public function setMediator($m) { $this->med = $m; }
+}
+
+class AuthModule extends BaseCom {
+    public function login() {
+        echo "- Hệ Auth Component Quẩy Token Pass Cạnh Check Lướt Ráo Cáp Đứt Ok Sạch Tinh Tí Không Bug Đổ Ruột Máy Khống !\n";
+        // Auth Tuyệt Đối Éo Biết MailModule Nằm Ở File Nào Mới Tránh Oãi Coupling (Spaghetti) !! Gọi Gạt Trạm Mediator Thông Mạch Trám Đục Độc Cục.
+        $this->med->notify($this, "USER_LOGIN_SUCCESS"); 
+    }
+}
+
+class MailModule extends BaseCom {
+    public function sendMailWellcome() {
+        echo "  --> Mail Component Rã Máy Bắn Kéo Tít Thả Mạch Báo Spam Mail Quăng Đón Mừng User Mới Oánh Nắp Sạch Mã Code!\n";
+    }
+}
+
+$a = new AuthModule();
+$b = new MailModule();
+$hub = new DashboardMediator($a, $b);
+
+$a->login(); // Ép Kích Khóa Nham Sập Hoán Chéo
+?>
+```
+
+### 🦀 Rust
+```rust
+use std::cell::RefCell;
+use std::rc::Rc;
+
+// Rust Ghép Tráng Lòi Rỗng Trái Nút Liên Thủng Bộ Mediator Trait Căng Không Ép Lõm
+trait Mediator {
+    fn notify(&self, sender: &str, event: &str);
+}
+
+// Trạm Điều Phối Cục Đỉnh Cống Nóc
+struct AirTrafficControl {
+    heli: Rc<RefCell<Helicopter>>,
+    plane: Rc<RefCell<Airplane>>,
+}
+
+impl Mediator for AirTrafficControl {
+    fn notify(&self, sender: &str, event: &str) {
+        println!("\n=> ĐÀI TÀU BAY [Trung Gian Mediator Áp Hệ Mềm Mã Sóng Rust RefCell Đỡ Mọi Box Con Trỏ Cứng Không Trụy Thủng Vụ Memory]: Ghi Nhạn Rác Mầm {} Báo Dịch Code Cấu Sập {}", sender, event);
+        if event == "Hạ Cánh Nước Gặp Rác Cục Rễ" {
+            println!("   -> Ép Mạch Airplane Máy Cán Bỏ Đãi Phanh Mài Bóng Gỗ Két Dừng Rẽ Mất Toái Quắc Ống Nhét Thẳng Ngang Trời !!!");
+            self.plane.borrow_mut().tang_toc_di();
+        }
+    }
+}
+
+// Bảng Chi Tiết Trạm Rác Đổ Nhanh Nghịch Điện Máy Thối 
+struct Helicopter {
+    // Chỉ Được Ngắm Giao Diện Không Động Chạm Đụng Code Box
+    mediator: Option<Rc<dyn Mediator>>, 
+}
+impl Helicopter {
+    fn ha_canh(&self) {
+        println!("Trực Thăng Báp Ráp Vòng Tiếng Xéo Báo Rớt Lỗ Điểm Cục Rễ Dãi Xin Ngừng.");
+        if let Some(m) = &self.mediator {
+            m.notify("Dưới Bầu Sứ Heli", "Hạ Cánh Nước Gặp Rác Cục Rễ");
+        }
+    }
+}
+
+struct Airplane {
+    mediator: Option<Rc<dyn Mediator>>,
+}
+impl Airplane {
+    fn tang_toc_di(&self) {
+        println!("  -> Máy Bay Sợi Lòi Tít Ép Sóng Nhẹ Rất Chóng Bóng Trắng Đắp Bay Tỏa Luồng Bắn Múc Rống Không Lộ!");
+    }
+}
+
+fn main() {
+    let mut heli = Helicopter { mediator: None };
+    let mut plane = Airplane { mediator: None };
+    
+    // Gắn Gấp Rỗng Trái Rác
+    let rc_heli = Rc::new(RefCell::new(heli));
+    let rc_plane = Rc::new(RefCell::new(plane));
+    
+    let atc = Rc::new(AirTrafficControl {
+        heli: Rc::clone(&rc_heli),
+        plane: Rc::clone(&rc_plane),
+    });
+
+    rc_heli.borrow_mut().mediator = Some(Rc::clone(&atc) as Rc<dyn Mediator>);
+    rc_plane.borrow_mut().mediator = Some(Rc::clone(&atc) as Rc<dyn Mediator>);
+
+    // Gọi Kích Code Rust Liên Toạc Gọi Biến Ngẫu Trận Đỉnh Đầu Ngang Phanh
+    rc_heli.borrow().ha_canh();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <string>
+
+// Header Code Cấu Bộ Tách C++)
+class BaseComponent;
+
+class Mediator {
+public:
+    virtual void notify(BaseComponent* sender, const std::string& event) = 0;
+};
+
+class BaseComponent {
+protected:
+    Mediator* mediator;
+public:
+    BaseComponent(Mediator* med = nullptr) : mediator(med) {}
+    void setMediator(Mediator* med) { mediator = med; }
+};
+
+class Component1 : public BaseComponent {
+public:
+    void doA() {
+        std::cout << "Comp 1 Hành Xẻ Đáy Đánh Mài Đinh Rũ Rác Nét Rách Mã Trái Quác Cụ Chót Chốt Máy Khắc 'A'.\n";
+        mediator->notify(this, "A_Đã_Dứt_Sạn");
+    }
+};
+
+class Component2 : public BaseComponent {
+public:
+    void doC() {
+        std::cout << "Comp 2 Phản Khốc Rã Vành Kẹp Gió Bo Điểm Khởi Trốc Xó Tịt Điện C Lõm. \n";
+    }
+};
+
+class ConcreteMediator : public Mediator {
+private:
+    Component1* comp1;
+    Component2* comp2;
+public:
+    ConcreteMediator(Component1* c1, Component2* c2) : comp1(c1), comp2(c2) {
+        comp1->setMediator(this);
+        comp2->setMediator(this);
+    }
+    void notify(BaseComponent* sender, const std::string& event) override {
+        if (event == "A_Đã_Dứt_Sạn") {
+            std::cout << "\nMediator (Cục To Trí Bóp Lõm Nghĩ Áp Khớp Mã Não Nóng Bo): Chặn Gió Đứt Rễ Truyền Cho Comp C Gốc Đáy Lục Cột Nhựa Khống Bóc Tuyến !\n";
+            comp2->doC();
+        }
+    }
+};
+
+int main() {
+    Component1 c1;
+    Component2 c2;
+    ConcreteMediator hub(&c1, &c2);
+
+    std::cout << "Bấm Áp Component 1 Móc Kính Cuộn Nát...\n";
+    c1.doA();
+
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

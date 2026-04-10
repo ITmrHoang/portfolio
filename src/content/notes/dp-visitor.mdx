@@ -1,0 +1,343 @@
+---
+title: "Visitor Pattern"
+date: 2026-04-12T22:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Visitor (Gã Khách Viếng Thăm)** là sự lựa chọn kiến trúc chuyên sâu (Behavioral Pattern) giúp tách các thuật toán hoạt động ra khỏi các đối tượng (objects) hoặc lớp mà chúng đang thao tác trên đó. Bạn có thể chèn thêm trực tiếp tính năng mới vào các lớp đang hiện hành bằng cách tạo ra một class `Visitor` ở ngoài có khả năng "chui ngược" vào từng lớp đó thông qua lỗ khóa giao tiếp nhỏ.
+
+## 2. Mục đích
+- Làm sạch cấu trúc Component Class bằng cách loại bỏ và di dời những chức năng vụn vặn không liên quan (ví dụ Exporting logic, Format JSON/XML) ra khỏi vùng Code chính và đẩy ra một object Khách riêng biệt.
+- Áp dụng các tính năng hàng loạt trên một mạng lưới cấu trúc đối tượng Object phức tạp đan xen nhau (như Component Trees, Abstract Code Tree, DOM Tree) mà không phải thay đổi các cấu trúc node bên trong rễ đó.
+- Công nghệ "Double Dispatch" giúp xác định chính xác phương thức cần chạy qua kiểu dữ liệu của Visitor và Element.
+
+## 3. Khi nào ứng dụng
+- Quản lý Máy in/Máy xuất tệp (Exporting systems): Khi bạn có cây tài liệu gồm `KhốiVănBản(Text)`, `Ảnh(Image)`, và `Bảng(Table)`. Thay vì chỉnh nhồi thêm hàm `exportPDF()` vào cả 3 lớp này, bạn tạo gã khách `ReportPDFVisitor` đi vào từng lớp để xử lý và gom kết quả.
+- Trình kiểm tra Mã nguồn (Code Linter Analysis): Duyệt qua cây AST (Gồm NodeBiến, NodeHàm) để móc lỗi mà khỏi cần sửa các Node trên hệ thống.
+- Chức năng Tính toán chiết khấu giỏ hàng linh hoạt: Người mua thẻ hạng Vàng, hạng Đồng... được duyệt lại toàn bộ sản phẩm bằng chức năng Giảm Giá riêng.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ SRP và OCP cực kì hoàn mỹ. Bạn có thể xây 10 loại Visitor mưu đồ mới (XML Export, SQL Execute) để chạy trên Cấu trúc đã có từ lâu đời mà không cần sửa dòng nào trong Object Cũ.
+- Gộp các hành vi hỗn loạn và đa dạng vào trong chung một class Khách. Mọi thứ trở nên dễ kiểm soát.
+
+**Nhược điểm:**
+- Bắt buộc Lớp gốc (Element) BẮT BUỘC PHẢI MỞ cửa một hàm `accept(visitor)` để đón gã khách đó. Nếu quên chưa có, hệ thống không hoạt động.
+- Mỗi lần bạn giới thiệu một Node / Element class MỚI tinh vào đội hình, tất cả các Visitor bạn từng viết trong quá khứ đều phải bị đào hố lên và chỉnh sửa lại vòng `visit` của mình đối với gã class mới này. Rất rủi ro bảo trì.
+
+---
+
+## 5. Ví dụ minh họa (Xuất báo cáo Giỏ Hàng - Shopping Cart)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Thành phần Gốc (Element) - Bắt buộc mở cổng đón Khách
+interface ItemElement {
+    accept(visitor: Visitor): number;
+}
+
+class Book implements ItemElement {
+    constructor(public price: number, public weight: number) {}
+
+    // CỔNG GIAO TIẾP DUY NHẤT: Bắt buộc mở cửa đón nhận các gã Khách thao tác
+    public accept(visitor: Visitor): number {
+        return visitor.visitBook(this);
+    }
+}
+
+class Fruit implements ItemElement {
+    constructor(public pricePerKg: number, public weight: number, public name: string) {}
+
+    public accept(visitor: Visitor): number {
+        return visitor.visitFruit(this);
+    }
+}
+
+// KHÁCH ĐẾN CHƠI (Visitor) - Kẻ mang Thuật toán Phân loại
+interface Visitor {
+    visitBook(book: Book): number;
+    visitFruit(fruit: Fruit): number;
+}
+
+// Gã Khách 1: Hệ thống tính tiền hàng
+class CalculatePriceVisitor implements Visitor {
+    public visitBook(book: Book): number {
+        console.log(`[Thu ngân] Đang quét mã Sách. Chi phí: Giá NY là $${book.price}. Khuyến mại giảm giá $5...`);
+        return book.price > 10 ? book.price - 5 : book.price; 
+    }
+
+    public visitFruit(fruit: Fruit): number {
+        const cost = fruit.weight * fruit.pricePerKg;
+        console.log(`[Thu ngân] Cân hoa quả ${fruit.name}: ${fruit.weight}kg x $${fruit.pricePerKg} = $${cost}`);
+        return cost;
+    }
+}
+
+// Gã Khách 2: Bưu điện muốn vào để tính Tiền Phí Vận Chuyển dựa theo kg nặng 
+// (Giờ Ta hoàn thành chức năng Vận chuyển mà KHÔNG HỀ chạm vào Class Book/Fruit ở trên)
+class ShippingCostVisitor implements Visitor {
+    public visitBook(book: Book): number {
+        console.log(`[Bưu Điện] Gói Sách nặng ${book.weight}kg. Phí cước rẻ.`);
+        return book.weight * 2; 
+    }
+
+    public visitFruit(fruit: Fruit): number {
+        console.log(`[Bưu Điện] Thùng ${fruit.name} nặng ${fruit.weight}kg. Hàng dễ hỏng nên phí Đắt.`);
+        return fruit.weight * 5; 
+    }
+}
+
+// Danh sách Hàng Hóa Cố định
+const cart: ItemElement[] = [
+    new Book(20, 1),
+    new Fruit(5, 3, "Táo Xanh")
+];
+
+console.log("=== KIỂM TRA MÁY TÍNH TIỀN ===");
+const checkoutVisitor = new CalculatePriceVisitor();
+let totalSum = 0;
+for (const item of cart) {
+    totalSum += item.accept(checkoutVisitor);
+}
+console.log(`-> TỔNG THANH TOÁN: $${totalSum}\n`);
+
+
+console.log("=== KIỂM TRA PHÍ VẬN CHUYỂN LOGISTICS ===");
+const shipVisitor = new ShippingCostVisitor();
+let totalShip = 0;
+for (const item of cart) {
+    totalShip += item.accept(shipVisitor);
+}
+console.log(`-> TỔNG PHÍ GIAO HÀNG: $${totalShip}`);
+```
+
+### ☕ Java
+```java
+// Elements
+interface ComputerPart {
+    void accept(ComputerPartVisitor computerPartVisitor);
+}
+
+class Keyboard implements ComputerPart {
+    @Override
+    public void accept(ComputerPartVisitor visitor) { visitor.visit(this); }
+}
+
+class Monitor implements ComputerPart {
+    @Override
+    public void accept(ComputerPartVisitor visitor) { visitor.visit(this); }
+}
+
+// The Visitor
+interface ComputerPartVisitor {
+    void visit(Keyboard keyboard);
+    void visit(Monitor monitor);
+}
+
+class XMLReportVisitor implements ComputerPartVisitor {
+    @Override
+    public void visit(Keyboard keyboard) { System.out.println("-> Hệ thống xuất File XML: Đang ghi mã thiết bị cho <Bàn Phím>."); }
+
+    @Override
+    public void visit(Monitor monitor) { System.out.println("-> Hệ thống xuất File XML: Đang ghi mã thiết bị cho <Màn Hình>."); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        ComputerPart kb = new Keyboard();
+        ComputerPart mo = new Monitor();
+        
+        ComputerPartVisitor exportAI = new XMLReportVisitor();
+        
+        System.out.println("----- KHỞI ĐỘNG XUẤT REPORT CỦA BÊN THỨ 3 -----");
+        kb.accept(exportAI);
+        mo.accept(exportAI);
+    }
+}
+```
+
+### 🐍 Python
+Do Python dùng "Duck Typing", đôi khi ta có thể áp dụng Visitor linh hoạt hơn thông qua mẹo Dispatch (singledispatch). Nhưng format chuẩn OO vẫn hay dùng.
+```python
+from abc import ABC, abstractmethod
+
+class Animal(ABC):
+    @abstractmethod
+    def accept(self, visitor): pass
+
+class Dog(Animal):
+    def accept(self, visitor):
+        visitor.visit_dog(self)
+        
+    def bark(self): return "Gâu Gâu"
+
+class Cat(Animal):
+    def accept(self, visitor):
+        visitor.visit_cat(self)
+        
+    def meow(self): return "Meo Meo Nhỏ"
+
+class AnimalVisitor(ABC):
+    @abstractmethod
+    def visit_dog(self, dog: Dog): pass
+    @abstractmethod
+    def visit_cat(self, cat: Cat): pass
+
+class SoundAnalysisVisitor(AnimalVisitor):
+    def visit_dog(self, dog: Dog):
+        print(f"Hệ thống phân tích hạ âm phát hiện tiếng Chó sủa: {dog.bark()} siêu cường độ.")
+
+    def visit_cat(self, cat: Cat):
+        print(f"Hệ thống ghi nhận âm Meo yếu ớt của con Mèo: {cat.meow()}")
+
+zoo = [Dog(), Cat()]
+analyzer = SoundAnalysisVisitor()
+
+for a in zoo:
+    a.accept(analyzer)
+```
+
+### 🐘 PHP
+```php
+<?php
+interface ComponentVisitor {
+    public function visitButton(ButtonObj $b);
+    public function visitInput(InputObj $i);
+}
+
+interface UIComponent {
+    public function accept(ComponentVisitor $v);
+}
+
+class ButtonObj implements UIComponent {
+    public function accept(ComponentVisitor $v) { $v->visitButton($this); }
+}
+
+class InputObj implements UIComponent {
+    public function accept(ComponentVisitor $v) { $v->visitInput($this); }
+}
+
+class ColorThemeVisitor implements ComponentVisitor {
+    public function visitButton(ButtonObj $b) {
+        echo "Gã Thợ Sơn sơn màu Xanh Lục lên Cúc Nút Bấm.\n";
+    }
+    public function visitInput(InputObj $i) {
+        echo "Gã Thợ Sơn dán viền Đỏ cho Thanh Nhập Chữ.\n";
+    }
+}
+
+$UI = [new ButtonObj(), new InputObj()];
+$painter = new ColorThemeVisitor();
+
+foreach($UI as $component) {
+    $component->accept($painter);
+}
+?>
+```
+
+### 🦀 Rust
+```rust
+trait AnimalVisitor {
+    fn visit_lion(&self, lion: &Lion);
+    fn visit_penguin(&self, penguin: &Penguin);
+}
+
+trait AnimalElement {
+    fn accept(&self, visitor: &dyn AnimalVisitor);
+}
+
+struct Lion;
+impl AnimalElement for Lion {
+    fn accept(&self, visitor: &dyn AnimalVisitor) {
+        visitor.visit_lion(self);
+    }
+}
+
+struct Penguin;
+impl AnimalElement for Penguin {
+    fn accept(&self, visitor: &dyn AnimalVisitor) {
+        visitor.visit_penguin(self);
+    }
+}
+
+// Khách thăm 1: Người khám bệnh
+struct VetDoctor;
+impl AnimalVisitor for VetDoctor {
+    fn visit_lion(&self, _lion: &Lion) {
+        println!("Bác sĩ thú y: Chích ngừa cho Sư Tử và khám răng nanh.");
+    }
+    fn visit_penguin(&self, _penguin: &Penguin) {
+        println!("Bác sĩ thú y: Kiểm tra cánh và độ rụng lông của Chim Cánh Cụt.");
+    }
+}
+
+fn main() {
+    let simba = Lion;
+    let rico = Penguin;
+    
+    let doctor = VetDoctor;
+    
+    // Đón khách
+    simba.accept(&doctor);
+    rico.accept(&doctor);
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+
+class ConcreteElementA;
+class ConcreteElementB;
+
+class Visitor {
+public:
+    virtual void visit(ConcreteElementA* e) const = 0;
+    virtual void visit(ConcreteElementB* e) const = 0;
+};
+
+class Element {
+public:
+    virtual void accept(Visitor* v) = 0;
+    virtual ~Element() {}
+};
+
+class ConcreteElementA : public Element {
+public:
+    void accept(Visitor* v) override { v->visit(this); }
+    void featureA() { std::cout << "[Element A Core Operation].\n"; }
+};
+
+class ConcreteElementB : public Element {
+public:
+    void accept(Visitor* v) override { v->visit(this); }
+    void featureB() { std::cout << "[Element B Advanced Mechanism].\n"; }
+};
+
+class LogicScannerVisitor : public Visitor {
+public:
+    void visit(ConcreteElementA* e) const override {
+        std::cout << "Gã Khách (Visitor) đã thâm nhập thành công. Gửi lệnh kích hoạt: ";
+        e->featureA();
+    }
+    void visit(ConcreteElementB* e) const override {
+        std::cout << "Gã Khách (Visitor) chiếm quyền điều khiển khối B. Kích hoạt: ";
+        e->featureB();
+    }
+};
+
+int main() {
+    ConcreteElementA cA;
+    ConcreteElementB cB;
+    LogicScannerVisitor hacker;
+    
+    cA.accept(&hacker);
+    cB.accept(&hacker);
+    
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

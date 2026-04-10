@@ -1,0 +1,242 @@
+---
+title: "Facade Pattern"
+date: 2026-04-12T10:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Facade** (Mặt Tiền) là một mẫu thiết kế cấu trúc (Structural Pattern) cung cấp một giao diện rút gọn, thống nhất và cấp cao cho một thư viện khổng lồ, một nền tảng phức tạp hoặc một tập hợp dày đặc các lớp (Class) và khung cấu trúc (Framework) ở bên trong.
+
+## 2. Mục đích
+- Làm bình phong lá chắn, giấu nhẹm đi sự phức tạp tột độ của hệ thống bên dưới để Client chả cần bận tâm.
+- Tạo ra một nơi DUY NHẤT để truy cập toàn bộ các thành phần hỗn loạn của Subsystem.
+- Giảm thiểu hoàn toàn lỗi biên dịch chéo do tương tác vớ vẩn râu ria với các lớp thành phần con (Subsystem Classes). Không còn chuyện Client tự đi gõ cổng từng Class một.
+
+## 3. Khi nào ứng dụng
+- Quản lý Máy chủ Mã hóa Video (Video Converter Framework). Trong thư viện ffmpeg chứa hàm ngàn tính năng (Bitrate, AudioReader, VideoWriter, AudioMixer). Thay vì bắt người dùng xài 10 dòng code, bạn trỏ chúng thông qua một cái `VideoConverterFormat` Facade duy nhất.
+- Đặt Hàng Thương Mại Điện Tử (Purchase Order Sys). Để mua xong hàng phải chạy Order System, Payment Gateway, Shipping Logistics, Notification Service. Gói gọn tụi nó vào 1 nút `PurchaseFacade.buy()`.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Nới lỏng coupling dính kết giữa người dùng API Client với các thành tố loạn xà ngầu của Subsystems.
+- Tăng tôc độ học code cực lẹ (Học API Facade chỉ mất 5 phút, học vào Subsystems mất 5 ngày).
+
+**Nhược điểm:**
+- Rủi ro duy nhất khi vô tình biến lớp bình phong Facade thành một "Hố đen God Object" - Nơi chứa tỷ tỷ dòng lệnh nối vào thập cẩm toàn bộ hệ thống làm lớp này trở nên quá khó quản lý về sau.
+
+---
+
+## 5. Ví dụ minh họa (Hệ thống Xử lý Video)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Các Mảnh Ghép Con Khổng Lồ, Phức Tạp Chỗ Sâu Thẳm Hệ Hệ Thống (Subsystems)
+class AudioSystem {
+    public extractSound(): string { return "[Hệ Thống Tiếng]: Tháo rời rọc bỏ toàn bộ đường Track m Thanh Mp3"; }
+}
+class VideoEncoder {
+    public compress(): string { return "[Hệ Thống Codec nén Ảnh]: Chạy Cấu Trúc Nén Băng Thông H264 Cực Căng..."; }
+}
+class NetworkServer {
+    public upload(): string { return "[Trạm Phát Mạng Lan AWS]: Bắn thẳng File lên Dịch Vụ Mây Cổng Tốc Độ Cao Storage."; }
+}
+
+// BỘ TRUNG TÂM PHẢN ỨNG MẶT TIỀN - FACADE CLASS MÁY MÓC TỰ ĐỘNG
+class VideoConverterFacade {
+    private audio: AudioSystem = new AudioSystem();
+    private encoder: VideoEncoder = new VideoEncoder();
+    private server: NetworkServer = new NetworkServer();
+
+    // Duy Nhất Một Nút Bấm "DO EVERYTHING" Đưa Qua Hàm Client Nhấn !!
+    public convertAndUploadObject(): void {
+        console.log("=== MẶT TIỀN FACADE: Bắt đầu bấm nút khởi động dây chuyền xí nghiệp ===");
+        console.log(this.audio.extractSound());
+        console.log(this.encoder.compress());
+        console.log(this.server.upload());
+        console.log("=== THÀNH CÔNG: Mọi công việc hậu trường đều đã được hệ thống giấu mặt làm nốt! ===");
+    }
+}
+
+// Trải Nghiệm Lập Trình Viên Ở Đầu Client (Cực Kỳ Sướng & Thanh Lịch)
+const magicButton = new VideoConverterFacade();
+magicButton.convertAndUploadObject();
+```
+
+### ☕ Java
+```java
+// Hệ Thống Con Chằng Chéo 
+class Memory { public void load() { System.out.println("Máy chủ Trạm A RAM: Gắn Nạp Data Load Tốc Độ Gốc."); } }
+class CPU { public void process() { System.out.println("Chip Set Intel: Vận Chuyển Tính toán Số Liệu Cảnh Phực Tập Lệnh Core 9."); } }
+class HardDrive { public void write() { System.out.println("Ổ Cứng Nhông Samsung Cơ SSD: Khảm Khắc Lưu Lại Trạng Thái Ổn Định Ghi Chép."); } }
+
+// Lớp Bình Phong Vĩ Đại Cản Bước Sóng 
+class ComputerFacade {
+    private Memory r;
+    private CPU c;
+    private HardDrive h;
+
+    public ComputerFacade() {
+        this.r = new Memory();
+        this.c = new CPU();
+        this.h = new HardDrive();
+    }
+
+    public void start() {
+        System.out.println("--> Giao Diện Ngắn Gọn Khởi Động Mặt Tiền PC Máy Tính ...");
+        r.load();
+        c.process();
+        h.write();
+        System.out.println("--> Quy trình Giấu Kín Thành Công Đỉnh Cao. Thiết Bị PC Chạy Bốc Mượt.");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        ComputerFacade myPC = new ComputerFacade();
+        myPC.start(); // Code Cực kì Clean Ngắn Nhanh Sạch 
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Các Thư Viện Chạy Dấu Chân Ngầm Backend
+class DataFetcher:
+    def download_data(self): return "--> Rút Cạn Thông Tin Khủng Lố Xuống Local"
+class DataParser:
+    def parse(self, data): return f"--> Lọc bỏ Cặn Rác Sâu Chuỗi ({data})"
+class DataStorage:
+    def save(self, parsed): print(f"--> Nén Trữ Nhét Về DB {parsed}")
+
+# Bộ Công Cụ Tập Trung Điều Tiết App Độc Đạo (Facade)
+class BigDataFacade:
+    def __init__(self):
+        self.fetcher = DataFetcher()
+        self.parser = DataParser()
+        self.storage = DataStorage()
+
+    def do_full_workflow(self):
+        print("Mặt Tiền Cản Bước Xử Lý: Lôi Kéo Nối Ghép Cú Đấm Khủng Của Hệ Chuỗi Hệ Thống...")
+        raw = self.fetcher.download_data()
+        clean = self.parser.parse(raw)
+        self.storage.save(clean)
+
+# Khách Gọi Bày Cỗ Lên Ăn Ngay !!
+facade = BigDataFacade()
+facade.do_full_workflow()
+```
+
+### 🐘 PHP
+```php
+<?php
+// Ngân Hàng Trung Á Chằng Chéo API
+class BankVerificationDB {
+    public function checkAccount() { echo "--> Đáy Xã Hội 1: Check Trùng Lặp Nợ Xóa Ngân Hàng Đỏ.\n"; }
+}
+class IdentityValidator {
+    public function checkID() { echo "--> API Rối Bời 2: Đọc Nguồn Camera Phát Hiện CMT Căn Cước Giả.\n"; }
+}
+class LoanSystem {
+    public function approve() { echo "--> API Phá Sản Lỗi 3: Ngân Mạng Phát Phiếu Phê Duyệt Tròn.\n"; }
+}
+
+// Giải Pháp Facade Làm Sạch Code Khổng Lồ
+class LoanApprovalFacade {
+    protected $bank;
+    protected $identity;
+    protected $loan;
+
+    public function __construct() {
+        $this->bank = new BankVerificationDB();
+        $this->identity = new IdentityValidator();
+        $this->loan = new LoanSystem();
+    }
+
+    public function applyForLoan() {
+        echo "MẶT TIỀN GIAO DỊCH QUẦY API ĐIỂM TIẾP NHẬN BẦU CỬ:\n";
+        $this->identity->checkID();
+        $this->bank->checkAccount();
+        $this->loan->approve();
+    }
+}
+
+$loanCenter = new LoanApprovalFacade();
+$loanCenter->applyForLoan();
+?>
+```
+
+### 🦀 Rust
+```rust
+struct ParserRustSystem;
+impl ParserRustSystem {
+    fn extract(&self) { println!("--> Bộ Cơ Rust Bóc Tách Băm Thô Parser Chữ Text Sạch Ngon."); }
+}
+
+struct EngineRustOptimizer;
+impl EngineRustOptimizer {
+    fn optimize(&self) { println!("--> Bộ Đẩy Tăng Trưởng Memory Cache Tối Ưu LLVM Engine Quét Vượt Bậc."); }
+}
+
+// Bảng Trung Tâm Tác Dụng Máy Tính Gộp Chung Logic Đảo
+struct CompilerFacade {
+    parser: ParserRustSystem,
+    optimizer: EngineRustOptimizer,
+}
+
+impl CompilerFacade {
+    fn new() -> Self {
+        CompilerFacade {
+            parser: ParserRustSystem,
+            optimizer: EngineRustOptimizer,
+        }
+    }
+
+    fn compile(&self) {
+        println!("TRUNG TÂM ĐIỀU HÀNH THAO TÁC BIÊN DỊCH ỐNG FACADE: (Giấu kín cơ chế gọi)");
+        self.parser.extract();
+        self.optimizer.optimize();
+    }
+}
+
+fn main() {
+    let dev_facade = CompilerFacade::new();
+    dev_facade.compile();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+
+class Engine {
+public:
+    void injectFuel() { std::cout << "--> Xilanh Điểm 1: Đơm Xăng Ép Ngẹt Nhiên Liệu Xả Tiết Kiệm.\n"; }
+};
+
+class Starter {
+public:
+    void ignite() { std::cout << "--> Nguồn Bắt Lửa 2: Quẹt Bật Bu-gi Điện Cơ Phát Cháy Cực Mạnh Lò Nhỏ.\n"; }
+};
+
+// Động Cơ Chùm Thiết Kế Vĩ Đại
+class CarStarterFacade {
+private:
+    Engine engine;
+    Starter starter;
+public:
+    void turnKey() {
+        std::cout << "[Mã Nguồn Ô Tô Bấm Khóa Từ Xa FACADE] Giao Tiếp Chìa Cơ Xoay Khởi Động Cuộn Mầm...\n";
+        engine.injectFuel();
+        starter.ignite();
+    }
+};
+
+int main() {
+    CarStarterFacade remoteVipToken;
+    remoteVipToken.turnKey(); // Code Client Sạch Gọn Làng Quê Đi Quá Ngon !!
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

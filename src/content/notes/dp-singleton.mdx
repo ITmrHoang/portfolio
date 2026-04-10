@@ -1,0 +1,200 @@
+---
+title: "Singleton Pattern"
+date: 2026-04-12T01:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Singleton** là một Creational Design Pattern đảm bảo rằng một Class chỉ có duy nhất **một instance** (một đối tượng) trong suốt vòng đời của ứng dụng, đồng thời cung cấp một điểm giao tiếp toàn cục (global access point) để truy cập đến instance đó.
+
+## 2. Mục đích
+- Kiểm soát quyền truy cập đồng thời vào một tài nguyên duy nhất dùng chung.
+- Đảm bảo rằng dù cho gọi khởi tạo ở nhiều nơi, hệ thống sẽ bảo đảm chỉ trả về cùng một vùng nhớ.
+- Cung cấp tính toàn cục (global state) nhưng được kiểm soát tốt hơn biến toàn cục.
+
+## 3. Khi nào ứng dụng
+- Quản lý kết nối Cơ sở dữ liệu (Database Connection Pool).
+- Quản lý file log, hệ thống ghi đĩa (File System Resource).
+- Truyền load cấu hình của hệ thống (Configuration/Settings Manager).
+- Tích hợp với bộ nhớ Cache chung toàn cục.
+
+## 4. Ưu nhược điểm
+**Ưu điểm:**
+- Đảm bảo chắc chắn rằng một class chỉ có duy nhất một instance.
+- Truy cập global đến instance một cách dễ dàng và đồng bộ.
+- Khởi tạo lười (lazy initialization) - object chỉ được cấp phát bộ nhớ trong lần đầu tiên sử dụng.
+
+**Nhược điểm:**
+- Vi phạm nguyên tắc Single Responsibility Principle (SRP) khi nó vừa quản lý instance riêng, vừa thực thi logic hệ thống.
+- Cản trở quá trình Unit Testing vì state được dùng chung toàn cục.
+- Cần đặc biệt chú ý và xử lý riêng trên môi trường Đa luồng (Multi-threading).
+
+---
+
+## 5. Ví dụ minh họa (Database Connection)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+class Database {
+    // Biến static lưu giữ phiên bản duy nhất
+    private static instance: Database;
+
+    private constructor() {
+        console.log("Đang khởi tạo kết nối Database (Chỉ chạy 1 lần duy nhất)...");
+    }
+
+    public static getInstance(): Database {
+        // Nếu chưa tồn tại thì tạo mới, ngược lại trả về cái cũ
+        if (!Database.instance) {
+            Database.instance = new Database();
+        }
+        return Database.instance;
+    }
+
+    public query(sql: string) {
+        console.log(`Tiến hành gọi lệnh SQL: ${sql}`);
+    }
+}
+
+// Khởi tạo 2 biến độc lập
+const db1 = Database.getInstance();
+const db2 = Database.getInstance();
+
+// Kết quả so sánh vùng nhớ
+console.log(db1 === db2); // Output: true (Hai biến mượn chung 1 object)
+```
+
+### ☕ Java
+```java
+public class Database {
+    // Từ khóa volatile đảm bảo an toàn truy cập luồng (Thread-safe)
+    private static volatile Database instance;
+
+    private Database() {
+        System.out.println("Đang thiết lập kết nối đến Cơ sở Dữ liệu...");
+    }
+
+    public static Database getInstance() {
+        // Kiểm tra Double-checked locking 
+        if (instance == null) {
+            synchronized (Database.class) { 
+                if (instance == null) {
+                    instance = new Database();
+                }
+            }
+        }
+        return instance;
+    }
+}
+```
+
+### 🐍 Python
+```python
+class Database:
+    _instance = None
+
+    def __new__(cls):
+        # Override hàm cấp phát vùng nhớ Python
+        if cls._instance is None:
+            print("Khởi chạy kết nối Database tập trung...")
+            cls._instance = super(Database, cls).__new__(cls)
+        return cls._instance
+
+db1 = Database()
+db2 = Database()
+print(db1 is db2) # Output: True (Cùng xài chung RAM)
+```
+
+### 🐘 PHP
+```php
+<?php
+class Database {
+    private static $instance = null;
+
+    private function __construct() {
+        echo "Khởi tạo máy chủ CSDL duy nhất toàn cầu...\n";
+    }
+
+    // Khóa luôn hàm Clone và Wakeup để cấm sinh lỗi Object dư thừa
+    private function __clone() {}
+    public function __wakeup() {}
+
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
+    }
+}
+
+$db1 = Database::getInstance();
+$db2 = Database::getInstance();
+
+var_dump($db1 === $db2); // Output: bool(true)
+?>
+```
+
+### 🦀 Rust
+```rust
+use std::sync::{Arc, Mutex, OnceLock};
+
+#[derive(Debug)]
+struct Database {
+    connection_string: String,
+}
+
+impl Database {
+    // Rust xài OnceLock để đảm bảo tính duy nhất và an toàn luồng tuyệt đối
+    fn get_instance() -> Arc<Mutex<Database>> {
+        static INSTANCE: OnceLock<Arc<Mutex<Database>>> = OnceLock::new();
+        INSTANCE.get_or_init(|| {
+            println!("Đang kích hoạt Mạch dữ liệu gốc...");
+            Arc::new(Mutex::new(Database {
+                connection_string: "localhost:5432".to_string(),
+            }))
+        }).clone()
+    }
+}
+
+fn main() {
+    let db1 = Database::get_instance();
+    let db2 = Database::get_instance();
+    
+    // Kiểm tra con trỏ trỏ về cùng một vùng Arc memory
+    assert!(Arc::ptr_eq(&db1, &db2)); 
+    println!("Thử nghiệm thành công! DB1 và DB2 khớp nhau!"); // Output test success
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+
+class Database {
+private:
+    Database() { std::cout << "Mở cổng giao tiếp Database Server...\n"; }
+    ~Database() {}
+    
+    // Xóa bộ dựng copy (Copy Constructor) để chống nhái hàng
+    Database(const Database&) = delete;
+    Database& operator=(const Database&) = delete;
+
+public:
+    static Database& getInstance() {
+        // Biến static tự tạo một lần duy nhất theo chuẩn C++11
+        static Database instance; 
+        return instance;
+    }
+};
+
+int main() {
+    Database& db1 = Database::getInstance();
+    Database& db2 = Database::getInstance();
+    
+    std::cout << "Kiểm tra địa chỉ nhớ: " << (&db1 == &db2) << std::endl; // Output: 1 (True)
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

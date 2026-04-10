@@ -1,0 +1,386 @@
+---
+title: "Command Pattern"
+date: 2026-04-12T15:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Command (Câu lệnh)** là mẫu thiết kế hành vi (Behavioral Pattern) có nhiệm vụ đóng gói (encapsulate) một yêu cầu hành động (request) thành một đối tượng độc lập chứa đầy đủ toàn bộ thông tin về yêu cầu đó. Việc biến "lệnh" thành đối tượng này sẽ cho phép bạn truyền các request như là các đối số (arguments) vào hàm, xếp hàng (queue) hoặc ghi log các lời gọi hệ thống, và cực kì dễ dàng phát triển hệ thống hoàn tác (undoable operations).
+
+## 2. Mục đích
+- Loại bỏ sự trói buộc Coupling trực tiếp giữa đối tượng Gọi Lệnh (Invoker / Nút Bấm) và đối tượng Thực Thi Rút Lõi Lệnh Khủng (Receiver / Máy Ghi Đĩa, TV). Nút bấm không cần biết TV là cái gì, nó chỉ biết Kích Hoạt cái Cục Cất Giấu Lệnh (Command) bên trong bụng TV.
+- Tạo nền tảng móng cực xịn cho các tính năng vĩ mô: Undo/Redo đa tầng, lên Thạch Lịch Lịch Trình (Schedule) gọi hàm sau nửa tiếng (CRON Job), Thu Âm Cáp Lệnh Macro Combo.
+- Quy củ hóa việc Request gửi lung tung trong Runtime System Lập Trình Gốc Căn Cốt.
+
+## 3. Khi nào ứng dụng
+- Phần Mềm Chỉnh Sửa Hình Ảnh (Photoshop): Mọi thao tác dập xóa Cọ vẽ, Cắt Ảnh, Đổ màu đều đẻ ra 1 Class `Command`. Nếu Sai tay Tét Quệt lộn, Cứ việc Lọ Mò ấn `Ctrl + Z`, Hệ Thống Undo Stack móc móc từng cục Command rác vác ra và gọi lệnh Chế Độ Lùi hàm Khôi Phục Cháy Nổ Lõi Phẳng Cuộn Băng Ngược Mốc Thời Gian Không Phai.
+- Game Chiến Thuật, Các Tính Năng Chỉnh HotKey Thay Nút, Map Đi Phím Chuột Lướt Code Ngắn Combo QWE. Nút Q kích Command Xoạc. 
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân chuẩn Single Responsibility (SRP): Kẻ Gửi Lệnh và Kẻ Xử Lệnh cãi nhau Mãi Không Nhìn Mặt Nhau Cả. Tiền Hô Hậu Ủng Quá Tuyết!
+- Áp Dụng Được Cơ Chế Bánh Răng Hoàn Tác Cứu Sập Lỗi Chấn Động Undo Redo Trứ Danh Thế Kỷ Code Lõi Chìm Máy Gửi Lưu Lại !
+- Bạn Cất Gọi Vứt Thêm Hàng Trăm Loại Command Mới Đè Trộn Mix Đùn Nhau Quét Combo Đánh Tướng Dã Man Mà Lõi Chẳng Vỡ Bục Tróc (Open Closed Principle Dễ Yếu Mềm).
+
+**Nhược điểm:**
+- Chỉ Vì Thỏa Thích Tách Lệnh Dài Chữ Viết Class Mỏ Rộng, Mã Nguồn Code Băng Thông File Phình Trướng Ra Rất Rỗng Nhẹ Lõi Nhiều Dã Man Vì Tạo Command Nhỏ 1 Dòng Khống. Dính Lầy !!
+
+---
+
+## 5. Ví dụ minh họa (Bật/Tắt Đèn Thông Minh Bằng Remote)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Bộ Khuôn Command Tối Cao Rỗng
+interface Command {
+    execute(): void;
+    undo(): void;
+}
+
+// BỘ MÁY XỬ NGẬT VẬT LÝ NHẠY LÕI (Receiver) - Cái Cục Tiếp Thu Bạo Điện Vỡ
+class SmartLight {
+    public turnOn() { console.log("=> [Bóng Đèn Điện Hệ Rễ Trần]: Bật Nháy Điện Cực Mở Nguồn Bơm Máu Sáng Chói Lóa Khắp Không Gian Chật Hẹp Bức Màn !"); }
+    public turnOff() { console.log("=> [Bóng Đèn Điện Mù Lòa Khóa Lõm Cáp]: Tắt Khoán Quắc Công Tắc Đen Ngịt Căn Phòng Tối Tăm Ma Quỷ ..."); }
+}
+
+// --- Cục Đá Kích Tên Lửa Lệnh Nháy Sóng ---
+
+class TurnOnLightCommand implements Command {
+    constructor(private light: SmartLight) {}
+
+    public execute(): void {
+        console.log("-> Bàn Tay Khách Hàng Gọi Ép Xuống Lệnh BẬT ĐÈN Nóng Trái Máy: ");
+        this.light.turnOn();
+    }
+    public undo(): void {
+        console.log("<- Trái Tim Hoàn Tác Bẻ Gẫy Nghịch Thời Gian BẬT Trở Lại Đáy Hố TẮT MÙ ĐÈN MẠCH !");
+        this.light.turnOff();
+    }
+}
+
+class TurnOffLightCommand implements Command {
+    constructor(private light: SmartLight) {}
+
+    public execute(): void {
+        console.log("-> Dây Tín Gửi Xuyên Thủng Vỏ Lệnh TẮT Lửa: ");
+        this.light.turnOff();
+    }
+    public undo(): void {
+        console.log("<- Máy Khâu Thời Gian Trả Đĩa Cáp: Dật Ngược Trái Lửa Khớp Kép Hút Cáp Bật Máu Gốc Sáng Rực Cháy Bóng Hỏng Nham Thạch.");
+        this.light.turnOn();
+    }
+}
+
+// (Invoker) CHIẾC REMOTE ĐIỀU KHIỂN RỖNG TUẾCH HOẠT ĐỘNG CHỐNG CÀI CHỐT LỆNH MỞ CỬA 
+class SimpleRemoteControl {
+    private history: Command[] = [];
+
+    // Chặn Phát Bấm Nút Gọi Vô Tư Hàm Chạm Điện
+    public triggerCommand(command: Command) {
+        command.execute();
+        this.history.push(command); // Log Ký Lại Vô Sổ Tang Chứng Lưu Trữ !
+    }
+
+    // Ctrl + Z Nhấn Cúc Undo Lì Khống Thuật Ảo Lỗi Mốc !
+    public pressUndo() {
+        if (this.history.length > 0) {
+            const lastCmd = this.history.pop();
+            console.log("  >>> Người Dùng Trỏ Chuột Kéo Dây Lệnh Nút Lùi Ctrl+Z Khẩn Cấp Bỏ Cháy: ");
+            lastCmd?.undo();
+        }
+    }
+}
+
+// KHAI TEST MÁY MÓC TỰ ĐỘNG THÔNG MINH IoT:
+const lightBulb = new SmartLight(); // Bộ Máy
+const onCmd = new TurnOnLightCommand(lightBulb); // Cục Lệnh Nắm Cố Gắn Khung
+const offCmd = new TurnOffLightCommand(lightBulb);
+
+const remoteHub = new SimpleRemoteControl(); // Remote App Điện Thoại Gỗ Rỗng
+
+// Nhấp Click Hành Lỗi Kép Trộn Cháy
+remoteHub.triggerCommand(onCmd);
+remoteHub.triggerCommand(offCmd);
+
+// Nghĩ Lại Hơi Sai Lầm !!! Cứu Vãn Ấn Lùi Gốc
+remoteHub.pressUndo(); // Hàm Off Rớt => Bật Mở Lại Chớp !
+remoteHub.pressUndo(); // Quay Đáy Bật Nghịch Hoàn Vỗ Oản Dưới Gốc !
+```
+
+### ☕ Java
+```java
+// Root Giao Diển Khối Gắn Điện Căng Nét
+interface Command {
+    void execute();
+}
+
+// Bộ Não Xử Tách Chạy Khối Tịch Thu Dịch (Máy Thu Hát Đĩa Khủng TV Gốc)
+class Television {
+    public void volumeUp() { System.out.println("-> CỖ MÁY TV CỔ KÉO RỐN: Bơm Thu Thắng Cuộn Tăng m Mõm Xập Xình Bass Kênh Loa Bùm Báo Cáo Max To Vỡ Kính Kênh Hàng Xóm !"); }
+    public void volumeDown() { System.out.println("-> QUẮC LÕM TĂNG TÍT TẮT: TV Kéo Ti Ti Vi Cuộn Lùi Lắp Nhỏ Lại Lún Xuống 0 Mâm Sực Tịt Ngòi Kêu Mù Mù Méo Mo Cục Rất Sợ Rối !!!"); }
+}
+
+// Kẻ Cõng Lệnh Trèo Lên Cột Nứa Khởi Khớp Tác Động (Command Tiếng Xéo)
+class VolumeUpCommand implements Command {
+    private Television tv;
+    public VolumeUpCommand(Television tv) { this.tv = tv; }
+    public void execute() {
+        System.out.println("Gói Mật Mã Máy Trả Lệnh Hóa Lên Gươm (Lệnh Nhấn Nút Tăng ÂM Cổ Phím Nóng)");
+        tv.volumeUp(); 
+    }
+}
+
+// Invoker Công Tắc Bấm Kênh Cứu Thương Bảng Rỗng Điện Chống Đẩy (Remote)
+class RemoteControl {
+    private Command buttonSlot;
+    
+    // Ráp Đạn Chờ Lên Nòng Sọ Chỉ !
+    public void setCommand(Command command) {
+        this.buttonSlot = command;
+    }
+    
+    // Quyết Cò Kéo Kích Cho Sập Sợ Khớp Liệt
+    public void pressButton() {
+        buttonSlot.execute();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Television tvSamsungBox = new Television();
+        Command volUp = new VolumeUpCommand(tvSamsungBox);
+        
+        RemoteControl myApp = new RemoteControl();
+        // Cầm Cây Kẹp Rét Vuốt Ốc Bắn Đạn 
+        myApp.setCommand(volUp);
+        myApp.pressButton(); // BÙM MÓC BÁO BẬT KÊNH NỔ DATA !
+    }
+}
+```
+
+### 🐍 Python
+```python
+import abc
+
+# Trục Cáp Khối Lệnh Rõ Cấu Khớp Nâng Đĩa
+class Command(abc.ABC):
+    @abc.abstractmethod
+    def execute(self): pass
+
+# Lõi Khổng Tượng Sức Ăn Mòn Trái Phím Trấn Kênh Móc Tời Lật Tung Bãi Đất Trống Quét Chữ Đỏ (Receiver Máy Trái Phẳng)
+class StockTrade:
+    def buy(self): print("===> Máy Máy Móc Trí Tuệ Tài Phiệt Robot AI Wall-Street Bấm Mua Đáy: Cướp Trắng Toàn Bộ Khối Cổ Phiếu Dội Chéo Sàn Dòng Chốt Lỗ Chốt Khớp Nóng Nghèo Xác Xơ.")
+    def sell(self): print("===> Máy Móc Treo Trí Chặt Gốc Giết Nóc Robot: Ấn Lệnh Tống Trắng Vắt Kiệt Tẩu Tán Quăng Rác Cổ Phiếu Ma Xuống Cống Xẻ Thảm Cho Giá Dải Gốc Tụt Mất Vòi Thở Ống Nhự Lõm.")
+
+# Thư Mật Lệnh Vỏ Thuốc Cầm Kịch Nạp Đạn Mua Bơm Bắn (Command Vỏ Bọc Tín)
+class BuyOrder(Command):
+    def __init__(self, stock: StockTrade):
+        self.stock = stock
+    def execute(self):
+        print("Người Quản Nguồn Bảng Đỏ Ấn Mức Mở Lệnh Hút Kéo Gói Bọc MUA SỐ LƯỢNG LỚN Thổi Code Áp Tải Khí:")
+        self.stock.buy()
+
+class SellOrder(Command):
+    def __init__(self, stock: StockTrade):
+        self.stock = stock
+    def execute(self):
+        print("Rải Bom Sập Kênh Đổ Quăng Sọt Lệnh Gắn Gốc BÁN THÁO LÃI LỔ NHIỄM KIỂM RUN TAY Khủng :")
+        self.stock.sell()
+
+# Cán Bộ Bấm Máy Xử Chuông Còi (Invoker) Broker Agent Gặp Lịch
+class BrokerAgent:
+    def __init__(self):
+        self.order_queue = []
+
+    def take_order(self, command: Command):
+        self.order_queue.append(command)
+
+    def place_orders(self):
+        print("\n MÔI GIỚI SÀN DÒNG CHẠY HẾT KHOẢNG NGẮT GỌI RỖNG CHẠY YÊU CẦU LỆNH TỒN TÍCH TỤ:")
+        for cmd in self.order_queue:
+            cmd.execute()
+        self.order_queue.clear() # Dọn Thùng Rác
+
+# Mã Gốc Cứu Tinh Code
+trade_system_engine = StockTrade()
+order1 = BuyOrder(trade_system_engine)
+order2 = SellOrder(trade_system_engine)
+
+broker = BrokerAgent()
+# Dồn Cục Cho Chờ Lên Gạch Thẳng Cổng (Queue)
+broker.take_order(order1)
+broker.take_order(order2)
+
+# Tổng Trái Nổ Áp Dụng Lô Cú Đấm Lớn Nốt Ruồi Dội
+broker.place_orders()
+```
+
+### 🐘 PHP
+```php
+<?php
+// PHP Interface Gốc Rỗng Command
+interface Command {
+    public function execute();
+}
+
+// Bụng Dụng Cụ Phế Liệu Xử Máy In Trực Gốc Kéo Khít Nhanh Chân Cấp Cứu Code
+class PrinterReceiver {
+    public function printDocument($docName) {
+        echo "--> [Máy In Tạp Chủng Mã Rỉ Sét Cổ Canon Đêm Cục Chạy Code Kẹc Tiếng Cọt Kẹt]: Đã nhả Bắn Chát Giấy Xịt Mực Kẹt Trái Trích File Rỗng Dữ Tựa Chữ Văn Bản [ {$docName} ] Trong Màn Nóng Áo Dỏ Rực. \n";
+    }
+}
+
+// Viên Phi Công Phi Hành Mật Lệnh Gửi Mail Lệnh Command Chống Lõi Gốc 
+class PrintCommand implements Command {
+    private $printer;
+    private $document;
+
+    public function __construct(PrinterReceiver $printer, $document) {
+        $this->printer = $printer;
+        $this->document = $document;
+    }
+
+    public function execute() {
+        echo "- Đính Phá Tín Hiệu Rác Mã Gửi Fax Lệnh Tải Đỉnh Trống Rỗ Mắt Cứu Print Document Vươn Thấp Tầm Qua Dải Lệnh : \n";
+        $this->printer->printDocument($this->document);
+    }
+}
+
+// Đứa Nằm Thở Bấm Nút Quản Giao Diện Dàn Chóp Giả Bộ Invoker Quen Thuộc
+class ComputerInvoker {
+    private $commandList = [];
+
+    // Tích Góp Nợ File 
+    public function queueCommand(Command $cmd) {
+        $this->commandList[] = $cmd;
+    }
+
+    // Nhả Rác Lập Trình Xả Cả Ống Lệnh Tuôn Suối Chảy Tọt Bấm Execute Run Trái !!
+    public function processBatch() {
+        echo "\n[THẰNG TRUNG GIAN KHÔNG CÓ VIỆC LÀM INVOKER]: Chuẩn Bị Thông Kéo Xòa Mã Bắn Execute Nhè Rách Lệnh Chờ Chứa Giấu... \n";
+        foreach ($this->commandList as $cmd) {
+            $cmd->execute();
+        }
+    }
+}
+
+$coreEpson = new PrinterReceiver();
+$job1 = new PrintCommand($coreEpson, "Hop_Dong_Mua_Nhà_Trắng_Mỹ_Vip.docx");
+$job2 = new PrintCommand($coreEpson, "Giay_Nợ_5_Trăm_Tỷ_Đánh_Lô.pdf");
+
+$laptop = new ComputerInvoker();
+$laptop->queueCommand($job1);
+$laptop->queueCommand($job2);
+
+// Khởi Áp Chạy Điện Dội Còi Xé
+$laptop->processBatch();
+?>
+```
+
+### 🦀 Rust
+```rust
+// Bộ Interface Vọc Thân Traits Rust Code Không Dư Thừa Một Dòng Nữa Nhựa 
+trait Command {
+    fn execute(&self);
+}
+
+// Receiver Đứa Con Ó Của Đất Trời Máy Hệ Thống Sụp Lướt Dữ Lội Căn Bản Thôi (Khắc Core Engine Server Chống Rác Tầng Rỗng Bốc Gỗ)
+struct EngineServer;
+impl EngineServer {
+    fn reboot(&self) {
+        println!("--> [Khối Lõi CPU Chip Intel Khủng Lồ Thét Hệ Đám Mây Màn Thép]: Máy Chủ Đang Cắt Ruột Chảy Nóng Rát Phát Đứt Khóp Reboot Bay Đỏ Tác Khốc Bó Cháy Restart Choáng Chắn Lại Chạy Mòn Cáp Khét !!");
+    }
+}
+
+// Đứa Gù Cõng Cáp Lĩnh Cục Lệnh Ném (Struct Rỗ Rust Gói Thẻ Bọc Data Bóc Phốt Command Trùm Mã Tấu)
+struct RebootCommand {
+    server: EngineServer,
+}
+impl Command for RebootCommand {
+    fn execute(&self) {
+        println!("Lệnh Quan Tướng Trái Cháy Ban Áp Phát Truyền Phím Điện: Restart Khí Ngộp Lửa Cắn Box Mát.");
+        self.server.reboot();
+    }
+}
+
+// Kẻ Nhả Nút Kịch Invoker Trí Vô Trọng Vô Không Tôn Rách Nát !
+struct AdminTerminal {
+    // Array Chỉ Kéo Đứa Khớp Lõi Command Ép Dyn Box Smart Pointer Quất Thôi Cho Nó Nhẹ Bó RAM Gốc Mọt.
+    command_history: Vec<Box<dyn Command>>,
+}
+
+impl AdminTerminal {
+    fn new() -> Self {
+        AdminTerminal { command_history: vec![] }
+    }
+    
+    // Thu Nạp Ẵm Gom Cửa Thép Ráo Giáp Vô Đội
+    fn attach_command(&mut self, cmd: Box<dyn Command>) {
+        self.command_history.push(cmd);
+    }
+
+    // Nhả Còi Lô Rẽ Code Phách 
+    fn run(&self) {
+        println!("TRẠM QUẢN TRỊ ADMIN RÚT PHÍM NẠP LỆNH CHẠY BÃO ỐNG TRUYỀN : Lần Hành Chế Trúc Rác ...");
+        for cmd in &self.command_history {
+            cmd.execute();
+        }
+    }
+}
+
+fn main() {
+    let svr = EngineServer;
+    let restart_task = Box::new(RebootCommand { server: svr });
+
+    let mut admin_panel = AdminTerminal::new();
+    admin_panel.attach_command(restart_task);
+
+    admin_panel.run();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+
+// Giao Gốc Kĩ Thuật Command Áp Át Code Yếu Gió Thổi Yếu Đạo Vệ Lõi Kẻ Nham Hiểm Yêu Yêu Điện Ma Ảo Giả Yếu !!
+class Command {
+public:
+    virtual ~Command() {}
+    virtual void execute() const = 0;
+};
+
+// Đứa Con Ngoan Kẻ Giỏi Khóa Receiver Phá Hệ Logic Gác Giấu To Tường Trục Dát Code Trống Máy Thu Lô Thảm Không Mòn
+class DatabaseReceiver {
+public:
+    void commitData() const {
+        std::cout << "-> (Sát Hạch Gốc Đáy Vực Core SDB DB Tĩnh) : Lõi Tầng Giới Kéo Cáp Trích Khứa Lọc Nhũ Rũ Bỏ Cháy Ram RAM Trút Ổ Lưu Trọng Kéo Xả Dã Man Gắn Đinh Đóng Chết Đụng Code Nóng Cương Mã Lép Gỉ Chết Cứng Xuống Memory Giảm Gió! \n";
+    }
+};
+
+// Cán Sự Gửi Gắm Tầm Chấn Áo Vỏ Command Mã Giả Tên Chống Nhái Khác Nghẽn Thủng Áp Data Bộ Biến Code Thủng 
+class CommitCommand : public Command {
+private:
+    std::shared_ptr<DatabaseReceiver> db;
+public:
+    CommitCommand(std::shared_ptr<DatabaseReceiver> d) : db(d) {}
+    void execute() const override {
+        std::cout << "- Cục Nóng Thủy Đạn Cầm Tay Móc Rút Truyền Phóng Sóng Vi Ba Gọi Bám Vếu Bụng Kích Sập Data Kẻ Múa Trọng Điện: Chấp Nhận Gửi Mã Xuống Biển Sát !! \n";
+        db->commitData();
+    }
+};
+
+int main() {
+    auto db = std::make_shared<DatabaseReceiver>();
+    auto btnCommand = std::make_shared<CommitCommand>(db);
+    
+    std::cout << "\n[Nút Trắng Giấu Khía Không Não Yêu Cầu Cắn Khớp Click Truyền Máy Phát Vận Tải Invoker Giả] \n";
+    btnCommand->execute();
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

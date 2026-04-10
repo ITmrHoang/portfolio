@@ -1,0 +1,264 @@
+---
+title: "Adapter Pattern"
+date: 2026-04-12T06:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Adapter** là một cấu trúc thiết kế (Structural Pattern) hoạt động như một cầu nối giữa hai interfaces (giao diện) không tương thích. Nhờ đó, các đối tượng có giao diện hoàn toàn khác nhau vẫn có thể tương tác và làm việc chung với nhau thông qua một đối tượng "Bộ chuyển đổi" (Adapter).
+
+## 2. Mục đích
+- Chuyển đổi giao diện (interface) của một lớp này thành một giao diện khác mà client (người dùng/hệ thống) mong muốn.
+- Hỗ trợ việc tái sử dụng lại các class cũ, các thư viện của bên thứ 3 (third-party libraries) mà bạn không có quyền hoặc không thể sửa đổi mã nguồn gốc của chúng.
+- Giảm phụ thuộc trực tiếp vào các hệ thống bên ngoài.
+- Ẩn giấu hoàn toàn logic chuyển đổi dữ liệu phức tạp.
+
+## 3. Khi nào ứng dụng
+- Tích hợp một thư viện/SDK mới vào hệ thống cũ nhưng định dạng dữ liệu trả về khác nhau (ví dụ: Hệ thống của bạn dùng JSON nhưng thư viện mới yêu cầu định dạng XML).
+- Xây dựng một Wrapper (lớp bọc) để tương thích ngược (Backward Compatibility) với một hệ thống mã nguồn cũ (Legacy Code).
+- Khi bạn chia sẻ mã nguồn giữa ứng dụng Web và Mobile nhưng chuẩn giao tiếp backend của hai nền tảng có sự sai lệch.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ nguyên tắc Single Responsibility (SRP): Tách bóc quy trình xử lý dữ liệu khỏi logic doanh nghiệp chính.
+- Tuân thủ nguyên tắc Open/Closed (OCP): Bạn có thể thêm các Adapter mới cho các phiên bản thư viện mới mà không cần chỉnh sửa code đang chạy ổn định.
+
+**Nhược điểm:**
+- Tăng độ phức tạp của code base vì hệ thống phải tạo thêm các lớp và interfaces mới. Đôi khi, việc viết lại service cũ cho tương thích với giao diện mới sẽ tốn ít thời gian bảo trì hơn.
+
+---
+
+## 5. Ví dụ minh họa (XML to JSON Adapter)
+
+Giả sử App của bạn chỉ xử lý `JSON` nhưng thư viện phân tích biểu đồ (Analytics) lại chỉ nhận dữ liệu `XML`.
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Thư viện bên thứ 3 cũ rích (Chỉ đọc được ngôn ngữ giao tiếp XML)
+class AdvancedAnalyticsTool {
+    public analyzeXML(xmlData: string): void {
+        console.log(`[Thư Viện Đồ Thị] Đang phân tích luồng dữ liệu XML: ${xmlData}`);
+    }
+}
+
+// Giao diện Hệ thống chuẩn của Cty Bạn Cần (Chỉ dùng được mã JSON)
+interface ClientInterface {
+    request(jsonData: string): void;
+}
+
+// ADAPTER (KẺ CẦU NỐI): Chuyển cục JSON -> XML trước khi bơm vào Thư viện
+class JsonToXmlAdapter implements ClientInterface {
+    private adaptee: AdvancedAnalyticsTool;
+
+    constructor(adaptee: AdvancedAnalyticsTool) {
+        this.adaptee = adaptee;
+    }
+
+    public request(jsonData: string): void {
+        // Mô phỏng Logic bóc tách và viết lại chuẩn định dạng Text (JSON dỏm sang XML)
+        const xmlData = `<xml><data>${jsonData.replace('{', '').replace('}', '')}</data></xml>`;
+        console.log("Adapter Trạm Chuyển Tiếp: Đã hoàn tất convert chuỗi JSON thành XML.");
+        
+        // Tiến hành Bơm luồng dữ liệu chuẩn cho Lớp Cổ Lỗ Sĩ chạy
+        this.adaptee.analyzeXML(xmlData);
+    }
+}
+
+// Khởi chạy App (Ứng dụng vẫn truyền JSON như chưa có chuyện gì xảy ra)
+const analyticsTool = new AdvancedAnalyticsTool();
+const adapter = new JsonToXmlAdapter(analyticsTool);
+
+adapter.request('{"name": "John", "age": 30}');
+/*
+Output:
+Adapter Trạm Chuyển Tiếp: Đã hoàn tất convert chuỗi JSON thành XML.
+[Thư Viện Đồ Thị] Đang phân tích luồng dữ liệu XML: <xml><data>"name": "John", "age": 30</data></xml>
+*/
+```
+
+### ☕ Java
+```java
+// Logic Core Cũ (Adaptee)
+class AnalyticsTool {
+    public void analyze(String xmlData) {
+        System.out.println("Processing XML Component: Bật hệ thống biểu đồ cho " + xmlData);
+    }
+}
+
+// Mô hình Model Mới của Công ty cần hướng tới
+interface JsonProcessor {
+    void processJson(String jsonData);
+}
+
+// Ống dẫn biến hình (Adapter)
+class XmlAdapter implements JsonProcessor {
+    private AnalyticsTool tool;
+
+    public XmlAdapter(AnalyticsTool tool) {
+        this.tool = tool;
+    }
+
+    @Override
+    public void processJson(String jsonData) {
+        System.out.println("Bộ tiếp hợp Adapter: Kéo dãn JSON -> XML chuẩn.");
+        String xml = "<xml_format>" + jsonData + "</xml_format>";
+        tool.analyze(xml); // Gọi Hàm Thực Thi Gốc
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        AnalyticsTool tool = new AnalyticsTool();
+        JsonProcessor adapter = new XmlAdapter(tool);
+        
+        // Đẩy tham số như mảng JSON thông thường
+        adapter.processJson("{ \"user_id\": 1 }");
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Lõi cứng của Plugin bên C thứ 3 cần tương thích
+class TargetXMLTool:
+    def execute_xml_query(self, xml_data: str):
+        print(f"Hệ quản trị CSDL XML thực thi mã nhận được: {xml_data}")
+
+# Cục nối điện (Adapter)
+class DataAdapter:
+    def __init__(self, tool: TargetXMLTool):
+        self.tool = tool
+
+    def execute_json(self, json_data: str):
+        print("Adapter System: Đã bắt được chuỗi JSON. Dịch mã qua XML...")
+        xml_data = f"<xml-envelope>{json_data}</xml-envelope>"
+        
+        # Bắn lệnh vào Hệ Phức Tạp
+        self.tool.execute_xml_query(xml_data)
+
+third_party_tool = TargetXMLTool()
+adapter = DataAdapter(third_party_tool)
+
+# Khách hàng ung dung truyền cục Dict JSON
+adapter.execute_json("{ 'mode': 'fast_query', 'limit': 10 }")
+```
+
+### 🐘 PHP
+```php
+<?php
+// API Cổng hóa đơn bên Ngân Hàng (Chỉ xơi XML)
+class ThirdPartyBilling {
+    public function submitXML($xml) {
+        echo "Giao dịch Hệ thống Ngân hàng thành công qua Cổng XML: " . $xml . "\n";
+    }
+}
+
+// Source code Web nội bộ Cty
+interface WebBilling {
+    public function payJSON($json);
+}
+
+// Bộ Giáp Biến Đổi
+class BillingAdapter implements WebBilling {
+    private $billingSystem;
+
+    public function __construct(ThirdPartyBilling $billingSystem) {
+        $this->billingSystem = $billingSystem;
+    }
+
+    public function payJSON($json) {
+        echo "[Adapter Server]: Đang thay đổi cấu trúc mảng Payment...\n";
+        $xml = "<payment_payload>" . $json . "</payment_payload>";
+        $this->billingSystem->submitXML($xml);
+    }
+}
+
+$oldSystem = new ThirdPartyBilling();
+$adapter = new BillingAdapter($oldSystem);
+
+$adapter->payJSON("{amount: 1000, currency: USD}");
+?>
+```
+
+### 🦀 Rust
+```rust
+struct OldPrinter;
+impl OldPrinter {
+    // Máy in thập niên 90 chỉ biết đọc cấu hình XML cổ
+    fn print_xml(&self, xml: &str) { println!("In tài liệu mã XML: {}", xml); }
+}
+
+trait JsonPrinter {
+    fn print_json(&self, json: &str);
+}
+
+// Hộp chuyển mạch Adapter nhét cấu hình cũ vào Option Ruột
+struct PrinterAdapter {
+    old_printer: OldPrinter,
+}
+
+impl JsonPrinter for PrinterAdapter {
+    fn print_json(&self, json: &str) {
+        println!("Rust Adapter Tool: Đánh chặn luồng JSON, tái cấu trúc Frame thành XML Format...");
+        let xml = format!("<rust_xml>{}</rust_xml>", json);
+        
+        // Cấp truyền dữ liệu sang thiết bị
+        self.old_printer.print_xml(&xml);
+    }
+}
+
+fn main() {
+    let old_app = OldPrinter;
+    let adapter = PrinterAdapter { old_printer: old_app };
+    
+    // Code App Hiện Lên
+    adapter.print_json("{ 'api_key': 'rust_is_awesome' }");
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <string>
+
+// Lớp Lỗi Thời
+class LegacySystem {
+public:
+    void sendXMLRequest(const std::string& xml) const {
+        std::cout << "Legacy Core đang phân rã Frame XML truyền đến: " << xml << "\n";
+    }
+};
+
+// Giao diện Khung ứng phó Hiện Đại
+class ModernAppInterface {
+public:
+    virtual ~ModernAppInterface() {}
+    virtual void sendJSONRequest(const std::string& json) const = 0;
+};
+
+// Khớp Nối Chuyển Hệ
+class SystemAdapter : public ModernAppInterface {
+private:
+    LegacySystem* legacySys;
+public:
+    SystemAdapter(LegacySystem* sys) : legacySys(sys) {}
+    
+    void sendJSONRequest(const std::string& json) const override {
+        std::cout << "[C++ Wrapper Adapter]: Mã dịch từ JSON Engine...\n";
+        std::string xml = "<xml_package>" + json + "</xml_package>";
+        legacySys->sendXMLRequest(xml); // Passing Object Info
+    }
+};
+
+int main() {
+    LegacySystem legacy;
+    SystemAdapter adapter(&legacy);
+    
+    // Lệnh Gọi Hiện Đại nhưng kết quả chọc thủng Legacy Engine
+    adapter.sendJSONRequest("{ 'status': 200, 'msg': 'OK' }");
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

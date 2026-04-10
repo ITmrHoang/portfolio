@@ -1,0 +1,320 @@
+---
+title: "Strategy Pattern"
+date: 2026-04-12T14:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Strategy (Chiến lược)** là mẫu thiết kế hành vi (Behavioral Pattern) cho phép bạn gom nhóm hẳn một gia đình các thuật toán (algorithms), đóng gói từng phần vào các lớp (class) tách biệt hoàn toàn, và làm cho các lớp tráo thân hoán đổi cho nhau (interchangeable) vô cùng trơn tru. Nhờ có gã Strategy này, thuật toán có thể được đổi chác thay thế nóng lúc chương trình đang chạy.
+
+## 2. Mục đích
+- Chấm dứt thảm cảnh hàng chục đống `if... else` lồng nhau kinh hãi chỉ để lựa chọn những biến thể logic (ví dụ tính phí ship hàng đường bay, ship xe lửa, ship đi bộ...).
+- Giao khối não logic thuật toán phức tạp ra bề ngoài. Một Lớp Mẹ Lõi App (Context) không cần biết chi tiết tính thuế của Singapore ra sao, nó chỉ ủy thác Data ném qua cục Cục Trí Tuệ (Strategy) Singapore là xong việc.
+- Cho phép đổi luồng Xử lý cực sạch vào lúc thực thi Runtime.
+
+## 3. Khi nào ứng dụng
+- Tích hợp cổng Thanh toán Shopping Cart: Pay bằng Paypal, thẻ Visa, mã Ví MoMo, Crypto. Tụi nó xài Cục Design Strategy riêng nhưng cùng là giao thức Cấn Trừ Tiền Gửi (Pay).
+- Áp Dụng Công Cụ Tính Đường (Navigation / Map routing): Đường cho Xe Đạp Khác, Ô tô Chậm Khác, Tàu Hỏa Trực Thăng Lại Càng Khác Xa -> Đẻ ra hàng loạt các RoutingStrategy đính trực tiếp vào Mảng Tính Quãng Đồ.
+- Engine Kết xuất đồ họa Export File: Code chạy Save File dưới dạng `.pdf`, hoặc nén xuống `.jpg` hay đẩy thẳng ra chuỗi `.csv`. 
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ rực rỡ OCP (Mở cho mở rộng tính năng mới bốc cháy, đóng kín cho không chỉnh Cục Code Lõi).
+- Tháo gỡ hoàn toàn sự trói buộc cứng nhắc (hard-wired) bằng cách áp dụng Trừu Tượng Ủy Thác Ném Code ra Cục Data Dịch Báo Chéo Lõi Nhớ Ngoài CPU (Composition Override Thừa Kế).
+- Đảo nhánh linh hoạt đổi ruột logic trên nền Môi trường Runtime. Máy không chết!
+
+**Nhược điểm:**
+- Khách Hàng (Client) sử dụng phải thật sự hiểu tường tận đống Chiến Lược (Strategies) khác nhau chỗ nào để mà móc Lắp Ghép vô ống Tủy Khớp Nối Nào đúng. Phức tạp bộ ÓC người điều hướng!
+- Dễ Làm phình số Số File vì thêm vài Class Tí Nị cho ba cái Logical nhạt nhẽo xâu xé Nhỏ xíu (Thuế 2%, Thuế 3%...) -> Đẻ Ra Vạn Thể !!
+
+---
+
+## 5. Ví dụ minh họa (Giao dịch Thanh toán - Payment Strategies)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Bộ Khung Xương Strategy Cơ Bản Thống Nhất Trích Cốt Lỗi Trọng Tâm
+interface PaymentStrategy {
+    pay(amount: number): void;
+}
+
+// Thuật Khối Chiến Lược Cực Đoan 1 (Kênh Tiền Mật Mã Vỡ Đáy)
+class CreditCardPayment implements PaymentStrategy {
+    constructor(private name: string, private cardNumber: string) {}
+
+    public pay(amount: number): void {
+        console.log(`[Thượng Đỉnh Thanh Toán Bảo Tuyến]: Đã Trích Sút Thành Công Hóa Đơn Lỗ ( $${amount} VNĐ ) Khỏi Kênh Thẻ Visa Trắng [${this.name} ****${this.cardNumber.slice(-4)}] Tráng Rỗng Bóc Vỏ Tới Đáy \n`);
+    }
+}
+
+// Bộ Chiến Thuật Lỗ Hổng Paypal Số 2
+class PayPalPayment implements PaymentStrategy {
+    constructor(private email: string) {}
+
+    public pay(amount: number): void {
+        console.log(`[Trạm Quét Hóa Đơn Email Lọc Web Nhanh Chớp Thở]: Tín Điện Gí Đã Kẹt Cứu Khoản Nợ Rẻo ( $${amount} USD ) Từ Mail Trắng [${this.email}] Phá Rỗng Tới Đáy \n`);
+    }
+}
+
+// BỤC MAIN CHỨA ỐNG CONTEXT CHIẾN LƯỢC
+class ShoppingCartContext {
+    private itemsCost: number = 0;
+    // Điểm Lõi Kẹp Chiến Thuật Chờ Client Gắn
+    private strategy: PaymentStrategy;
+
+    public setPaymentStrategy(strategy: PaymentStrategy) {
+        this.strategy = strategy;
+    }
+
+    public addToCart(price: number) {
+        this.itemsCost += price;
+    }
+
+    public checkout() {
+        if (!this.strategy) {
+            console.log("!!! LỖI CHÍ TỬ ĐỨT BO MẠCH: Client Quên Chưa Ráp Thẻ Nguồn Phương Thức Vô Lỗ Trống Strategy API !!!");
+            return;
+        }
+        // Gọi trỏ xuống Ủy Thác Căng Gốc Sâu Strategy
+        this.strategy.pay(this.itemsCost);
+    }
+}
+
+const cart = new ShoppingCartContext();
+cart.addToCart(150);
+cart.addToCart(300);
+
+// Thử Thanh Toán Chưa Gắn Logic Giảm Chấn Nào Cả
+cart.checkout(); 
+
+// Vòng Ghép Mạch Tiền Nhựa Cố Móc Trục Cuốn Thẻ Card 
+cart.setPaymentStrategy(new CreditCardPayment("Nguyễn Lập Trình", "1234567890128888"));
+cart.checkout();
+
+// Khách Đổi Ý Đỏi Bọc Mạch Điện Tử Email Paypal 
+cart.setPaymentStrategy(new PayPalPayment("user_vip_pro_tieu_tien_nhu_nuoc@gmail.com"));
+cart.checkout();
+```
+
+### ☕ Java
+```java
+// Khuôn Hình Logic Cắt Nút Xâu Lọc Thống Nhất Gói Strategy 
+interface RouteStrategy {
+    void buildRoute(String start, String end);
+}
+
+// Dây Lõi Xe Ô Tô Xuyên Hầm Nhánh Nhanh Tốc Độ Bão Lũ Dải 
+class DrivingStrategy implements RouteStrategy {
+    public void buildRoute(String start, String end) {
+        System.out.println("-> CỖ MÁY BẢN ĐỒ AI VỆ TINH PHÓNG QUÉT (X: Ô Tô Buýt Rẽ Nhánh Lõi Trái): Lộ Trình Lái Xe Tốc Độ Bão Lũ Từ " + start + " Lái Sốc Chảy Rải Tới " + end);
+    }
+}
+
+// Luồng Giao Trạch Cầu Rẽ Chống Tắc Bộ Hành Phố Đi Chợ
+class WalkingStrategy implements RouteStrategy {
+    public void buildRoute(String start, String end) {
+        System.out.println("-> BẢN ĐỒ ĐẤT SINH TỒN (Đi Bộ): Dẫn Khách Đường Tắt Hẻm Chết Xó " + start + " Lách Trốn Đi Dạo Ra " + end);
+    }
+}
+
+// Kẻ Đi Nhờ Gọi Kí Hợp Gắn Cáp Khợp Strategy Cáp Nối
+class NavigatorContext {
+    private RouteStrategy strategy;
+    
+    // Gắn Ngay Từ Đáy Hàm Khởi Tạo Bẻ Mạch Không Trống Rỗng
+    public NavigatorContext(RouteStrategy st) { this.strategy = st; }
+    
+    // Đảo Ngôi Luân Chuyển Thời Gian Thực Tại 
+    public void setStrategy(RouteStrategy st) { this.strategy = st; }
+    
+    public void executeLogic(String s, String e) {
+        strategy.buildRoute(s, e);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        NavigatorContext gps = new NavigatorContext(new DrivingStrategy());
+        gps.executeLogic("Trạm Ngã Tư Cống", "Biệt Thự Đỉnh Đồi");
+        
+        System.out.println("\n  --- [ĐỤNG KẸT XE GIỜ TẮC NGẬP NƯỚC CÁP ĐÈ ĐẤT TRÓC] --- ĐỔI STRATEGY LIỀN KHÔNG CẦN CHỈNH NGUỒN !!!");
+        gps.setStrategy(new WalkingStrategy());
+        gps.executeLogic("Trạm Ngã Tư Cống", "Biệt Thự Đỉnh Đồi");
+    }
+}
+```
+
+### 🐍 Python
+```python
+import abc
+
+# Trục Cột Dịch Thuật Core
+class DiscountStrategy(abc.ABC):
+    @abc.abstractmethod
+    def calculate_discount(self, initial_price: float) -> float: pass
+
+# Mức Cắt Bỏ Không Giảm Giá
+class NoDiscount(DiscountStrategy):
+    def calculate_discount(self, initial_price: float) -> float:
+        print("  -> Đội Trưởng Thu Ngân Báo Khách Căng: Không Quẹt Thẻ VIP Đâu Miễn Khuyến Mãi ! Yêu Cầu Chồng Đủ Tiền Hàng Sạch Bách !!!")
+        return initial_price
+
+# Khớp Chặt Bẽ Gãy Vô Thuật Black Sale Black Friday Chiết Khấu 50%
+class BlackFridayDiscount(DiscountStrategy):
+    def calculate_discount(self, initial_price: float) -> float:
+        print(f"  -> Hệ Tính Trừ Chiết Khấu Đáy Mạng: Chém Mất Đứt Cuống Lõi 50% Giá Tiền Bùng Nổ Giật Kho Cáp Liệt (Giá Phốc Gốc: {initial_price})")
+        return initial_price * 0.5 
+
+class OrderContext:
+    def __init__(self, price: float, strategy: DiscountStrategy):
+        self.price = price
+        self.strategy = strategy
+
+    def print_bill(self):
+        final_price = self.strategy.calculate_discount(self.price)
+        print(f"  ==> TÓM CHỐT BIÊN LAI: Tiết Cạo Sạch Máng Khách Hàng, Vắt Kiệt Rác Tiền Với Số Tổng Nợ Hãi Hùng: \$ {final_price} Mỹ Đồng Nguyên Khối\n")
+
+# Bán Cáp Thừa Ngày Nắng Đơn Giản Dội Tiền
+order_normal = OrderContext(100.0, NoDiscount())
+order_normal.print_bill()
+
+# Áp Kéo Bo Lõm Khách Nghèo Ngày Mưa Lỗ Kho
+order_sale = OrderContext(100.0, BlackFridayDiscount())
+order_sale.print_bill()
+```
+
+### 🐘 PHP
+```php
+<?php
+// Xương Rỗng Áp Giải Khốc Máu (Strategy Cực Căng Thắt Nút Thở)
+interface SortStrategy {
+    public function sort(array $dataset): array;
+}
+
+// Thuật Toán Lõi Chọn Bong Bóng Rác Bubble Qúa Đỉnh Sùi Điện 
+class BubbleSort implements SortStrategy {
+    public function sort(array $dataset): array {
+        echo "- Bo Mạch Quét Đẩy Nhiệt Vỡ Tim RAM Băng Lọc Lưới Nóng Ran Quét Cháy Đáy Nước Nổi Bọt Bubble Sort Chạy Số Vồng Véo Đau Tắt Bức Rác Đảo !!! \n";
+        sort($dataset); // Fake Function Rỗng Chạy Mượt Rền Cơ
+        return $dataset;
+    }
+}
+
+// Xé Khống Rách Tim Khoảng Giông Cúp Cuồng Cáp Điên Thần Nhẩm Code Tốc Nét
+class QuickSort implements SortStrategy {
+    public function sort(array $dataset): array {
+        echo "- Giải Mã Cực Gốc Chip Code Tính Số Máy Siêu Việt Trùm Chớp Giật Mép QuickSort Dứt Nét Cắt Ghép Quá Ảo Sợ Toát Trống Phốc Cháy !! \n";
+        sort($dataset);
+        return $dataset;
+    }
+}
+
+// Máy Chặt Điều Khiển Lõi 
+class SorterContext {
+    private $strategy;
+    public function __construct(SortStrategy $s) { $this->strategy = $s; }
+
+    public function doSort($data) {
+        return $this->strategy->sort($data);
+    }
+}
+
+$c = new SorterContext(new BubbleSort());
+$c->doSort([5,1,2]);
+
+$c = new SorterContext(new QuickSort()); // Chuyển Mình Đổi Quắc Máy Không Thay Trống !!
+$c->doSort([5,1,2]);
+?>
+```
+
+### 🦀 Rust
+```rust
+// Bộ Áo Bọc Strategy Thần Linh Mũi Giáo Cắm Sâu Mạch
+trait HashStrategy {
+    fn generate_hash(&self, data: &str) -> String;
+}
+
+// Hệ MD5 Bí Khắp Mỏng Tẹt Rỗng Data
+struct MD5Hash;
+impl HashStrategy for MD5Hash {
+    fn generate_hash(&self, data: &str) -> String {
+        println!("Rust Engine Gọi Tools MD5 Kém Nhiễm Bọt Vét Rác Mã Độc: Đập Nát Cọc Data Rỗng Bụng {} Sứt Sẹo Khởi Thủy Mỏng Bé.", data);
+        "md5_fake_hash_string".to_string()
+    }
+}
+
+// Trùm Mạng Mũi Trụ SHA256 Chóp Tách Dài Tuyết Giáng Bảo Mật Tốc
+struct SHA256Hash;
+impl HashStrategy for SHA256Hash {
+    fn generate_hash(&self, data: &str) -> String {
+        println!("Dải Code Trục Khuỷu Cuốn Máy Móc Lệnh Thép Đặc Rỉ Sét SHA-256 Nhả Kẹp Giáp Lớp Răng Điện To Bức Tử Khóa Data Cáp Cứng !!! ({}) Khoét Nhanh...", data);
+        "sha256_super_secure_hash_string_rust_v2_alpha".to_string()
+    }
+}
+
+struct PasswordManager {
+    // Chứa Mảnh Con Trỏ Bộ Box Cáp Cấu Thần Cấp Mềm Mỏng Rust Bứt Phá Memory  
+    strategy: Box<dyn HashStrategy>,
+}
+
+impl PasswordManager {
+    fn hash_password(&self, pass: &str) {
+        self.strategy.generate_hash(pass);
+    }
+}
+
+fn main() {
+    let locker1 = PasswordManager { strategy: Box::new(MD5Hash) };
+    locker1.hash_password("admin_mat_khau_123");
+
+    let locker2 = PasswordManager { strategy: Box::new(SHA256Hash) };
+    locker2.hash_password("admin_sieucap_vutru_hack");
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Header Form Mã Nòng Chiến Lược Nén Cọc File Data Trống 
+class CompressionStrategy {
+public:
+    virtual ~CompressionStrategy() {}
+    virtual void compress(const std::string& file) = 0;
+};
+
+class ZipCompression : public CompressionStrategy {
+public:
+    void compress(const std::string& file) override {
+        std::cout << "[Hệ Nén Giải Trí Ống Cũ Lõi Khô] Bơm Bộ Lọc Zip Cày Cuốc Vắt Thon Rỗng Bẹp Dẹt Data Thoi Rỗng Khỏi Cuốn Cấu Mạng RAM (File Tệp: " << file << ") Mảnh Khảnh Cấp 1 \n";
+    }
+};
+
+class RARCompression : public CompressionStrategy {
+public:
+    void compress(const std::string& file) override {
+        std::cout << "[Máy Ngắt Bẻ Mã Trí Tuệ Sợ Nát RAR Cao Cáp Kép] Bóp Vỡ Thảm Giả Cốt Sợi Cắn Code Đóng Đinh Xuyên Băng Bức Chết Chia Gói Nhỏ Tiếu Ruột (File Lưu Trữ: " << file << ") Rụng Rời Cặn !! \n";
+    }
+};
+
+class CompressorContext {
+private:
+    std::unique_ptr<CompressionStrategy> strategy;
+public:
+    CompressorContext(std::unique_ptr<CompressionStrategy> s) : strategy(std::move(s)) {}
+    void archive(const std::string& file) {
+        strategy->compress(file);
+    }
+};
+
+int main() {
+    CompressorContext appBase(std::make_unique<RARCompression>());
+    appBase.archive("Ho_So_Chung_Khoan_Quoc_Gia_Mat.dat");
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

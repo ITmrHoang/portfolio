@@ -1,0 +1,280 @@
+---
+title: "Factory Method Pattern"
+date: 2026-04-12T02:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Factory Method** cung cấp một interface hoặc phương thức trong việc tạo nên một đối tượng (object) trong class cha. Tuy nhiên, nó cho phép các class con (subclass) kế thừa từ class cha có khả năng ghi đè (override) để chỉ rõ đối tượng cụ thể nào sẽ được tạo. Factory method giao việc khởi tạo một đối tượng (object) cụ thể cho lớp con.
+
+## 2. Mục đích
+- Tạo ra một cách khởi tạo object mới thông qua một interface / phương thức chung gốc.
+- Che giấu quá trình xử lý logic của phương thức khởi tạo object thay vì gọi trực tiếp từ khóa `new`.
+- Giảm sự phụ thuộc (coupling) cực đoan giữa các module cốt lõi (creator) và module sản phẩm (concrete products).
+- Dễ dàng mở rộng ứng dụng khi cần thêm class sản phẩm mới.
+- Giảm khả năng gây lỗi biên dịch (compile error) nhờ quản lý tập trung.
+
+## 3. Khi nào ứng dụng
+- Khi bạn KHÔNG thể đoán trước các loại class và thành phần phụ thuộc chuẩn xác mà code của bạn cần làm việc cùng (e.g. hệ thống Logistics gồm bộ phận Đường Thủy và Đường Bộ).
+- Tiết kiệm tài nguyên cho hệ thống bằng cách tái sử dụng những object hiện có thay vì build lại khi nào cũng chạy từ mới.
+- Xây dựng thư viện code / framework mà người phát triển có thể mở rộng loại đối tượng bên trong (e.g. UI framework đa nền tảng).
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Loại bỏ sự trói buộc chặt chẽ của việc gọi từ khóa khởi tạo giữa Creator và concrete products.
+- Tuân thủ nguyên tắc Single Responsibility Principle. Gói gọn mã khởi tạo ở một nơi, giúp mã dễ bảo trì.
+- Tuân thủ nguyên tắc Open/Closed Principle. Bạn có thể giới thiệu các loại product mới vào chương trình mà không phá vỡ code core gốc.
+
+**Nhược điểm:**
+- Hệ thống có thể trở nên cồng kềnh với quá nhiều class, vì pattern này đòi hỏi bạn phải khởi tạo thêm nhiều Creator classes tương ứng nhằm mục đích khởi tạo từng Product class.
+
+---
+
+## 5. Ví dụ minh họa (Transport Logistics)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao diện (Interface) chung cho mọi phương tiện vận chuyển
+interface Transport {
+    deliver(): void;
+}
+
+// Lớp Xe tải (Đường bộ)
+class Truck implements Transport {
+    deliver() { console.log("Giao hàng bằng đường bộ trong một hộp."); }
+}
+
+// Lớp Tàu thủy (Đường biển)
+class Ship implements Transport {
+    deliver() { console.log("Giao hàng bằng đường biển trong một container."); }
+}
+
+// Lớp cha Logistics (Đóng vai trò Factory cốt lõi)
+abstract class Logistics {
+    // Phương thức Factory Method (Class con buộc phải ghi đè)
+    public abstract createTransport(): Transport; 
+    
+    // Logic cốt lõi dùng chung
+    public planDelivery(): void {
+        const transport = this.createTransport();
+        transport.deliver();
+    }
+}
+
+// Logistic Đường bộ (Sản sinh Xe tải)
+class RoadLogistics extends Logistics {
+    public createTransport(): Transport { return new Truck(); }
+}
+
+// Logistic Đường biển (Sản sinh Tàu thuyền)
+class SeaLogistics extends Logistics {
+    public createTransport(): Transport { return new Ship(); }
+}
+
+// Thực thi
+const logistics = new RoadLogistics();
+logistics.planDelivery(); // Output: Giao hàng bằng đường bộ trong một hộp.
+```
+
+### ☕ Java
+```java
+// Giao diện chung
+interface Transport { void deliver(); }
+
+// Phương tiện Xe tải
+class Truck implements Transport {
+    public void deliver() { System.out.println("Giao hàng bằng đường bộ trong một hộp."); }
+}
+
+// Phương tiện Tàu biển
+class Ship implements Transport {
+    public void deliver() { System.out.println("Giao hàng bằng đường biển trong một container."); }
+}
+
+// Công ty Logistics gốc
+abstract class Logistics {
+    // Phương thức sản xuất
+    public abstract Transport createTransport();
+    
+    public void planDelivery() {
+        Transport t = createTransport();
+        t.deliver();
+    }
+}
+
+// Công ty đường bộ chuyên Biệt
+class RoadLogistics extends Logistics {
+    public Transport createTransport() { return new Truck(); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Logistics log = new RoadLogistics();
+        log.planDelivery(); // Output: Giao hàng bằng đường bộ trong một hộp.
+    }
+}
+```
+
+### 🐍 Python
+```python
+from abc import ABC, abstractmethod
+
+# Lớp trừu tượng Phương tiện
+class Transport(ABC):
+    @abstractmethod
+    def deliver(self): pass
+
+# Lớp Xe tải
+class Truck(Transport):
+    def deliver(self): print("Giao hàng bằng đường bộ trong một hộp.")
+
+# Lớp Tàu chở hàng
+class Ship(Transport):
+    def deliver(self): print("Giao hàng bằng đường biển trong một container.")
+
+# Nhà máy chính yếu
+class Logistics(ABC):
+    @abstractmethod
+    def create_transport(self) -> Transport: pass
+    
+    def plan_delivery(self):
+        t = self.create_transport()
+        t.deliver()
+
+# Phân xưởng đường biển
+class SeaLogistics(Logistics):
+    def create_transport(self) -> Transport: return Ship()
+
+# Thực thi code
+log = SeaLogistics()
+log.plan_delivery() # Output: Giao hàng bằng đường biển trong một container.
+```
+
+### 🐘 PHP
+```php
+<?php
+// Giao diện Phương tiện
+interface Transport { public function deliver(); }
+
+// Xe tải
+class Truck implements Transport {
+    public function deliver() { echo "Giao hàng bằng đường bộ trong một hộp.\n"; }
+}
+
+// Tàu thủy
+class Ship implements Transport {
+    public function deliver() { echo "Giao hàng bằng đường biển trong một container.\n"; }
+}
+
+// Root Logistics
+abstract class Logistics {
+    // Phương thức cha sinh object
+    abstract protected function createTransport(): Transport;
+    
+    public function planDelivery() {
+        $transport = $this->createTransport();
+        $transport->deliver();
+    }
+}
+
+// Công ty Dịch vụ Đường bộ
+class RoadLogistics extends Logistics {
+    protected function createTransport(): Transport { return new Truck(); }
+}
+
+// Thực thi
+$log = new RoadLogistics();
+$log->planDelivery(); // Output: Giao hàng bằng đường bộ trong một hộp.
+?>
+```
+
+### 🦀 Rust
+```rust
+// Trait (Hành vi chung)
+trait Transport {
+    fn deliver(&self);
+}
+
+// Struct Xe tải
+struct Truck;
+impl Transport for Truck {
+    fn deliver(&self) { println!("Giao hàng bằng đường bộ trong một hộp."); }
+}
+
+// Struct Tàu chở hàng
+struct Ship;
+impl Transport for Ship {
+    fn deliver(&self) { println!("Giao hàng bằng đường biển trong một container."); }
+}
+
+// Kế hoạch Logistics
+trait Logistics {
+    fn create_transport(&self) -> Box<dyn Transport>;
+    
+    fn plan_delivery(&self) {
+        let t = self.create_transport();
+        t.deliver(); 
+    }
+}
+
+struct RoadLogistics;
+impl Logistics for RoadLogistics {
+    fn create_transport(&self) -> Box<dyn Transport> {
+        Box::new(Truck)
+    }
+}
+
+fn main() {
+    let log = RoadLogistics;
+    log.plan_delivery(); // Output: Giao hàng bằng đường bộ trong một hộp.
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+
+// Giao diện lớp trừu tượng
+class Transport {
+public:
+    virtual ~Transport() {}
+    virtual void deliver() const = 0;
+};
+
+// Xe tải
+class Truck : public Transport {
+public:
+    void deliver() const override { std::cout << "Giao hàng bằng đường bộ trong một hộp.\n"; }
+};
+
+// Chuỗi Logistics cốt lõi
+class Logistics {
+public:
+    virtual ~Logistics() {}
+    // Khai báo Template Hàm Khởi tạo 
+    virtual std::unique_ptr<Transport> createTransport() const = 0;
+
+    void planDelivery() const {
+        // Tái sử dụng Method chung
+        auto transport = this->createTransport();
+        transport->deliver();
+    }
+};
+
+class RoadLogistics : public Logistics {
+public:
+    std::unique_ptr<Transport> createTransport() const override {
+        return std::make_unique<Truck>();
+    }
+};
+
+int main() {
+    RoadLogistics log;
+    log.planDelivery(); // Output: Giao hàng bằng đường bộ trong một hộp.
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

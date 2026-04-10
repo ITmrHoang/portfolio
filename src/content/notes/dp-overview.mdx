@@ -1,0 +1,53 @@
+---
+title: "Design Patterns - Bách khoa toàn thư 22 Mẫu Thiết Kế"
+date: 2026-04-12T00:00:00Z
+topic: "Design Pattern"
+---
+
+**Design Pattern** là tập hợp các giải pháp đã được tối ưu hóa và kiểm chứng để giải quyết các vấn đề phổ biến trong thiết kế phần mềm. Thay vì là những đoạn code cụ thể, Design Pattern cung cấp một "khuôn mẫu" (template) về cách tổ chức và tương tác giữa các Class, Objects. Danh sách dưới đây tổng hợp 22 mẫu thiết kế cốt lõi (GoF Design Patterns).
+
+---
+
+## 🏗️ 1. Mẫu Khởi Tạo (Creational Patterns)
+Nhóm Creational Patterns cung cấp các module khởi tạo đối tượng (object creation) linh hoạt, giúp giấu đi logic khởi tạo phức tạp và giảm sự phụ thuộc giữa các class.
+
+| Tên Pattern | Ý nghĩa cốt lõi | Link |
+|-------------|-----------------|------|
+| **Singleton** | Đảm bảo class chỉ có duy nhất 1 instance trên toàn hệ thống. | [Đọc bài](/notes/dp-singleton) |
+| **Factory Method** | Giao việc khởi tạo object cho các lớp con (subclasses). | [Đọc bài](/notes/dp-factory-method) |
+| **Abstract Factory** | Tạo ra tập hợp các object có chung đặc điểm/nhóm (family) tương thích. | [Đọc bài](/notes/dp-abstract-factory) |
+| **Builder** | Khởi tạo qua từng bước rành mạch cho các object phức tạp. | [Đọc bài](/notes/dp-builder) |
+| **Prototype** | Tạo object mới bằng cách clone từ object có sẵn (prototype). | [Đọc bài](/notes/dp-prototype) |
+
+---
+
+## 🧱 2. Mẫu Cấu Trúc (Structural Patterns)
+Nhóm Structural Patterns xây dựng mối quan hệ giữa các class và object để tạo thành các cấu trúc lớn hơn nhưng vẫn đảm bảo tính linh hoạt.
+
+| Tên Pattern | Ý nghĩa cốt lõi | Link |
+|-------------|-----------------|------|
+| **Adapter** | Cho phép 2 interface không tương thích có thể kết nối với nhau. | [Đọc bài](/notes/dp-adapter) |
+| **Bridge** | Làm giảm sự kết dính giữa Abstraction (trừu tượng) và Implementation (triển khai). | [Đọc bài](/notes/dp-bridge) |
+| **Composite** | Gom nhóm các object lại theo cấu trúc cây (tree structure) đồng nhất. | [Đọc bài](/notes/dp-composite) |
+| **Decorator** | Linh động bổ sung thuộc tính / phương thức cho object tại thời điểm runtime. | [Đọc bài](/notes/dp-decorator) |
+| **Facade** | Cung cấp interface đơn giản hóa cho một hệ thống (subsystem) phức tạp rắc rối. | [Đọc bài](/notes/dp-facade) |
+| **Flyweight** | Tiết kiệm bộ nhớ bằng cách chia sẻ các trạng thái dùng chung (shared state). | [Đọc bài](/notes/dp-flyweight) |
+| **Proxy** | Đại diện cho một object khác để kiểm soát quyền truy cập hoặc caching. | [Đọc bài](/notes/dp-proxy) |
+
+---
+
+## 🎭 3. Mẫu Hành Vi (Behavioral Patterns)
+Nhóm Behavioral Patterns tập trung vào sự giao tiếp và phân bổ trách nhiệm giữa các object.
+
+| Tên Pattern | Ý nghĩa cốt lõi | Link |
+|-------------|-----------------|------|
+| **Observer** | Cơ chế Đăng ký - Lắng nghe (Subscribe & Publish). | [Đọc bài](/notes/dp-observer) |
+| **Strategy** | Bọc các thuật toán vào các class riêng biệt để dễ dàng thay đổi khi runtime. | [Đọc bài](/notes/dp-strategy) |
+| **Command** | Đóng gói request thành một object để dùng cho undo, queueing hoặc logging. | [Đọc bài](/notes/dp-command) |
+| **State** | Cho phép object thay đổi hành vi khi trạng thái nội bộ của nó thay đổi. | [Đọc bài](/notes/dp-state) |
+| **Iterator** | Duyệt lần lượt collection mà không cần tiết lộ cấu trúc bên trong. | [Đọc bài](/notes/dp-iterator) |
+| **Chain of Responsibility**| Truyền request dọc theo một chuỗi các handler xoay vòng. | [Đọc bài](/notes/dp-cor) |
+| **Mediator** | Cung cấp trung gian liên lạc để giảm bớt sự phụ thuộc trực tiếp N:N. | [Đọc bài](/notes/dp-mediator) |
+| **Memento** | Cho phép lưu lại snapshot (trạng thái) của object để khôi phục sau này. | [Đọc bài](/notes/dp-memento) |
+| **Template Method** | Định nghĩa một bộ khung (skeleton) thuật toán trong thư mục gốc. | [Đọc bài](/notes/dp-template-method) |
+| **Visitor** | Cho phép thêm method mới vào Mọi Đối Tượng hiện tại mà không phải sửa lại code cũ. | [Đọc bài](/notes/dp-visitor) |

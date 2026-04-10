@@ -1,0 +1,275 @@
+---
+title: "Bridge Pattern"
+date: 2026-04-12T07:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Bridge** là một cấu trúc thiết kế (Structural Pattern) cho phép chia tách một lớp khổng lồ (hoặc một tập hợp các lớp liên kết chặt chẽ) thành hai hệ thống phân cấp riêng biệt: **Sự trừu tượng (Abstraction)** và **Sự triển khai (Implementation)**. Hai hệ thống này có thể được nâng cấp, mở rộng hoặc chỉnh sửa một cách hoàn toàn độc lập với nhau.
+
+## 2. Mục đích
+- Phân rã "God object" (lớp quá lớn ôm đồm tỷ thứ) thành các phần quản lý được.
+- Tách biệt phần giao diện cao cấp (thứ mà client trực tiếp tương tác) khỏi phần logic thực thi ở tầng thấp (API, Database, OS).
+- Thay vì kế thừa phần Implementation (dẫn đến sự bùng nổ tổ hợp các Class như `WindowsBlueButton`, `WindowsRedButton`, `MacBlueButton`), ta sử dụng Composition (thành phần) để liên kết sự kết hợp.
+- Thay đổi hệ thống triển khai ngay tại lúc chương trình đang chạy (Runtime) mà không làm sập giao thức bên ngoài.
+
+## 3. Khi nào ứng dụng
+- Quản lý bộ thư viện UI hoạt động trên đa hệ điều hành (Windows, MacOS, Linux).
+- Phát triển hệ thống thiết bị và remote điều khiển (Tivi, Radio, Điều hòa và Điều khiển cơ bản, Điều khiển cảm ứng đa năng).
+- Xây dựng lớp giao tiếp API nơi mà Framework kết nối tới (Frontend Application) được tách bạch hoàn toàn với Công nghệ Backend (NodeJS, Java, Go).
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ nguyên tắc Open/Closed (OCP) và Single Responsibility (SRP): Phần giao diện (Abstraction) và phần thi hành (Implementation) có thể tập trung vào nhiệm vụ riêng rẽ.
+- Code base dễ dàng bảo trì và quản lý vì không gặp phải ma trận đa kế thừa rối rắm.
+- Chi tiết nền tảng (Platform-specific details) được ẩn giấu hoàn toàn đối với user.
+
+**Nhược điểm:**
+- Khó áp dụng nếu hệ thống vốn dĩ đã có cấu trúc class quá đơn giản; việc chia nhỏ ra có thể khiến số lượng file tăng không cần thiết.
+
+---
+
+## 5. Ví dụ minh họa (Thiết bị và Remote Control)
+
+Trong ví dụ này, `RemoteControl` hoạt động như Abstraction và `Device` hoạt động như Implementation. Dù đó là TV hay Radio, Remote vẫn gọi được mà không cần phải viết class `TVRemoteControl` hoặc `RadioRemoteControl` riêng biệt.
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao diện Chuẩn (Implementation) mà mọi Thiết bị Tivi/Radio phải theo
+interface Device {
+    isEnabled(): boolean;
+    enable(): void;
+    disable(): void;
+    getVolume(): number;
+    setVolume(percent: number): void;
+}
+
+// Đối tượng Cụ Thể (TV)
+class TV implements Device {
+    private on: boolean = false;
+    private volume: number = 30;
+
+    isEnabled() { return this.on; }
+    enable() { this.on = true; console.log("Ti vi đã được CẮM ĐIỆN & BẬT SÁNG MÀN HÌNH."); }
+    disable() { this.on = false; console.log("Ti vi đã TẮT ĐIỆN."); }
+    getVolume() { return this.volume; }
+    setVolume(pct: number) { this.volume = pct; console.log(`Cài đặt cấu hình Âm lượng Tivi về mức: ${pct}`); }
+}
+
+// Đối tượng Điều khiển Gắn Ghép Tính Trừu Tượng (Abstraction Bridge)
+class RemoteControl {
+    protected device: Device;
+
+    constructor(device: Device) {
+        this.device = device;
+    }
+
+    // Các hàm của Remote trực tiếp giao tiếp qua cầu nối với Thiết bị thực
+    public togglePower(): void {
+        console.log("Remote: Khách hàng ấn phím nguồn ĐỎ tắt mở.");
+        if (this.device.isEnabled()) this.device.disable();
+        else this.device.enable();
+    }
+
+    public volumeUp(): void {
+        console.log("Remote: Khách hàng ấn phím tăng Max Âm lượng thêm 10 nấc.");
+        this.device.setVolume(this.device.getVolume() + 10);
+    }
+}
+
+const tv = new TV();
+// Nối Thiết bị vào chiếc Remote tương ứng
+const remote = new RemoteControl(tv);
+
+remote.togglePower(); // Output: Ti vi đã được CẮM ĐIỆN & BẬT SÁNG MÀN HÌNH.
+remote.volumeUp();    // Output: Cài đặt cấu hình Âm lượng Tivi về mức: 40
+```
+
+### ☕ Java
+```java
+// Logic Cốt Lõi Tầng Thấp Ngầm (Implementation)
+interface Device {
+    void turnOn();
+    void turnOff();
+}
+
+class Radio implements Device {
+    public void turnOn() { System.out.println("Đài Phát Thanh Radio đang Dò Sóng BẬT."); }
+    public void turnOff() { System.out.println("Đài Phát Thanh Radio đã đóng Mất Tín Hiệu."); }
+}
+
+// Lớp Mặt Nạ Người Dùng (Abstraction)
+class AdvancedRemote {
+    protected Device device;
+    // Điểm liên kết Bridge Design
+    public AdvancedRemote(Device device) { this.device = device; }
+    
+    public void toggle() {
+        System.out.println("Bộ Điều Khiển Cao Cấp V2 đang thao túng thiết bị từ xa qua Hồng Ngoại...");
+        device.turnOn();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Device radio = new Radio();
+        AdvancedRemote remote = new AdvancedRemote(radio);
+        
+        remote.toggle(); // Output: Bộ Điều Khiển Cao Cấp ... \n Đài Phát Thanh Radio đang Dò Sóng BẬT.
+    }
+}
+```
+
+### 🐍 Python
+```python
+# API Cốt lõi phần cứng (Implementation Hierarchy)
+class Renderer:
+    def render_circle(self, radius: float): pass
+
+class VectorRenderer(Renderer):
+    def render_circle(self, radius: float):
+        print(f"Đang phân tích vẽ Hình Tròn có độ cong Bán R= {radius} sử dụng Đồ họa Thuật Toán Vecto nét căng.")
+
+class RasterRenderer(Renderer):
+    def render_circle(self, radius: float):
+        print(f"Đang băm nhỏ vẽ Hình Tròn có Bán Kính= {radius} sử dụng Điểm ảnh Pixel Raster bể vỡ.")
+
+# Khúc Quản Lý Thiết kế Ảo (Abstraction Hierarchy)
+class Shape:
+    def __init__(self, renderer: Renderer):
+        self.renderer = renderer
+    def draw(self): pass
+
+class Circle(Shape):
+    def __init__(self, renderer: Renderer, radius: float):
+        super().__init__(renderer)
+        self.radius = radius
+
+    def draw(self):
+        print("Model Hình Tròn gửi Yêu Cầu vẽ Cấu Trúc Xuống Rendering Engine.")
+        self.renderer.render_circle(self.radius)
+
+raster = RasterRenderer()
+# Kết nối "Hình Tròn" vào Động Cơ "Raster Điểm Ảnh"
+circle = Circle(raster, 5)
+circle.draw() 
+# Output: Model Hình Tròn gửi Yêu Cầu vẽ Cấu Trúc... -> Đang băm nhỏ vẽ Hình Tròn...
+```
+
+### 🐘 PHP
+```php
+<?php
+// System Thực Thi Code Gốc
+interface Formatter {
+    public function format($text);
+}
+
+class HtmlFormatter implements Formatter {
+    public function format($text) { return "<p class='html-tag'>$text</p>\n"; }
+}
+
+// UI Áp Lên 
+abstract class Page {
+    protected $formatter;
+    public function __construct(Formatter $formatter) {
+        $this->formatter = $formatter;
+    }
+    abstract public function view();
+}
+
+class SimplePage extends Page {
+    public $content;
+    public function view() {
+        echo "[Trang Đơn Giản]: Chuẩn bị bơm data văn bản thông qua Engine Định Dạng: \n";
+        return $this->formatter->format($this->content);
+    }
+}
+
+$page = new SimplePage(new HtmlFormatter());
+$page->content = "Khỏe không các Lập trình viên Coder!";
+echo $page->view();
+?>
+```
+
+### 🦀 Rust
+```rust
+// Khối Implementation (Nền tảng Tách Biệt)
+trait Color {
+    fn fill(&self) -> String;
+}
+
+struct Red;
+impl Color for Red {
+    fn fill(&self) -> String { "Sắc Đỏ Cháy Bỏng".to_string() }
+}
+
+struct Blue;
+impl Color for Blue {
+    fn fill(&self) -> String { "Sắc Xanh Lạc Quan".to_string() }
+}
+
+// Khối Abstraction: Thay vì Kế thừa (Inheritance), Rust áp dụng Composition Bridge mặc định
+struct Shape<T: Color> {
+    name: String,
+    color: T, // Khớp nối thần kỳ Bridge Pattern nằm ở đây
+}
+
+impl<T: Color> Shape<T> {
+    fn draw(&self) {
+        println!("Thợ sơn đang Phủ Phết vẽ {} tông màu dải màu {}", self.name, self.color.fill());
+    }
+}
+
+fn main() {
+    let circle = Shape {
+        name: "Mô Hình Tượng Phật Tròn".to_string(),
+        color: Red,
+    };
+    circle.draw();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Chuỗi Lõi Thực Thi Máy (Implementation)
+class Implementation {
+public:
+    virtual ~Implementation() {}
+    virtual std::string operationImpl() const = 0;
+};
+
+class ConcreteImplementation : public Implementation {
+public:
+    std::string operationImpl() const override {
+        return "Nền Tảng Đáy Cấp 1: Phần Xử Lý Cốt Lõi Máy API Phức Đã Chạy Xong. Return Status OK.";
+    }
+};
+
+// Chuỗi Mặt Tiền App Trải Nghiệm (Abstraction)
+class Abstraction {
+protected:
+    Implementation* implementation;
+public:
+    Abstraction(Implementation* impl) : implementation(impl) {}
+    virtual ~Abstraction() {}
+    
+    virtual std::string operation() const {
+        return "Khu Vực Giao Diện Trừu Tượng:\n Dây chuyền gọi hàm đang nối qua Cầu Bridge...\n" + implementation->operationImpl();
+    }
+};
+
+int main() {
+    ConcreteImplementation impl;
+    Abstraction abstractObj(&impl);
+    
+    std::cout << abstractObj.operation() << "\n";
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

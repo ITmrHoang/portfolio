@@ -1,0 +1,316 @@
+---
+title: "Proxy Pattern"
+date: 2026-04-12T12:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Proxy** là một mẫu thiết kế cấu trúc (Structural Pattern) cung cấp một đối tượng đại diện (surrogate) hoặc một kẻ đóng thế (placeholder) cho một đối tượng khác nhằm kiểm soát quá trình truy cập vào đối tượng gốc đó. Nhờ có gã đánh chặn này, bạn có thể thực hiện một số thao tác trước hoặc sau khi yêu cầu (request) đi qua tới được đối tượng gốc.
+
+## 2. Mục đích
+- Bảo vệ và truy cập kiểm soát (Security/Access Control): Chặn lại các lời gọi trái phép nếu client không có đủ thẩm quyền truy cập vào core object.
+- Tải chậm (Lazy Initialization): Trì hoãn việc khởi tạo một đối tượng khổng lồ tiêu tốn RAM cho tới khi nó THỰC SỰ cần thiết được gọi.
+- Lưu trữ bộ nhớ đệm (Caching/Logging): Log lại tất cả các request đánh vào Database hoặc lưu một mảng Cache kết quả nếu request đó liên tiếp bị người dùng Spam.
+
+## 3. Khi nào ứng dụng
+- Tích hợp Lazy Loading trong ứng dụng có Đồ họa hoặc Kết nối Database. Người dùng lướt Facebook tới đâu, ảnh ảo Proxy mới tải Ảnh Thật từ AWS về (Virtual Proxy).
+- Bảo vệ hệ thống Đăng nhập / Tính năng Admin trong hệ thống CMS quản trị. Hệ thống check token trước ở `AuthProxy` rồi mới cho gọi API thật (Protection Proxy).
+- Quản lý bộ nhớ Caching (Caching Proxy): API gọi lấy "Tỷ giá Vàng" quá nặng, Proxy chặn lại và đưa số liệu hôm qua nếu gọi lặp 100 lần/giây để chống sập Web.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuyệt mật 100%. Bạn có thể thay đổi bất kì trạng thái an ninh, caching, logging nào trên lớp Proxy mà Client không hề hay biết rằng nó chưa hề chạm vào Database lõi.
+- Tuân thủ OCP (Mở/Đóng): Bạn có quyền tạo hàng chục loại Proxy khác biệt chồng lên nhau mà Lớp Thực tế dưới đáy vẫn sạch nguyên.
+
+**Nhược điểm:**
+- Hệ thống bị phình to do phải tạo ra rất nhiều Lớp Đại Diện chứa các Interface giống y hệt Đối tượng gốc.
+- Gây Delay thời gian đáp ứng (Response Time) rất nhẹ do Request luôn bị đập vào Cửa Trạm Kiểm Soát Proxy trước.
+
+---
+
+## 5. Ví dụ minh họa (Bảo Vệ Tính Thẩm Quyền)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao Diện Chung của cả Proxy và Dịch vụ Thực
+interface DatabaseAccess {
+    queryData(userRole: string): void;
+}
+
+// Lõi Cứng DB (Tuyệt đối không được lộ hở)
+class RealDatabase implements DatabaseAccess {
+    public queryData(userRole: string): void {
+        console.log(`[Hệ thống Lưu Trữ Gốc]: Trích xuất Thành công Tài Lượng Khổng Lồ Data Mật cho vai trò [${userRole}].`);
+    }
+}
+
+// Bức Tường Proxy Kiểm Soát Chặt Lọc
+class SecurityProxy implements DatabaseAccess {
+    private realDB: RealDatabase;
+
+    constructor(db: RealDatabase) {
+        this.realDB = db;
+    }
+
+    public queryData(userRole: string): void {
+        console.log(`--> Proxy Đang Đánh Chặn: Kiểm tra quyền quét an ninh tài khoản của vai trò '${userRole}'...`);
+        
+        if (this.checkAccess(userRole)) {
+            // Chỉ thả cửa khi Thỏa Mãn Auth
+            this.realDB.queryData(userRole);
+            this.logAccess(); // Hậu kiểm
+        } else {
+            console.log(`[403 Lỗi Phân Quyền Proxy]: TỪ CHỐI !!! Bạn là '${userRole}', bạn không có cấp quyền Đọc Thông Tin Tuyệt Mật.\n`);
+        }
+    }
+
+    // Module Xử lý Logics Giấu 
+    private checkAccess(userRole: string): boolean {
+        return userRole === "TRÙM_CUỐI_ADMIN";
+    }
+
+    private logAccess(): void {
+        console.log("[Proxy Log Báo Cáo Ghi Lại Mật Hệ]: Đã lưu dấu vân tay thời điểm kết nối của Admin vào tệp hệ thống.\n");
+    }
+}
+
+const realDB = new RealDatabase();
+const proxyTough = new SecurityProxy(realDB);
+
+// TEST 1: Kẻ Khách Vãng Lai Bắn Request Cấm
+proxyTough.queryData("KẺ_LẠ_THƯỜNG_DÂN");
+
+// TEST 2: Sếp Trưởng Server
+proxyTough.queryData("TRÙM_CUỐI_ADMIN");
+
+/* Output: 
+--> Proxy Đang Đánh Chặn: Kiểm tra quyền quét an ninh tài khoản ...
+[403 Lỗi Phân Quyền Proxy]: TỪ CHỐI !!! Bạn là 'KẺ_LẠ_THƯỜNG_DÂN' ...
+
+--> Proxy Đang Đánh Chặn: Kiểm tra quyền quét an ninh tài khoản ...
+[Hệ thống Lưu Trữ Gốc]: Trích xuất Thành công Tài Lượng Khổng Lồ Data Mật cho vai trò [TRÙM_CUỐI_ADMIN].
+[Proxy Log Báo Cáo ...]: Đã lưu dấu vân tay thời điểm kết nối ...
+*/
+```
+
+### ☕ Java
+```java
+// Interface Nòng Giao Thức
+interface VideoDownloader {
+    void downloadVideo(String videoId);
+}
+
+// Module Lõi Kéo Mạng Chậm Rì
+class RealVideoDownloader implements VideoDownloader {
+    public void downloadVideo(String videoId) {
+        System.out.println("Kết nối Rục Rịch Lõi Sever Châu Âu Tải File Nặng Video Cỏ Thật: " + videoId);
+        System.out.println("... Tải Xong Báo Cáo!");
+    }
+}
+
+// Proxy Làm Cache Để Tăng Tốc X10 Lần
+class CachedVideoProxy implements VideoDownloader {
+    private RealVideoDownloader downloader;
+    private String cachedVideoId = null;
+
+    public CachedVideoProxy() {
+        this.downloader = new RealVideoDownloader();
+    }
+
+    public void downloadVideo(String videoId) {
+        System.out.println("\nProxy Caching Trinh Sát Phát Hiện Yêu Cầu...");
+        // Kiểm Tra Lục Lại Tủ Mạng Cũ
+        if (videoId.equals(cachedVideoId)) {
+            System.out.println("-> Cảnh Báo: Truy Cập Tắt - Lôi Ngay Rác Video Đồ Cổ Bộ Nhớ Tạm Để Tiết Kiệm Mạng!!");
+        } else {
+            downloader.downloadVideo(videoId);
+            cachedVideoId = videoId; // Lưu Cache Ghi Nhớ
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        VideoDownloader youtubeAPI = new CachedVideoProxy();
+        
+        youtubeAPI.downloadVideo("MV_SƠN_TÙNG_MP4"); // Cache rỗng nên Download Phẳng
+        youtubeAPI.downloadVideo("MV_SƠN_TÙNG_MP4"); // Dùng Lại Rác Cache Chớp Nhoáng (Không tốn Băng thông Lõi)
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Lõi Mở Đọc File Tối Mật 
+class RealDocument:
+    def __init__(self, filename):
+        print(f"Hệ Thống Phân Khúc Ổ Đĩa: Bắt buộc tiêu tốn 5GB Cấu Cấp Vùng Nhớ Đọc Cuốn [{filename}] vô bộ ROM Tĩnh Khảo Sát...")
+        self.filename = filename
+
+    def display(self):
+        print(f"Mật Vụ File Reader In Ra Nội Dung Toàn Dải Tệp: {self.filename}")
+
+# Ủy Quyền Proxy Trì Hoãn Delay Khi Nào GỌI MỚI TẠO (Virtual Proxy)
+class ProxyDocument:
+    def __init__(self, filename):
+        self.filename = filename
+        self._real_document = None # Trống Rỗng
+
+    def display(self):
+        # Trọng điểm Đánh Tắt Lazy Init Nằm Ngay Ở Khúc Này
+        if self._real_document is None:
+            print("++ Proxy Báo Động: Phát Vận Sự Kiện Lấy Lõi Từ Đáy Nước (Thật Sự Trễ Khởi Tạo ++ ")
+            self._real_document = RealDocument(self.filename)
+        self._real_document.display()
+
+# Chưa tạo vùng RAM Nào Chết Chóc !!
+doc_proxy = ProxyDocument("BÍ_MẬT_QUỐC_GIA.pdf")
+
+print("Client Màn Hình UI đang Load Các Thứ Dạo Chơi Xung Quanh...")
+# Chỉ Khi Nào Bấm Click Coi Thì Lõi Mới Sinh Tồn Hoạt Động
+doc_proxy.display()
+doc_proxy.display() # Lần 2 Không Init Nữa Do Tồn Tại Thể 
+```
+
+### 🐘 PHP
+```php
+<?php
+interface PaymentGateway {
+    public function processCreditCard($amount);
+}
+
+class StripeBankApi implements PaymentGateway {
+    public function processCreditCard($amount) {
+        echo "-> [Cổng Stripe Bank] Máy POS Phát Thẻ Quẹt Báo Mức Giao Dịch Rút Lõi Hết \${$amount}\n";
+    }
+}
+
+class SecurityPaymentProxy implements PaymentGateway {
+    private $realGateway;
+    
+    public function __construct(PaymentGateway $realAPI) {
+        $this->realGateway = $realAPI;
+    }
+
+    public function processCreditCard($amount) {
+        echo "[Cảnh Sát Proxy] Phân Tuyến Radar Phát Hiện Có Vụ Tiêm Nhiễm Thẻ Ăn Cắp Rủi Ro Thấp...\n";
+        
+        if ($amount > 5000) {
+            echo "!! [LỖI BLOCK API] Khoản Tín Rút Ngưỡng Đóng Đỉnh Thủng Quỹ \$5000. Hệ Thống Khóa Từ Từ Rút Tiền Phá Giao Dịch !!\n";
+        } else {
+            $this->realGateway->processCreditCard($amount);
+            echo "[Log Log] Lịch Sử Quét Ngân Hàng Mật Đã Hoàn Thành Thêm Giao Dịch Vào Sổ Cái Phi Yếu Tố.\n";
+        }
+    }
+}
+
+$core = new StripeBankApi();
+$proxy = new SecurityPaymentProxy($core);
+
+echo "Khách Mua Đồ Chuẩn 1 Đồng:\n";
+$proxy->processCreditCard(100);
+
+echo "\nThẻ Bị Trộm Swipe Chùa 1 Triệu Đô Lên Xổ Số:\n";
+$proxy->processCreditCard(10000); 
+?>
+```
+
+### 🦀 Rust
+```rust
+trait SubjectDB {
+    fn request(&self);
+}
+
+struct RealSubject;
+impl SubjectDB for RealSubject {
+    fn request(&self) {
+        println!("  - Lõi Xử Lý Thuật Toán Máy Vùng Rust Đang Chạy Mượt Rền Chữ DB Cực Tốc.");
+    }
+}
+
+// Bức Tường Sắt Cản Rust 
+struct ProxyGuard {
+    real_subject: RealSubject,
+    check_auth: bool,
+}
+
+impl ProxyGuard {
+    fn new(auth_pass: bool) -> Self {
+        ProxyGuard {
+            real_subject: RealSubject,
+            check_auth: auth_pass,
+        }
+    }
+}
+
+impl SubjectDB for ProxyGuard {
+    fn request(&self) {
+        println!("Trạm Áp Gác Proxy: Đo Lường Quét Sinh Trắc Học Security Mật Mã Cửa Ải...");
+        if self.check_auth {
+            self.real_subject.request();
+        } else {
+            println!("! Nguy Hiểm BLOCK: Không Quét Ra Mã Quyền Trượng Thống Soái. Không Check Thẳng Cửa Thức Lõi Root !");
+        }
+    }
+}
+
+fn main() {
+    let auth_fake = ProxyGuard::new(false);
+    auth_fake.request();
+
+    println!("\n  == Đổi Máy Quét Authentication Chuẩn ==  ");
+    let auth_real = ProxyGuard::new(true);
+    auth_real.request();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Header Nòng
+class VideoTool {
+public:
+    virtual void play() = 0;
+    virtual ~VideoTool() {}
+};
+
+// Video Đáy Sâu 
+class HeavyVideo : public VideoTool {
+public:
+    HeavyVideo() { std::cout << "Kích Chuỗi Cáp Quang Kéo RAM Sạc Load Khổng Lồ Data Trái Phiếu Đội 4 Tỷ GB ROM...\n"; }
+    void play() override { std::cout << "   -> C++ Engine: Căng Buồm Phát Chéo Play Sóng Lọc Nét Căng Chóp.\n"; }
+};
+
+// Proxy Bọc Cáp Vỏ
+class LazyVideoProxy : public VideoTool {
+private:
+    std::unique_ptr<HeavyVideo> heavyCore;
+public:
+    void play() override {
+        // Chỉ Khi Khách Gọi Khởi Tạo Phát Chức Căng Thì Dây Mới Nhả Mầm RAM !!!
+        if (!heavyCore) {
+            std::cout << "[Điểm Máy Tạm Proxy] Tín hiệu Yêu Tải Gốc Bắt Đầu. Mở Ruột Móc Cấu...\n";
+            heavyCore = std::make_unique<HeavyVideo>();
+        }
+        heavyCore->play();
+    }
+};
+
+int main() {
+    std::cout << "Máy PC Vừa Khởi Động Load Bảng. Các Đối Trọng Sẵn Sàng (Trừ Vùng Nặng Lazy).\n";
+    LazyVideoProxy thumbnail;
+    
+    std::cout << "Khách Lướt Nhấn Nút Hình:\n";
+    thumbnail.play(); // Quét Load Chạy Init
+    
+    std::cout << "Phát Play Lại Cái Nữa Coi:\n";
+    thumbnail.play(); // Skip Bước Load Tối Mới
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

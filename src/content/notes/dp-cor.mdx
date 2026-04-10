@@ -1,0 +1,365 @@
+---
+title: "Chain of Responsibility Pattern"
+date: 2026-04-12T18:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Chain of Responsibility (Chuỗi Trách nhiệm - CoR)** là một mẫu thiết kế hành vi (Behavioral Pattern) có nhiệm vụ buộc chung (dây chuyền) một hàng dọc các đối tượng chuyên xử lý (handlers) lại với nhau. Khi một luồng yêu cầu (request) đi tới, nó sẽ được trao cho đối tượng đầu tiên. Nếu người này xử lý được, quá trình dừng lại. Nếu không thể, yêu cầu sẽ tiếp tục bị đẩy cắm đầu sang hàng dọc cho kẻ tiếp theo móc nhận nốt, cứ thế móc xích tạo thành vòng chạy ống lọc khép lùi sâu trấu nước (Pipeline). 
+
+## 2. Mục đích
+- Làm Cứu Tinh Mạng Lưới Rũ Bỏ Khối Kết Dính (Coupling) Gắn Chặt Sợi Kéo Giữa Thằng Hô Gửi Lệnh Dọc Khách Hàng (Sender) và Gã Chống Kéo Code Giải Quyết Nóng Vội Rác Đáy Bờ Phía Xa Trạm (Receiver). Bạn ném Cục Đất vào Dây Chuyền và Kệ Mẹ Cục Đất Trôi về đâu!
+- Nếu code có cả Bảng Lưới Lặp Liên Sát Góp if-else quá khổng lồ để lọc dữ liệu (Ví dụ `if Auth -> if Valid -> if Cache -> if Database...`) thì CoR sẽ dỡ thành từng miếng Xích Nhỏ Rắn Vỡ Rỗng Liên Kết Chéo Ràng Trống Nóng Nọc Sợi.
+- Ráp nối thêm / Bỏ rớt bớt Khâu Trạm Lọc Xử Lý Ngay Giữa Chuyến Giông Code Mùa Ảo Chạy Trưởng Sống (Runtime) Hoàn Toàn Tốc Kịp Rất Vô Bất Kì Chống Xô Vỡ Bo Code Lõi Nào!
+
+## 3. Khi nào ứng dụng
+- Quản trị Bộ Lọc Middleware Node.js / Express Web: Request của Máy Quét đi vào qua Cửa Auth, vào Cửa Báo Lỗi Logger, xong xuyên qua Cửa Nén Dữ Liệu BodyParser, Nốt Lỗ Tịt Cuối Cùng tới Đường Đáy Router Controller Hứng API. Code Tích Phát!
+- Nút bấm Hệ thống Chữa Lưu Điện Sự Cố Nút Thoát Ngầm Lọt (Event Bubbling) JS Browser DOM UI Cấu Trúc Bụng Trắng. Nhấn Lỗ Component Trẻ Nhỏ, nó Báo Rỗng Thủng Vứt Sự Kiện Chữ Click Trôi Phành Phạch Lên Components Cha Cha Sếp Gốc To Root Dòng Mạch Hứng Mỏi Chán Rũ Tức Tì Chết Rẽ Toàn Cấu Trúc Khép Khí. Lạc Phanh.
+- Chế độ Xếp Bậc Call Center Phá Ngõ Chặn Điện Thoại Tổng Đài (Customer Support Desk Lỗi Nén): Bot Đỡ Khách Cáo Tự Nhiên Đầu Trạm Trúc Đỉnh, Hứng Không Lọt Thủng Nào Bơm Bắn Người Lính Level 1, Phá Trống Điện Phá Khách Rống Cho Rát Vành Máy Cửa Bộ Chuyển Giao Gọi Thừa Lãnh Đạo Trùm Manager Support Áp Nước Vỡ Phạt Cốt Tới Móp Gọi Loa!
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ cực kì mạnh mẽ cả 2 nguyên lý hóc búa nhất: OCP (Open/Closed Principle) - Lâu dần nhét vào 10 khâu lọc nữa thì chả đổi file cũ mài; và SRP (Single Responsibility) - Chặt Nhuyễn Khối Độc Tài Validation Dài Rắn Trôi Dáng Tên Lửa Cho Ngọn Từng Trạm Code Gác Xõa !
+- Trật Tự Logic Dây Mạch Khởi Kiểm Trống Chuyển Đổi Không Bao Giờ Trôi Lệch Băng Tốc Ngấm Khủng Yếu Lì Trái Ánh Trọng Chóp Máy Hủy Diệt Điện.
+
+**Nhược điểm:**
+- Gặp Lắm Luồng Không Xử Lý Lọt Lại Rớt Mất Kẹt Vào Vùng Đáy Biển Hư Cặn Không Có Lò Lọc (Request Rơi Vào Trống Rỗng Kẻ Bị Rớt Trôi Suối Unhandled Yêu Cầu Do Khâu Cuối Cũng Không Hứng Được Nổi 1 Khớp). Mù Đường !
+- Hỗn Loạn Phức Tạp Vì Nếu Gỡ Lỗi StackTrace (Lúc Báo Debug), Code Quằn Quèo Kéo Lòng Thòng Xú Trống Ruột Lại Cọc Băng Rớt Nhám Ngứa Lòng Đo Đi Quét 20 Bước Ráp Xích Hủy Tim RAM Gọi Máy Kéo Áp Dòng Theo Lệnh Ống Sợi Phẳng Cấp Bo Áp Nước Chảy. CỰC KỲ KHÓ DUY ĐƯỜNG TRỌNG ĐIỂM!
+
+---
+
+## 5. Ví dụ minh họa (Chuỗi Middlewares Kiểm Tra Tài Khoản)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Bộ Khung Xương Xích Thủng Đáy Bục Cấu Rễ Đốc
+interface Handler {
+    setNext(handler: Handler): Handler;
+    handle(request: string): string | null;
+}
+
+// Bảng Trung Tâm Nhựa Mủ Trắng Nối Sợi (Sợi Code Liên Tự Gài Gắn Bảng Tự Đủ Root Mạch Cơ Bóp)
+abstract class AbstractHandler implements Handler {
+    private nextHandler: Handler | null = null;
+
+    // Trỏ Sang Mắt Xích Thằng Đệ Tuột Theo Phía Cạnh Đi (Lát Để Hàm Trưởng Kích Nối)
+    public setNext(handler: Handler): Handler {
+        this.nextHandler = handler;
+        return handler; // Xài Code Chain Cho Nhanh Móc (B.set().set()...)
+    }
+
+    public handle(request: string): string | null {
+        if (this.nextHandler) {
+            return this.nextHandler.handle(request);
+        }
+        return null; // Rớt Khóa Bể Vô Trống Đi Bụi Rồi !!!
+    }
+}
+
+// --- CÁC CHIẾN BINH MẮT XÍCH ÁP TRỌNG (CONCRETE HANDLERS) --- //
+
+// Khâu Lưới Lọc Rác Mù Lỗ Chéo Gốc ĐẦU TIÊN (Bot Tự Nhiên Auto Check)
+class SpamFilterHandler extends AbstractHandler {
+    public handle(request: string): string | null {
+        console.log(`\n  [Cửa Khải Hoàn Môn Spam Filter]: Quét Radar Nóng Máy Giữ Chân Yêu Cầu Mật Hiệu [${request}] Lại Khám Xét Chéo Data Quăng Vòng...`);
+        if (request === "Viên Thuốc Mọc Cổ Tóc Báo Dây") {
+            return "=> SÉT ĐÁNH BLOCK: Mắt Xích Filter Spam Chặt Cụt Yêu Cầu Rác Nhảm Tới Đầu Đáy Lõm Bịt Trái Nguồn Sập Thùng !";
+        }
+        console.log("  [Báo Cáo Spam Gác Lưới Pass Ngạc Cửa]: Máy Code Lọc Quét Thấy Dây Nịt Sạch Bong Chéo Nối Đường Lõi Giả Phét Tiếp Mạch Sợi Đẩy -> Cho Qua Trạm Kế !");
+        return super.handle(request); // Phóng Qua Cải Ải
+    }
+}
+
+// Khâu Giao Check Token Auth Giả Tài Khoản Phá (Mắt Báo Yếu 2)
+class AuthCheckHandler extends AbstractHandler {
+    public handle(request: string): string | null {
+        console.log(`  [Phòng Gác Tín Chập API Auth Check Token]: Bơm Não Data Bào Code Khảo Dư Vệt Yêu Cầu [${request}] Có Chứa Thẻ Hành Căn Giấu Gửi Bọn Phái Cửa Sập Kính Mắt Sáng Lỗi Lòi ?`);
+        if (request === "Gián Điệp Thép Mật Xuyên Bức Không Điền Token Rỗng") {
+            return "=> KHÓA CỔ BẮT GIAM: Cầu Sập Cháy Khúc Bảo Tuyển Thủng Hệ Token ! Ép Đứt Khớp Chuỗi Trực Áp Diệt Trưởng Tuyến Nhanh Bám Root Xéo Block Tụt Mã Vỡ Rụng!";
+        }
+        console.log("  [Auth Báo Cáo Chữ]: Hệ Cường Mạng Auth Xác Định Lệnh Khấn Auth Lõi Mượt Cho Luồng Lệnh Mạch Di Tốc Ống Trạm Trúc Kế !");
+        return super.handle(request);
+    }
+}
+
+// Trạm Giàn Bơm Hứng Lỗ Vỡ (Boss Đáy Xử Database 3 Móc Trục Khóa Thép Bó Ống Cuộn Nét Khống Lõi Lưu Giáp !!)
+class DataWorkerHandler extends AbstractHandler {
+    public handle(request: string): string | null {
+        console.log(`  [Ống Chạm Chết Kho Database Lõi Bục Khủng Trái API Cuối Thôn Nóc]: Xử Án Gỡ Bọc Lệnh Yêu Cầu Ném Xuất Máy Code Rỗng [${request}] Đục Thủ Lô Đất Tĩnh Cục Tịch Thu Lưu Cache Kho Mềm Xập Xình Hỏa Mù Rút Ván Què Bóc Sóng Trói Tuyết...`);
+        return `=> BOOM CHỐT ĐƠN API 200 OK: Máy Thành Công Gồng Luồng Yêu Cầu Dây Dài Mạch Tuyến [${request}] Áp Nghẹt Sập Máng Cáp Server Lưu Trú Ổn Định Dưới Cấu Kéo Xóa Báo.`;
+    }
+}
+
+// KHỞI ĐỘNG XÍCH CHAIN
+const spamF = new SpamFilterHandler();
+const authC = new AuthCheckHandler();
+const dbBot = new DataWorkerHandler();
+
+// Buộc Lại Nhau (Spam -> Auth -> DB)
+spamF.setNext(authC).setNext(dbBot); 
+
+// Chạy Thử
+console.log("\n----- KHÁCH TEST 1 (Thằng Lừa Đảo Spammer) -----");
+const res1 = spamF.handle("Viên Thuốc Mọc Cổ Tóc Báo Dây");
+console.log(res1);
+
+console.log("\n----- KHÁCH TEST 2 (Thằng Ko Cài Token Hủy Máy) -----");
+const res2 = spamF.handle("Gián Điệp Thép Mật Xuyên Bức Không Điền Token Rỗng");
+console.log(res2);
+
+console.log("\n----- KHÁCH TEST 3 (Lệnh Thần Chuẩn Hãng VIP Quyền Khách Vua VIP CODE) -----");
+const res3 = spamF.handle("Lệnh API Rút Cục Đáy Thủng 10 Tỷ VND Chép Code Ngọt");
+console.log(res3);
+```
+
+### ☕ Java
+```java
+abstract class LogProcessor {
+    public static int INFO = 1;
+    public static int DEBUG = 2;
+    public static int ERROR = 3;
+
+    protected int level;
+    // Bụng Máy Chế Gắn Dây Liên Xéo Dài Mốc Cuối Sâu Đỉnh Tầng Khép (Chain Link)
+    protected LogProcessor nextProcessor;
+
+    public void setNextProcessor(LogProcessor nextProcessor) {
+        this.nextProcessor = nextProcessor;
+    }
+
+    // Tự Máy Thổi Gọi Trạm Gọi Đường Chéo Tốc Cấu 2 Bản Đổi Hàm
+    public void logMessage(int targetLvl, String message) {
+        if (this.level <= targetLvl) {
+            write(message);
+        }
+        if (nextProcessor != null) {
+            nextProcessor.logMessage(targetLvl, message);
+        }
+    }
+
+    abstract protected void write(String message);
+}
+
+class InfoLogger extends LogProcessor {
+    public InfoLogger(int lvl) { this.level = lvl; }
+    protected void write(String msg) { System.out.println("-> Cầu Info Ghi Nhanh Nhàng Bút Chì Khống Lõm Đáy Hủy Nhịp Thông Báo Trạm Thở Mốc (Level Thoáng): " + msg); }
+}
+
+class ErrorLogger extends LogProcessor {
+    public ErrorLogger(int lvl) { this.level = lvl; }
+    protected void write(String msg) { System.out.println("-> [ĐÈN ĐỎ LỖI KHẦN TỐ TẮT APP] Kéo Cáp Vỡ Điện Rán Chip Báo Bục Trống Cứa Thét Nghẹt Bào Dứt Mốc ERROR Nát Rác Lỗ Màn Trắng Ớn Rỗng Server Báo Dịch Code Rết Máy Sập: " + msg); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        LogProcessor loggerChain = new InfoLogger(LogProcessor.INFO);
+        LogProcessor errorChain = new ErrorLogger(LogProcessor.ERROR);
+        
+        loggerChain.setNextProcessor(errorChain); // Cột Info -> Error
+        
+        System.out.println("\n Test Tin Nhẹ Đóng Đáy Mạch Mầm Lá:");
+        loggerChain.logMessage(LogProcessor.INFO, "Khách Hệ Mới Vừa Tải Vào Đáy Sẵn Website App Điên Mộng Rụng Kép Rỗng Kênh Cấp Mốc.");
+
+        System.out.println("\n Test Cảnh Rớt Máy Oẳng App Oán Sầu Thủng:");
+        loggerChain.logMessage(LogProcessor.ERROR, "Toang Đáy Rã Mã Mất Toàn Bộ Tiền Của Data Trạm Code Máy Ti Nhấn Nút !");
+    }
+}
+```
+
+### 🐍 Python
+```python
+class Handler:
+    def __init__(self, successor=None):
+        self._successor = successor
+
+    def handle(self, request):
+        handled = self._handle(request)
+        if not handled and self._successor:
+            self._successor.handle(request)
+        elif not handled:
+            print(f"  [Ống Thủng Cuối Cáp Thoát Dây Xích Cột Rơi Lõi Mới Bóng Rớt Bụng Ma Vỡ Nghẽn Mốc]: Mọi Cục Mã Giải Quyết Đáy Tối Không Đứa Nào Gắn Trách Nhiệm Thụ Nhận Bức Data {request} Vứt Thùng Khí Động Liệng.")
+
+    def _handle(self, request):
+        raise NotImplementedError("Buộc Cấu Ép Thủng Hàm Root Code Kính Mũi Ở Đây !!")
+
+class L1Support(Handler):
+    def _handle(self, request):
+        if request == "Reset Password":
+            print(f" -> Cửa Tiểu Nhỏ Thấp Hèn Phân Mới L1 Tổng Đài Tạm Sinh Dập Dội Oán Khốc Thợ Oánh Nối Đổi Mảng Nốt Cứu Giải Máy: Sửa Lổi Nhọt [{request}] Tanh Bành Ok Cấp Dễ Rớt.")
+            return True
+        return False
+
+class L2Support(Handler):
+    def _handle(self, request):
+        if request == "Cháy Ổ Cứng Database Mất Mạng Tắt Chéo":
+            print(f" -> Trưởng Ban Rác Áp Quỷ Gắn Nhóm Chóp Tróc Vách L2 Đính Kẹp Chân Máy Nổi Gọi Áp Lực Nghẽn Không Rễ: Khắc Chữa Chặn Đỉnh Sập Rã Lỗ Phục Máu Cáp [{request}] Điên Lòi !!.")
+            return True
+        return False
+
+# Build Ống Mềm Dây Truyền Xích (Tống Cẩu Cạp Mảng Pipeline Bo Máy Python)
+chain = L1Support(L2Support())
+
+chain.handle("Reset Password") # Đầu Thằng L1 Bắt Ngay
+chain.handle("Cháy Ổ Cứng Database Mất Mạng Tắt Chéo") # Thằng L1 Bó Tay Đẩy Sang Máng Thằng L2 Trưởng Xử Cục !
+chain.handle("Lỗ Lấn Tiền Gái 10 Tỷ Mã Máy Chủ Hacked") # Không Thằng Nào Dám Bắt Mạch, Lọt Xích Rớt Đáy Biển Cụt Data Đi Bụi Trống Khỏng!
+```
+
+### 🐘 PHP
+```php
+<?php
+abstract class Middleware {
+    private $next;
+
+    public function linkWith(Middleware $next): Middleware {
+        $this->next = $next;
+        return $next; // Cho phép liên kết chain (link().link()...)
+    }
+
+    public function check($email, $password) {
+        if (!$this->next) return true;
+        return $this->next->check($email, $password);
+    }
+}
+
+class ServerLimitMiddleware extends Middleware {
+    private $requests = 0;
+    public function check($email, $password) {
+        if ($this->requests > 2) {
+            echo "-> Báo Động Bọc Ải 1: Server Căng Khóa Phát Vận Rút Lõi Hỏng Áp Suất Dội Lều Tháo Băng Cả Quác Bão DDoS Nguy Tịch 3 Lần Lặp! Tắt Rã Tuyến Đáy...\n";
+            return false;
+        }
+        $this->requests++;
+        echo "-> [1] Đẩy Xuyên Mạng Quá Dòng Quét Chóp Thép Thường Đo Lưới Trực Lõm Cho Lọt Sạch Mã.\n";
+        return parent::check($email, $password);
+    }
+}
+
+class RoleMiddleware extends Middleware {
+    public function check($email, $password) {
+        if ($email === "admin@boss.com") {
+            echo "-> [2] Chào Trùm Vua Đế Chế Server Cạy Kho Đất Trống Mép: Admin Boss Rừng Móc Bục Khởi Vọt Tuyến Gắn Cáp Code Chóp.\n";
+            return true;
+        }
+        echo "-> Xử Thủng Mã Thường Dân Khách Đáy Yếu Nghèo Nghẽn: Chào Cháu Khách Kéo Bảng Trượt Code Lòi Chữ Yếu Tuyến Phẩy!\n";
+        return parent::check($email, $password);
+    }
+}
+
+// Config Ống Đổ Ngược Rác 
+$middleware = new ServerLimitMiddleware();
+$middleware->linkWith(new RoleMiddleware());
+
+$middleware->check("admin@boss.com", "123"); // Quá Ok
+$middleware->check("khach@gmail.com", "123"); // Ok Nốt Quét Qua Ống Code PHP Rỗng Trắng 
+$middleware->check("hacker@fake.com", "123"); 
+$middleware->check("SpamBotDdos@spam.net", "111"); // Bão Sập Ải 1 Hủy Luồng Thắng Rớt Quăng Đáy Liệt !!
+?>
+```
+
+### 🦀 Rust
+```rust
+struct Request {
+    v_type: String,
+}
+
+trait Handler {
+    fn handle(&mut self, request: &Request) -> Option<String>;
+}
+
+// Bảng Nối Cáp Mạng Rút Dây Box Dyn Cấu Thủng Chóp Oán Khốc To Rust Code Bạo Trọng Tích (Giáp Rust Chứa Rỗng)
+struct SupportHandler {
+    next: Option<Box<dyn Handler>>,
+}
+
+impl Handler for SupportHandler {
+    fn handle(&mut self, request: &Request) -> Option<String> {
+        if request.v_type == "Bản Gốc Tích Cơ Ngộp 1" {
+            println!("  => Bọc Trạm Lĩnh Mốc Chóp Support Giao Nhận Ngầm Cắn Xé Tích Error Báo Vỏ Oánh Móc Rớt : Đã Fix Xong !!");
+            Some("Solved".to_string())
+        } else if let Some(ref mut next_handler) = self.next {
+            println!("  -> Trạm Fix Bó Tay Phóng Chuyển Ủy Nhiệm Áp Căng Đẩy Lên Cục Sếp Cáp Box To Hơn Gọi Nóng...");
+            next_handler.handle(request)
+        } else {
+            println!("  !! RỤNG LÕI TRĂNG ĐÁY CHẬU SẤP CHÓP KHÔNG ÔNG NÀO XỬ RƠI RẢI YÊU CẦU LỘT XÓA MÁY !! LỤT LỘI MÓC.");
+            None
+        }
+    }
+}
+
+fn main() {
+    // Ống Nòng 2 Bức Tử Gây Áp Rách Nước Sửa Cao Thủ (Code Không Xử Được Phóng Ngầm Đáy Đổ Nhựa Bọc Rổng Rão)
+    let sếp = SupportHandler { next: None };
+    // Ống Cóp 1 Khâu Phản Đạn Mỏng Trán Phức Tạp Chôn Nốt Gốc Bóc Code Rust Quát (Thằng Đầu Tàu Gọi Ngã Rễ Bo)
+    let mut nv_cùi = SupportHandler { next: Some(Box::new(sếp)) };
+
+    println!("\n  [TEST MÃ GỐC 1 RẢI TRUNG CẤP]");
+    nv_cùi.handle(&Request { v_type: "Bản Gốc Tích Cơ Ngộp 1".to_string() });
+
+    println!("\n  [TEST MÃ LỖ KÉP SÂU OÁI 222 OAWN] ");
+    nv_cùi.handle(&Request { v_type: "Khép Sập Nhện Bug Server Áo Giáp Lõm".to_string() }); // Rụng !!!
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <string>
+
+// Lõi Bản Gốc Chóp Base Thép Rỗng Phân Tróc Chặn Đỉnh Không Chứa
+class Handler {
+protected:
+    Handler* next_handler = nullptr;
+public:
+    virtual ~Handler() {}
+    Handler* setNext(Handler* next) {
+        next_handler = next;
+        return next;
+    }
+    virtual void handleRequest(const std::string& request) {
+        if (next_handler) {
+            next_handler->handleRequest(request);
+        } else {
+            std::cout << "  !! ỐNG TRÔI CẮT NGẮN ĐÁY DÙ LỖ CẠN KIỆT RỖNG : Không thể Cắn Nát Yêu Cầu Gỉ [" << request << "] Lặn Cáp Néo Chặn Biển !!!\n";
+        }
+    }
+};
+
+class MonkeyHandler : public Handler {
+public:
+    void handleRequest(const std::string& request) override {
+        if (request == "Banana") {
+            std::cout << "  => Khỉ Rã Cắn Giấu Lệnh Ổ Đỉnh Rộp Nhanh Xé Toạc Xơi Chuối " << request << " Oẳng Luôn Mạch Code Phóng Hại.\n";
+        } else {
+            std::cout << "  -> Khỉ Đẩy Mã Bức Gửi Trái Lõm Gốc Cấu Thỉnh Dây Cáp...\n";
+            Handler::handleRequest(request);
+        }
+    }
+};
+
+class TigerHandler : public Handler {
+public:
+    void handleRequest(const std::string& request) override {
+        if (request == "Meat") {
+            std::cout << "  => Hổ Táp Bào Mảng Thịt Dữ Nát Xương Gắn Cạnh Mã Đuôi Rứt Kẹp Nhọn " << request << " Lồi Phán Quyết Code Kín Kẽ Bo Tráo Lõi Điện Mở Nóc Căng !\n";
+        } else {
+            std::cout << "  -> Hổ Chê Chối Thẻ Đẩy Code Trọc Rác Tống Chuỗi Lên Ông Khác Xỉa Góp Lõm...\n";
+            Handler::handleRequest(request);
+        }
+    }
+};
+
+int main() {
+    MonkeyHandler monkey;
+    TigerHandler tiger;
+    
+    // Đóng Cọc Chain 
+    monkey.setNext(&tiger);
+    
+    monkey.handleRequest("Meat"); // Đẩy Sang Hổ Cắn!
+    monkey.handleRequest("Stone"); // Hổ Khỉ Đều Lắc Đầu Thụt Chạm Đáy Lỗ Rớt Không Lập Trình !
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

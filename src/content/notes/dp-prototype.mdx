@@ -1,0 +1,246 @@
+---
+title: "Prototype Pattern"
+date: 2026-04-12T05:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Prototype** là một mẫu thiết kế khởi tạo cho phép tạo ra các đối tượng mới bằng cách sao chép (clone) từ một bản nguyên mẫu (prototype instance) đã tồn tại ban đầu, thay vì khởi tạo lại từ đầu (instantiation) thông qua hàm tạo (constructor). Bạn nhận được một bản sao chính xác và độc lập từ đối tượng gốc.
+
+## 2. Mục đích
+- Ẩn giấu hoàn toàn logic và sự phức tạp của quá trình khởi tạo một đối tượng mới đắt đỏ.
+- Giảm thiểu tài nguyên (bộ nhớ, CPU) nếu việc khởi tạo một object tiêu tốn nhiều chi phí phần cứng (chẳng hạn tải dữ liệu nặng từ Database).
+- Thay thế hoàn toàn hàng loạt các class nhỏ bằng cách setup trước sẵn các Prototype với các cấu hình trạng thái (state) mặc định.
+
+## 3. Khi nào ứng dụng
+- Hệ thống cần tạo rất nhiều object nhưng hầu hết chúng chia sẻ chung 99% trạng thái giống nhau (ví dụ: tạo quái vật trong game, enemy có cùng thông số máu).
+- Khi bạn muốn giảm việc tạo subclass thừa thãi do việc tuỳ biến dữ liệu khởi tạo. Thay vì tạo class `RedButton`, tạo class `BlueButton`, bạn chỉ cần tạo prototype `Button` và clone ra.
+- Khi làm việc với dữ liệu đối tượng cấu trúc cây, DOM giả (Virtual DOM).
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tăng tốc độ chương trình nhờ copy bộ nhớ (clone) tốc độ cao thay vì chạy qua hàng loạt method constructor lồng nhau phức tạp.
+- Tránh phụ thuộc vào các lớp cụ thể khi bắt tay thiết lập đối tượng phức tạp.
+
+**Nhược điểm:**
+- Việc sao chép đối tượng lồng ghép sâu (deep copy) cực kì phức tạp nếu object chứa các tham chiếu tuần hoàn (circular references).
+- Một số ngôn ngữ mặc định chỉ hỗ trợ `Shallow Copy` (sao chép nông), buộc bạn phải code lại toàn bộ phương thức clone cho từng đối tượng nồng (nested objects).
+
+---
+
+## 5. Ví dụ minh họa (Shape Cloner)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao thức Yêu cầu đối tượng phải có khả năng Nhân Bản
+interface Prototype {
+    clone(): this;
+}
+
+class Shape implements Prototype {
+    public color: string;
+    public x: number;
+    public y: number;
+
+    constructor(color: string, x: number, y: number) {
+        this.color = color;
+        this.x = x;
+        this.y = y;
+    }
+
+    // Thực hiện cơ chế Clone mượn có sẵn của JS Prototypes
+    public clone(): this {
+        console.log(`[Hệ thống] Đang tiến hành nhân bản hình khối màu ${this.color}...`);
+        // Object.create sẽ lấy nguyên mẫu hiện tại làm khung cho object mới
+        const cloned = Object.create(this);
+        return cloned;
+    }
+}
+
+// Khởi tạo Hình Học Bản Gốc (Original)
+const originalShape = new Shape("Đỏ (Red)", 10, 20);
+
+// Khởi tạo Phân Thân (Cloned)
+const clonedShape = originalShape.clone();
+
+// Độc lập Data hoàn toàn, ta đổi màu Bản Phân Thân
+clonedShape.color = "Xanh Nước Biển (Blue)"; 
+
+console.log(`Màu của bản gốc: ${originalShape.color}`); // Output: Đỏ (Red)
+console.log(`Màu của bản sao: ${clonedShape.color}`);  // Output: Xanh Nước Biển (Blue)
+```
+
+### ☕ Java
+```java
+// Java cung cấp sẵn Built-in Interface là Cloneable
+abstract class Shape implements Cloneable {
+    private String color;
+
+    public Shape(String color) { this.color = color; }
+    
+    public void setColor(String c) { this.color = c; }
+    public String getColor() { return this.color; }
+
+    // Chỉ việc đè override hàm clone có sẵn
+    @Override
+    public Shape clone() {
+        try {
+            System.out.println("[Memory] Tiến hành Shallow Copy cho khối hình học này.");
+            return (Shape) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}
+
+// Khối Hình Tròn mở rộng
+class Circle extends Shape {
+    public int radius;
+    
+    public Circle(String color, int radius) {
+        super(color);
+        this.radius = radius;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Circle circle1 = new Circle("Xanh Lá (Green)", 10);
+        
+        // Tạo biến thể nhờ phép Clone siêu tốc thay vì dùng Hàm New
+        Circle circle2 = (Circle) circle1.clone();
+        circle2.setColor("Đỏ (Red)");
+        
+        System.out.println("Hình tròn gốc: " + circle1.getColor()); // Xanh Lá
+        System.out.println("Hình tròn copy: " + circle2.getColor()); // Đỏ
+    }
+}
+```
+
+### 🐍 Python
+```python
+import copy
+
+class Shape:
+    def __init__(self, color: str):
+        self.color = color
+        
+    def clone(self):
+        print(f"Bắt đầu quy trình nhân bản sâu cấu trúc cho mẫu màu: {self.color}")
+        # Thư viện thiết yếu của Python copy.deepcopy giúp nhân bản mảng phức tạp đa cấp
+        return copy.deepcopy(self)
+
+# Tạo bản gốc màu Tím
+s1 = Shape("Tím (Purple)")
+
+# Copy toàn bộ gen của s1 tạo thành s2
+s2 = s1.clone()
+
+# S2 độc lập thay đổi không ảnh hưởng gốc
+s2.color = "Vàng (Yellow)"
+
+print("Bản thể 1:", s1.color) # Tím (Purple)
+print("Bản thể 2:", s2.color) # Vàng (Yellow)
+```
+
+### 🐘 PHP
+```php
+<?php
+class Shape {
+    public $color;
+
+    public function __construct($color) {
+        $this->color = $color;
+    }
+
+    // PHP có Magic Method phục vụ đặc thù cho việc Clone
+    public function __clone() {
+        echo "Cảnh báo PHP: Lệnh nhân bản đối tượng đã được đánh thức.\n";
+        // Có thể thực hiện deep copy ở đây nếu thuộc tính là dạng object lồng nhau
+    }
+}
+
+$s1 = new Shape("Đen Tuyền (Black)");
+
+// Dùng thẳng từ khóa clone có sẵn của lõi Ngôn ngữ
+$s2 = clone $s1;
+$s2->color = "Trắng Tinh Quốc (White)";
+
+echo "Mẫu màu thiết kế 1: " . $s1->color . "\n"; // Đen
+echo "Mẫu màu thiết kế 2: " . $s2->color . "\n"; // Trắng
+?>
+```
+
+### 🦀 Rust
+Rust có sẵn Trait `Clone` thần thánh dùng chuyên dụng cho Pattern này.
+```rust
+// Việc gán #[derive(Clone)] bảo Compiler tự sinh code clone sao chép memory
+#[derive(Clone, Debug)]
+struct Shape {
+    color: String,
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    let s1 = Shape {
+        color: "Cam Tươi (Orange)".to_string(),
+        x: 15,
+        y: 20,
+    };
+    
+    println!("Trạng thái: Đang chuẩn bị gọi lệnh Rust Clone...");
+    
+    // Sử dụng cơ chế Clone sao chép vùng nhớ sâu (Deep copy) nhẹ nhàng của Rust
+    let mut s2 = s1.clone();
+    s2.color = "Xám Tro (Gray)".to_string();
+    
+    println!("Thông số Object S1 thuần: {:?}", s1.color); // Cam Tươi
+    println!("Thông số Object S2 Đã đổi tính: {:?}", s2.color); // Xám Tro
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+
+// Cấu trúc Form Giao Diện Prototype 
+class Shape {
+public:
+    std::string color;
+    Shape(std::string c) : color(c) {}
+    virtual ~Shape() {}
+    
+    // Yêu cầu hàm clone() trả về Con Trỏ Trực Tiếp (Smart pointer)
+    virtual std::unique_ptr<Shape> clone() const = 0;
+};
+
+// Hình Chữ Nhật
+class Rectangle : public Shape {
+public:
+    int width, height;
+    Rectangle(std::string c, int w, int h) : Shape(c), width(w), height(h) {}
+    
+    // Sao chép Memory Data Default thông qua std::make_unique
+    std::unique_ptr<Shape> clone() const override {
+        std::cout << "[Core C++] Thực hiện copy toàn bộ cấp phát động qua Construct mới.\n";
+        return std::make_unique<Rectangle>(*this); 
+    }
+};
+
+int main() {
+    auto r1 = std::make_unique<Rectangle>("Hồng Đào (Pink)", 100, 200);
+    
+    // Nhân bản nó
+    auto r2 = r1->clone();
+    
+    std::cout << "Data Copy Thành công mang màu: " << r1->color << "\n"; // Hồng Đào
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

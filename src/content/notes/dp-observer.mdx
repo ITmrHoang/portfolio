@@ -1,0 +1,381 @@
+---
+title: "Observer Pattern"
+date: 2026-04-12T13:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Observer (Người Quan Sát)** là một mẫu thiết kế hành vi (Behavioral Pattern) định nghĩa nên một cơ chế đăng ký (subscription mechanism). Thông qua đó, một đối tượng gốc liên tục thông báo ra cho hàng loạt các đối tượng bám sát theo dõi quanh nó về bất kỳ loại sự kiện hay trạng thái nẩy mầm nào đã thay đổi.
+
+## 2. Mục đích
+- Xây dựng mạng lưới liên kết thông báo "Một-Nhiều" (One-to-Many). Nếu Đối tượng Trọng Tâm bị thay đổi (giảm giá đồ, đổi tên...), tất cả các bộ phận Râu Ria đi kèm sẽ ngay lập tức xoay chuyển mà không cần chọc vào hàm Lõi sửa code.
+- Áp dụng nguyên lý Push-Pull trong Stream kết nối trực tiếp, thay vì kẻ theo dõi (Subscriber) phải chạy gọi hàm Polling Check Check liên tục.
+- Giải pháp "cứu tinh" cho lập trình Frontend (Event Listeners), Mô hình Phản Ứng (Reactive Programming).
+
+## 3. Khi nào ứng dụng
+- Nút (Button Click) trên giao diện Web Browser: Khi ấn nút, tất cả hàm liên kết (Listener) sẽ được Cục Lăng Kính Bắt Rẽ Trigger chạy liên hồi.
+- Chế độ Theo dõi (Subscribe) trên YouTube: Khi kênh ra Video mới nhất (Subject), mọi Subscriber sẽ nhận về Chuông Thông Báo Đồng thời ở điện thoại của riêng họ.
+- Ứng dụng Chứng Khoán Real-time: Khi giá mã Vàng nhảy 1 đồng, đồng loạt 5 Bảng Biểu Đồ Điện Tử UI (Bảng Cột, Điểm Cân, Nhảy Số Mức) update số nháy ngay tắp lự.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Đặc tính Open/Closed (OCP). Bạn gạt đi hàng đống file code bị nhét gọi nhau trực tiếp. Thích thêm bao nhiêu Người Theo Dõi Mới (Observers) thoải mái mà cái Đài Phát (Subject) nó không cần biết cũng chẳng vỡ code. 
+- Mối liên kết (Coupling) Cực Kì Lỏng Lẻo. Đối tượng Lõi chả buồn bận tâm những đứa đang cắm theo dõi mình làm nghề ngỗng gì, nó cứ vứt cái thông báo vào khoảng không.
+
+**Nhược điểm:**
+- Các Observers được gọi báo ngẫu nhiễn hoặc theo thứ tự mảng. Khó quản lý dòng chảy "Ai được nhận báo trước tiên?".
+- Dễ dẫn bẫy Lỗ Hổng Kịch Độc: Memory Leaks (Tràn RAM vỡ mòn) nếu Observer theo dõi mãi mà quên tháo gỡ (Unsubscribe), làm cho Hệ Thống Treo Ram treo CPU mút mùa.
+
+---
+
+## 5. Ví dụ minh họa (Bản Tin Kênh Thời Tiết)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao Diện Cụ Đi Theo Dõi (Observer/Subscriber)
+interface Observer {
+    update(temperature: number, humidity: number): void;
+}
+
+// Giao Diện Đài Trạm Thông Tín (Subject/Publisher)
+interface SubjectWeather {
+    registerObserver(o: Observer): void;
+    removeObserver(o: Observer): void;
+    notifyObservers(): void;
+}
+
+// KHỐI RỄ CHÍNH - TRẠM THÔNG BÁO THỜI TIẾT ĐỊA PHƯƠNG
+class WeatherDataStation implements SubjectWeather {
+    private observers: Observer[] = [];
+    private temp: number = 0;
+    private humidity: number = 0;
+
+    public registerObserver(o: Observer): void {
+        this.observers.push(o);
+        console.log("Trạm Tổng: Đã chắp nối Cáp Lưu thêm một thiết bị Nhà Báo theo dõi mới.");
+    }
+
+    public removeObserver(o: Observer): void {
+        this.observers = this.observers.filter((obs) => obs !== o);
+        console.log("Trạm Tổng: Bẻ gãy Cáp xóa tháo gỡ thiết bị Khách hỏng.");
+    }
+
+    // Bơm Data vào Cục Rễ => Rễ truyền Phóng xạ Lan Tỏa ra tất cả các cành (Notify)
+    public setMeasurements(temp: number, humidity: number): void {
+        console.log(`\n\n[Bão Hệ Thống API Update]: Nạp Data Mới -> Nhiệt: ${temp}°C, Ẩm Cấp: ${humidity}%`);
+        this.temp = temp;
+        this.humidity = humidity;
+        this.notifyObservers();
+    }
+
+    public notifyObservers(): void {
+        for (const observer of this.observers) {
+            // Ném tham biến vào bộ mặt của các nhánh bám rễ
+            observer.update(this.temp, this.humidity);
+        }
+    }
+}
+
+// --- CÁC CHIẾC LÁ KHÁCH HÀNG (CONCRETE OBSERVERS) NGHÓNG ĐỢI DATA --- //
+
+// Khách Cài App Lấy Thông Tin Màn Hình Nhỏ
+class CurrentConditionDisplay implements Observer {
+    public update(temp: number, humidity: number): void {
+        console.log(`      📱 [App Mobile Đẩy Thông Báo Ping]: Nhiệt độ Gắt ${temp} Độ C - Mồ hôi ướt át tại tỷ lệ ${humidity}%. Vui lòng uống đủ Nước !`);
+    }
+}
+
+// Màn Hình Bảng Lớn Chuyên Báo Cáo Xu Hướng Thuật Toán
+class StatisticsTabDisplay implements Observer {
+    public update(temp: number, humidity: number): void {
+        console.log(`      📈 [Bảng Điện Tử Sàn Rực Lửa Chóp]: Tình hình mức độ Trái Đất Nóng Lên Dải Tuyến Vĩ Mô Xuyên Lục Địa đã chạy vào: Tổng Điểm Quét Sâu Mùa ${temp * 1.5} Chuẩn Hóa Rõ Ràng.`);
+    }
+}
+
+// Bắt Đầu Thiết Lập Đường Dây Game Update
+const stationCore = new WeatherDataStation();
+
+const phoneApp = new CurrentConditionDisplay();
+const giantMonitor = new StatisticsTabDisplay();
+
+stationCore.registerObserver(phoneApp);
+stationCore.registerObserver(giantMonitor);
+
+// SẢN XUẤT TRIGGER NẢY MẦM CODE EVENT
+stationCore.setMeasurements(25, 65);
+stationCore.setMeasurements(38, 90);
+```
+
+### ☕ Java
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+// Kế Hoạch Ống Máng Observer
+interface Follower { void update(String newsPost); }
+
+// Lớp Truyền Thông YouTuber Khủng
+class YouTuberChannel {
+    private List<Follower> fans = new ArrayList<>();
+    private String latestVideoTitle;
+
+    public void subscribe(Follower f) { fans.add(f); }
+    public void unsubscribe(Follower f) { fans.remove(f); }
+
+    public void uploadVideo(String title) {
+        this.latestVideoTitle = title;
+        System.out.println("\n[Máy Chủ Kênh Độ Mixi]: Nháy Nút UPLOAD BOM TẤN Video -> " + title);
+        notifyFans();
+    }
+
+    private void notifyFans() {
+        for(Follower f : fans) {
+            f.update(latestVideoTitle);
+        }
+    }
+}
+
+// Từng Cá Nhận User
+class UserMobile implements Follower {
+    private String name;
+    public UserMobile(String n) { this.name = n; }
+    
+    public void update(String newsPost) {
+        System.out.println("  🔔 (TingTing) Điện thoại Cháu " + name + " Rung Chuông Push Thông Báo Căng : Anh Em Vào Coi [" + newsPost + "] lẹ !");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        YouTuberChannel doMixi = new YouTuberChannel();
+        Follower toi = new UserMobile("Thằng Cua Em");
+        Follower anhTrai = new UserMobile("Thằng Hạo Trọc");
+        
+        doMixi.subscribe(toi);
+        doMixi.subscribe(anhTrai);
+        
+        doMixi.uploadVideo("GIẢI ĐẤU LÀNG NHÁNH VĐQG GAMING CHẤN ĐỘNG");
+        
+        System.out.println("-> Thằng Hạo Bỏ Quýt Unsub Xóa Kênh Cho Nhẹ RAM Cảnh Cáo");
+        doMixi.unsubscribe(anhTrai);
+        
+        doMixi.uploadVideo("VLOG DU LỊCH TRẢI TRẺ QUOTE NỊNH TÀI KHOẢN");
+    }
+}
+```
+
+### 🐍 Python
+```python
+# Bảng Nguồn (Subject)
+class AuctionItem:
+    def __init__(self, name):
+        self.item_name = name
+        self.current_price = 0
+        self.bidders = []
+
+    def register_bidder(self, bidder):
+        self.bidders.append(bidder)
+
+    def new_bid_price(self, new_price):
+        if new_price > self.current_price:
+            self.current_price = new_price
+            print(f"\n[Phiên Đấu Cáo Đỏ Lửa]: Chủ Trì La Hét Giá Cao Nhất Của Bức Tranh Nghệ Thuật [{self.item_name}] Được Đẩy Lên Mốc Mới Tròn Trĩnh => {self.current_price} Tỷ Cụ")
+            self.notify_bidders()
+
+    def notify_bidders(self):
+        for b in self.bidders:
+            b.receive_alert(self.item_name, self.current_price)
+
+# Hệ Người Chơi Khô Máu (Observer List)
+class BuyerBidder:
+    def __init__(self, name):
+        self.name = name
+
+    def receive_alert(self, item, price):
+        print(f"    -> Đại Gia Rủng Rỉnh {self.name} Nhấp Chuột Đỏ Máy Nhận Tin Trả Giá Sốc: Đồ {item} rớt vào Giá Rẻ Lỗ {price} Tỷ Nữa Đấy.")
+
+painting = AuctionItem("Tranh Của Leonardo DaVinci Siêu Hiếm Bịt Mắt")
+buyer1 = BuyerBidder("Vương Tư Thông Cậu Ấm")
+buyer2 = BuyerBidder("Bill Gates Vợ Đòi Quà")
+
+painting.register_bidder(buyer1)
+painting.register_bidder(buyer2)
+
+# Cuộc Chiến Kéo Chuông Update Notification
+painting.new_bid_price(100)
+painting.new_bid_price(500)
+```
+
+### 🐘 PHP
+```php
+<?php
+// PHP Core Engine Đã Tặng Sẵn Cho Bộ Giao Diện Xịn Nhất Thế Gian Này SplObserver !!
+class StockSubject implements SplSubject {
+    private $observers;
+    private $price;
+    private $ticker;
+
+    public function __construct($ticker) {
+        $this->observers = new SplObjectStorage();
+        $this->ticker = $ticker;
+    }
+
+    // Nhét Bọc Quan Sát Viên Gọi Kèo
+    public function attach(SplObserver $observer): void {
+        $this->observers->attach($observer);
+    }
+    public function detach(SplObserver $observer): void {
+        $this->observers->detach($observer);
+    }
+    
+    // Nổ Còi Phóng Thông Báo Tán Trái Thẳng Mặt Đứa Lót Dép Hóng !
+    public function notify(): void {
+        foreach ($this->observers as $obs) {
+            $obs->update($this);
+        }
+    }
+
+    public function setPrice($money) {
+        echo "\n[SÀN CHỨNG KHOÁN WALL STREET] Cổ Phiếu Vàng {$this->ticker} Dao Động Giật Giảm Còn Lỗ {$money} Ngàn Củ Hành Mạch.\n";
+        $this->price = $money;
+        $this->notify();
+    }
+    public function getPrice() { return $this->price; }
+    public function getTicker() { return $this->ticker; }
+}
+
+// Bảng Khởi Quan Sát Gốc 1 Đáy Lõi
+class TraderBot implements SplObserver {
+    private $name;
+    public function __construct($name) { $this->name = $name; }
+    
+    public function update(SplSubject $subject): void {
+        echo "   -> BOT Cày Tiền Trí Não A.I Kênh Đầu Tư Vô Hình [ {$this->name} ] Chợt Thấy Sóng {$subject->getTicker()} Rớt Bóp Trái \$" . $subject->getPrice() . ". Thao Tác Chốt Đơn Cháy RAM Cắt Lỗ Cực Căng Thẳng !!\n";
+    }
+}
+
+$appleStock = new StockSubject("APPLE_CORP");
+
+$bot1 = new TraderBot("Sói Cừu Hoang Dại");
+$bot2 = new TraderBot("Gấu Trắng Đầu Mùa");
+
+$appleStock->attach($bot1);
+$appleStock->attach($bot2);
+
+$appleStock->setPrice(150);
+$appleStock->setPrice(180);
+?>
+```
+
+### 🦀 Rust
+```rust
+// Trait Cần Tưởng Bám Nôi (Observer List Array)
+trait Subscriber {
+    fn on_click_event_fire(&self, button_name: &str);
+}
+
+// Đứa Con Sứa Đầu Mùa Tận Gốc Lõi Cấu Phân
+struct SystemLogLayer;
+impl Subscriber for SystemLogLayer {
+    fn on_click_event_fire(&self, button_name: &str) {
+        println!("  #Lớp Ghi Hình Lén Bắt Quyền Logger Server Đã Chép Hệ Lệnh Trấn File Log Bự [ Khách Hàng Chạm Vào Cúc Áo Button '{}' ].", button_name);
+    }
+}
+
+struct UIAudioFeedback;
+impl Subscriber for UIAudioFeedback {
+    fn on_click_event_fire(&self, _button_name: &str) {
+        println!("  #Lớp Thính Giác Nặng Chỉnh m Thanh Ting Ting Còi Kèn Phát Bó Audio Tranh Đi Cửa Lỗ Cáp Chéo Xong Ngắt Điện Lập Tức.");
+    }
+}
+
+// Đối Mạch Nút Bấm Khơi Kéo Root (Publisher Board Array Core)
+struct ButtonUI<'a> {
+    name: String,
+    // Quản Trị Tĩnh Tuyệt Sức Chứa Mảnh Vỡ Code Lõi Nguồn (Lifetimes Array List Bọc Nằm)
+    listeners: Vec<&'a dyn Subscriber>,
+}
+
+impl<'a> ButtonUI<'a> {
+    fn new(name: &str) -> Self {
+        ButtonUI { name: name.to_string(), listeners: vec![] }
+    }
+    fn add_listener(&mut self, s: &'a dyn Subscriber) {
+        self.listeners.push(s);
+    }
+    fn click_action(&self) {
+        println!("\n[Sát Nút Hành Động Lên Cầu Dao Trigger Nổi Giận Lửa]: Nút Tên Kí Mã '{}' Bị User Bấm Tét Chảy.", self.name);
+        for l in &self.listeners {
+            l.on_click_event_fire(&self.name);
+        }
+    }
+}
+
+fn main() {
+    let mut btn = ButtonUI::new("Submit Tống Data Gấp");
+    
+    let sys_log = SystemLogLayer;
+    let ui_audio = UIAudioFeedback;
+    
+    // Ghém Móc Dây Treo Liên Tưởng Vào Nút Lõi Mềm Khéo Rust
+    btn.add_listener(&sys_log);
+    btn.add_listener(&ui_audio);
+    
+    btn.click_action();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+
+// Kênh Tầm Thức Observer Lớp Yếu Bỏ Gạch
+class Observer {
+public:
+    virtual void update(const std::string& msg) = 0;
+    virtual ~Observer() {}
+};
+
+// Đứa Quản Đốc Đứa Có Nắp 
+class Subject {
+private:
+    std::vector<Observer*> listObs;
+public:
+    void attach(Observer* o) { listObs.push_back(o); }
+    // Quét Kích Toàn Bộ Gốc Con Trai Liên 
+    void notify(const std::string& msg) {
+        std::cout << "[Sát Thủ Đài Trung Tâm Nhấn Chíp Phóng Code Lõi Tọa Khắp Lan Lũ Lụt Chảy Tràn]: " << msg << "\n";
+        for (auto obs : listObs) {
+            obs->update(msg);
+        }
+    }
+};
+
+class ConcreteObserver : public Observer {
+private:
+    std::string name;
+public:
+    ConcreteObserver(std::string n) : name(n) {}
+    void update(const std::string& msg) override {
+        std::cout << "   -> Ánh Chớp Đồng Hồ Lệ Giọt Trôi Nhanh Xẹt " << name << " Bắt Kèo Đón Nhận Toái Điện Thần Thư Máy Nhắn: Lòi Lõi [" << msg << "]\n";
+    }
+};
+
+int main() {
+    Subject chatRoom;
+    ConcreteObserver userA("Jack Phá Hoại Cửa Trần");
+    ConcreteObserver userB("Tony Sát Thủ Mưu Giả");
+    
+    chatRoom.attach(&userA);
+    chatRoom.attach(&userB);
+    
+    // Kích Tốc Data Cho Sập Toàn Kênh Gọi Cửa !!
+    chatRoom.notify("Chào Ae Đang Ở Đâu Ván Game Chặn Kèo Mày Nhé Mới Xong Mệt VL !!!");
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

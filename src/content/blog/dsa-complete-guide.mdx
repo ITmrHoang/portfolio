@@ -1,0 +1,309 @@
+---
+title: "DSA Complete Guide - Cấu trúc Dữ liệu, Giải thuật & 15 LeetCode Patterns"
+date: 2026-04-10T00:00:00Z
+excerpt: "Lộ trình học DSA toàn diện 29 chủ đề từ cơ bản đến chuyên sâu, kèm 15 khuôn mẫu đánh bại mọi bài phỏng vấn LeetCode/HackerRank. Code mẫu JS, Python, Rust."
+---
+
+## 📑 Mục lục nhảy nhanh
+
+<div style="column-count: 2; column-gap: 2rem; font-size: 0.95em;">
+
+**Nền tảng**
+- [① Array & String](#array--string)
+- [② Linked List](#linked-list)
+- [③ Stack & Queue](#stack--queue)
+- [④ Hashing & Heap](#hashing--heap)
+
+**Trung cấp**
+- [⑤ Searching & Sorting](#searching--sorting)
+- [⑥ Recursion & Backtracking](#recursion--backtracking)
+- [⑦ Trees & BST](#trees--bst)
+- [⑧ Tries & Suffix Tree](#tries--suffix-tree)
+- [⑨ Graph Algorithms](#graph-algorithms)
+
+**Nâng cao**
+- [⑩ Greedy](#greedy-algorithms)
+- [⑪ Dynamic Programming](#dynamic-programming)
+- [⑫ Bitwise Operations](#bitwise-operations)
+- [⑬ Mathematical](#mathematical-algorithms)
+- [⑭ DSU & MST](#dsu--mst)
+
+**Chuyên sâu**
+- [⑮ Advanced Graph](#advanced-graph)
+- [⑯ Advanced DP](#advanced-dp)
+- [⑰ Segment Tree & Fenwick](#segment-tree--fenwick)
+- [⑱ Sparse Table](#sparse-table--binary-lifting)
+- [⑲ String Algorithms](#string-algorithms)
+
+**Master**
+- [⑳ Computational Geometry](#computational-geometry)
+- [㉑ Network Flow](#network-flow)
+- [㉒ Game Theory](#game-theory)
+- [㉓ Approximation & Randomized](#approximation--randomized)
+
+**🎯 [15 LeetCode Patterns](#-15-leetcode-patterns)**
+
+</div>
+
+---
+
+## 📐 Big O Notation — Đo hiệu suất nhanh
+
+| Big O | Tên | Ý nghĩa | Ví dụ |
+|-------|-----|---------|-------|
+| **O(1)** | Constant | Luôn cùng tốc độ | Truy cập mảng theo index |
+| **O(log n)** | Logarithmic | Chia đôi mỗi bước | Binary Search |
+| **O(n)** | Linear | Tỉ lệ thuận | Duyệt mảng |
+| **O(n log n)** | Linearithmic | Chia + xử lý | Merge Sort |
+| **O(n²)** | Quadratic | Vòng lặp lồng nhau | Bubble Sort |
+| **O(2ⁿ)** | Exponential | Gấp đôi mỗi bước | Thử mọi tổ hợp |
+
+> **Quy tắc vàng:** Big O càng nhỏ → code càng nhanh!
+
+---
+
+## 🟢 Nền tảng
+
+### Array & String
+Mảng (Array) là cấu trúc lưu trữ liên tiếp trong bộ nhớ — truy cập O(1) theo index. Chuỗi (String) thực chất là mảng ký tự, nhưng trong nhiều ngôn ngữ bị **immutable** (không sửa trực tiếp được). Đây là nền móng của mọi thứ trong DSA.
+
+> 📖 [Đọc chi tiết: Array & String →](/notes/ds-arrays)
+
+---
+
+### Linked List
+Danh sách liên kết lưu dữ liệu rải rác trong RAM, mỗi node chứa giá trị + con trỏ tới node kế. Chèn/xóa O(1) nhưng truy cập O(n). Có 3 dạng: **Singly**, **Doubly**, **Circular**.
+
+> 📖 [Đọc chi tiết: Linked List →](/notes/ds-linked-lists)
+
+---
+
+### Stack & Queue
+**Stack** = LIFO (Vào sau ra trước) — như chồng đĩa, dùng cho Undo, DFS, ngoặc đóng mở. **Queue** = FIFO (Vào trước ra trước) — như xếp hàng mua vé, dùng cho BFS, in ấn.
+
+> 📖 [Đọc chi tiết: Stack & Queue →](/notes/ds-stacks-queues)
+
+---
+
+### Hashing & Heap
+**Hash Table** biến key thành index bằng hàm băm → truy cập O(1). **Heap** là cây nhị phân đặc biệt giữ Min/Max ở gốc → lấy phần tử nhỏ/lớn nhất O(1), chèn O(log n). Nền tảng cho Priority Queue.
+
+> 📖 [Đọc chi tiết: Hashing & Heap →](/notes/ds-hash-tables)
+
+---
+
+## 🟡 Trung cấp
+
+### Searching & Sorting
+**Linear Search** O(n) quét tuần tự. **Binary Search** O(log n) chia đôi mảng đã sort. Sorting gồm: Bubble, Selection, Insertion (O(n²)), Merge Sort & Quick Sort (O(n log n)), Counting & Radix Sort (O(n)).
+
+> 📖 [Đọc chi tiết: Searching & Sorting →](/notes/algo-searching)
+
+---
+
+### Recursion & Backtracking
+**Đệ quy** = hàm gọi chính nó với input nhỏ hơn + base case dừng. **Backtracking** = đệ quy + thử → sai → quay lại thử cách khác. Kinh điển: N-Queens, Sudoku Solver, sinh tổ hợp/hoán vị.
+
+> 📖 [Đọc chi tiết: Recursion & Backtracking →](/notes/algo-recursion)
+
+---
+
+### Trees & BST
+Cây nhị phân phân cấp dữ liệu: mỗi node tối đa 2 con. **BST** (Binary Search Tree) giữ node trái < gốc < node phải → tìm kiếm O(log n). Duyệt cây: In-order, Pre-order, Post-order, Level-order.
+
+> 📖 [Đọc chi tiết: Trees & BST →](/notes/ds-trees)
+
+---
+
+### Tries & Suffix Tree
+**Trie** = cây tiền tố lưu từ điển, mỗi cạnh là 1 ký tự. Tìm từ O(L) (L = độ dài từ). Ứng dụng: Autocomplete, Spell-check. **Suffix Tree** mở rộng cho phân tích chuỗi con nâng cao.
+
+> 📖 [Đọc chi tiết: Tries & Suffix Tree →](/notes/ds-trie)
+
+---
+
+### Graph Algorithms
+Đồ thị gồm Đỉnh (V) + Cạnh (E). Biểu diễn: Adjacency List / Matrix. **BFS** (hàng đợi) tìm đường ngắn nhất. **DFS** (ngăn xếp/đệ quy) khám phá sâu. **Dijkstra** / **Bellman-Ford** tìm đường đi ngắn nhất có trọng số.
+
+> 📖 [Đọc chi tiết: Graph →](/notes/ds-graphs) · [BFS & DFS →](/notes/algo-bfs-dfs) · [Dijkstra & Bellman →](/notes/algo-dijkstra-bellman)
+
+---
+
+## 🟠 Nâng cao
+
+### Greedy Algorithms
+Tham lam = tại mỗi bước, chọn phương án tốt nhất hiện tại mà không quay lại. Hoạt động khi bài toán có **tính chất lựa chọn tham lam** (Greedy choice property). Ví dụ: Coin Change (mệnh giá đặc biệt), Activity Selection, Huffman Coding.
+
+> 📖 [Đọc chi tiết: Greedy Algorithms →](/notes/algo-greedy)
+
+---
+
+### Dynamic Programming
+Quy hoạch động = chia bài toán thành bài toán con chồng chéo, **ghi nhớ** kết quả để không tính lại. **Top-down** (Memoization) dùng đệ quy + cache. **Bottom-up** (Tabulation) dùng bảng dựng từ dưới lên. Kinh điển: Fibonacci, Knapsack, LCS.
+
+> 📖 [Đọc chi tiết: Dynamic Programming →](/notes/algo-dynamic-programming)
+
+---
+
+### Bitwise Operations
+Thao tác trực tiếp trên bit: AND, OR, XOR, NOT, Shift. Cực nhanh O(1). Mẹo: kiểm tra chẵn lẻ (`n & 1`), tìm số lẻ duy nhất (`XOR tất cả`), đếm bit 1 (Brian Kernighan), swap không dùng biến tạm.
+
+> 📖 [Đọc chi tiết: Bitwise Operations →](/notes/algo-bitwise)
+
+---
+
+### Mathematical Algorithms
+**Sàng Eratosthenes** tìm số nguyên tố O(n log log n). **GCD** bằng Euclid O(log n). **Lũy thừa nhanh** (Fast Exponentiation) O(log n). **Modular Arithmetic** cho bài toán số lớn tránh tràn.
+
+> 📖 [Đọc chi tiết: Mathematical →](/notes/algo-mathematical)
+
+---
+
+### DSU & MST
+**Disjoint Set Union** (Union-Find) gom nhóm liên thông O(α(n)) ≈ O(1). **Minimum Spanning Tree**: Kruskal's (sort cạnh + DSU) và Prim's (giống Dijkstra). Ứng dụng: mạng lưới, cụm cluster.
+
+> 📖 [Đọc chi tiết: DSU & MST →](/notes/algo-dsu-mst)
+
+---
+
+## 🔴 Chuyên sâu
+
+### Advanced Graph
+**Topological Sort** (Kahn's BFS) sắp xếp DAG theo phụ thuộc. **SCC** (Tarjan/Kosaraju) tìm thành phần liên thông mạnh. **Bridges & Articulation Points** phát hiện điểm yếu mạng. **Euler Path/Circuit** đi qua mọi cạnh đúng 1 lần.
+
+> 📖 [Đọc chi tiết: Advanced Graph →](/notes/algo-advanced-graph)
+
+---
+
+### Advanced DP
+**Bitmask DP** mã hóa tập con bằng bit — TSP cỡ nhỏ. **Digit DP** đếm số thỏa điều kiện trong khoảng [L, R]. **Tree DP** quy hoạch động trên cây — tô màu, phân phối tài nguyên.
+
+> 📖 [Đọc chi tiết: Advanced DP →](/notes/algo-advanced-dp)
+
+---
+
+### Segment Tree & Fenwick
+**Segment Tree** trả lời Range Query (min/max/sum) và Range Update trong O(log n). **Fenwick Tree** (BIT) nhẹ hơn, chỉ hỗ trợ prefix sum + point update. Lazy Propagation cho range update hiệu quả.
+
+> 📖 [Đọc chi tiết: Segment Tree & Fenwick →](/notes/ds-segment-tree)
+
+---
+
+### Sparse Table & Binary Lifting
+**Sparse Table** trả lời Range Minimum Query (RMQ) trong O(1) sau O(n log n) tiền xử lý. **Binary Lifting** tìm tổ tiên thứ K trong cây O(log n). Ứng dụng: LCA (Lowest Common Ancestor).
+
+> 📖 [Đọc chi tiết: Sparse Table →](/notes/ds-sparse-table)
+
+---
+
+### String Algorithms
+**KMP** tìm pattern trong text O(N+M) nhờ mảng LPS. **Rabin-Karp** dùng Rolling Hash so sánh chuỗi qua số. **Z-Algorithm** tính mảng Z bằng trick nối chuỗi `Pattern#Text`.
+
+> 📖 [Đọc chi tiết: String Algorithms →](/notes/algo-string)
+
+---
+
+## ⚫ Master
+
+### Computational Geometry
+**Cross Product** xác định hướng rẽ (CCW/CW). **Convex Hull** (Graham Scan) O(N log N). **Line Intersection** kiểm tra 2 đoạn cắt nhau. **Point-in-Polygon** (Ray Casting) O(N).
+
+> 📖 [Đọc chi tiết: Computational Geometry →](/notes/algo-comp-geometry)
+
+---
+
+### Network Flow
+**Max-Flow = Min-Cut** (Ford-Fulkerson). **Edmonds-Karp** O(VE²) dùng BFS. **Dinic's Algorithm** O(V²E) phân lớp Level Graph + Blocking Flow. Ứng dụng: Bipartite Matching, bandwidth tối ưu.
+
+> 📖 [Đọc chi tiết: Network Flow →](/notes/algo-network-flow)
+
+---
+
+### Game Theory
+**Nim Game**: XOR tất cả đống đá → S≠0 thắng, S=0 thua. **Sprague-Grundy**: Mọi Impartial Game đều quy về Nim thông qua hàm Grundy G(X) = MEX(G(con)). Tổ hợp nhiều game = XOR các Grundy.
+
+> 📖 [Đọc chi tiết: Game Theory →](/notes/algo-game-theory)
+
+---
+
+### Approximation & Randomized
+**NP-Hard** = không có thuật toán tối ưu thời gian đa thức. **Approximation** đảm bảo kết quả ≤ ρ × OPT (VD: Vertex Cover factor 2). **Monte Carlo** nhanh nhưng có xác suất sai. **Las Vegas** luôn đúng nhưng thời gian ngẫu nhiên (VD: QuickSort).
+
+> 📖 [Đọc chi tiết: Approximation & Randomized →](/notes/algo-approx-random)
+
+---
+
+## 🎯 15 LeetCode Patterns
+
+> Hầu hết các bài toán trên LeetCode/HackerRank đều tuân theo **15 khuôn mẫu**. Nhận diện Pattern = giải bài trong chớp mắt!
+
+### 🧩 Nhóm Array & String
+
+**1. Sliding Window** — Tìm chuỗi con/mảng con liên tiếp dài nhất/ngắn nhất thỏa điều kiện. Dãn khung phải, co khung trái khi vi phạm.
+→ [📖 Chi tiết + Code](/notes/pattern-array-string)
+
+**2. Two Pointers** — Mảng đã sort, tìm cặp phần tử. Hai con trỏ chạy ngược chiều hoặc cùng chiều tốc độ khác nhau.
+→ [📖 Chi tiết + Code](/notes/pattern-array-string)
+
+**3. Prefix Sum** — Tính tổng đoạn [L,R] trong O(1). Kết hợp Hash Map tìm mảng con tổng bằng K.
+→ [📖 Chi tiết + Code](/notes/pattern-array-string)
+
+### 🔗 Nhóm Linked List & Intervals
+
+**4. Fast & Slow Pointers** — Phát hiện chu trình (Floyd). Tìm điểm giữa Linked List.
+→ [📖 Chi tiết + Code](/notes/pattern-linkedlist-intervals)
+
+**5. In-place Reversal** — Đảo ngược Linked List tại chỗ O(1) space bằng 3 con trỏ prev/curr/next.
+→ [📖 Chi tiết + Code](/notes/pattern-linkedlist-intervals)
+
+**6. Cyclic Sort** — Mảng giá trị [1,N], đẩy mỗi phần tử về đúng index. Tìm số thiếu O(N).
+→ [📖 Chi tiết + Code](/notes/pattern-linkedlist-intervals)
+
+**7. Merge Intervals** — Sort theo start, gộp khoảng chồng lấn. Meeting Rooms, Insert Interval.
+→ [📖 Chi tiết + Code](/notes/pattern-linkedlist-intervals)
+
+### 🥞 Nhóm Stack & Heap
+
+**8. Monotonic Stack** — Tìm Next Greater/Smaller Element O(N). Stack giữ thứ tự đơn điệu.
+→ [📖 Chi tiết + Code](/notes/pattern-stack-heap)
+
+**9. Top K Elements** — Tìm K lớn nhất dùng Min Heap size K. K frequent dùng Heap + HashMap.
+→ [📖 Chi tiết + Code](/notes/pattern-stack-heap)
+
+### 🌳 Nhóm Tree & Graph
+
+**10. Tree BFS** — Duyệt theo tầng bằng Queue. Level Order, Right View, Average per Level.
+→ [📖 Chi tiết + Code](/notes/pattern-tree-graph)
+
+**11. Tree DFS** — Đệ quy gốc→lá. Path Sum, LCA, Diameter. Truyền giá trị xuống hoặc gom lên.
+→ [📖 Chi tiết + Code](/notes/pattern-tree-graph)
+
+**12. Topological Sort** — DAG + phụ thuộc. Kahn's: đếm In-Degree, Queue những node In-Degree=0.
+→ [📖 Chi tiết + Code](/notes/pattern-tree-graph)
+
+**13. Union Find (DSU)** — Gom nhóm liên thông. "Bạn của bạn là bạn". Phát hiện cạnh thừa.
+→ [📖 Chi tiết + Code](/notes/pattern-tree-graph)
+
+### 🎭 Nhóm DP & Backtracking
+
+**14. Subsets & Backtracking** — Sinh tất cả tập con/hoán vị/tổ hợp. Template: Chọn → Đệ quy → Hủy chọn (Backtrack).
+→ [📖 Chi tiết + Code](/notes/pattern-backtracking-dp)
+
+**15. 0/1 Knapsack & DP** — Chọn/không chọn từng item tối đa hóa giá trị. Tối ưu 1D: duyệt ngược capacity.
+→ [📖 Chi tiết + Code](/notes/pattern-backtracking-dp)
+
+---
+
+## 💡 5 bước học DSA hiệu quả
+
+1. **Hiểu concept** → đọc bài giải thích ở trên
+2. **Xem code mẫu** → chạy thử từng dòng
+3. **Tự code lại** → không nhìn bài mẫu
+4. **Giải bài tập** → LeetCode, HackerRank, Codeforces
+5. **Lặp lại sau 1 tuần** → spaced repetition
+
+> **Đừng cố học hết trong 1 ngày.** Mỗi ngày 1 chủ đề, thực hành code, sau vài tuần bạn sẽ nắm vững DSA!
+
+---
+
+*📖 Xem thêm: [Tổng quan DSA (Notes)](/notes/dsa-overview) · Nguồn tham khảo: [Zero To Mastery DSA Cheat Sheet](https://zerotomastery.io/cheatsheets/data-structures-and-algorithms-cheat-sheet/) · [VisuAlgo](https://visualgo.net/)*

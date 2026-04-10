@@ -1,0 +1,316 @@
+---
+title: "Flyweight Pattern"
+date: 2026-04-12T11:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Flyweight** là một mẫu thiết kế cấu trúc (Structural Pattern) hỗ trợ tối ưu hóa việc sử dụng RAM và bộ nhớ bằng cách dùng chung (sharing) càng nhiều trạng thái, dữ liệu có thể (intrinsic state) giữa các đối tượng nhỏ nhắn, thay vì copy và lưu trữ lặp lại toàn bộ dữ liệu đó cho mỗi một cái object độc lập.
+
+## 2. Mục đích
+- Làm Cứu Tinh (Lifesaver) khi ứng dụng của bạn tạo ra quá nhiều (hàng triệu, chục triệu) object nhỏ làm tràn bộ nhớ (OutOfMemoryError) và đứng máy.
+- Bóc tách trạng thái trong (Intrinsic State - dữ liệu thuộc tính tĩnh, không đổi, dùng chung) và trạng thái ngoài (Extrinsic State - tọa độ X, Y, Context - đổi liên tục) tách ra thành 2 đối tượng tách rời.
+- Dò tìm và bắt lấy tận chóp các thuộc tính lặp lại (ví dụ như Sprite hình hạt hạt cát, Data Color Mesh Cây Cỏ Cỏ Nhỏ) gắn chúng chung qua pointer (con trỏ tham chiếu).
+
+## 3. Khi nào ứng dụng
+- Games có thể thao túng Render hàng trăm nghìn hạt tuyết (Particle System), hàng ngàn viên đạn bắn bay, rừng cây phủ kín quả đồi rộng. Tụi nó chung Hình dáng/Màu/Texture (Intrinsic) khác nhau vị trí X, Y (Extrinsic).
+- Bộ xử lý Văn bản (Text processor, Word). Mỗi ký tự trên Word thay vì lưu MÀU/Kích cỡ chữ 11/Phông TimeNew... nó chỉ trỏ ngược lên Flyweight cache bộ Phông chung khổng lồ, giảm nghẽn RAM cho file Docs dài chục Tỷ chữ.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Hiệu suất vô đối cứu sập máy do Cạn RAM và Cache. 
+- Giúp bạn duy trì ứng dụng khổng lồ trong các thiết bị có bộ chứa thấp điện thoại cùi.
+
+**Nhược điểm:**
+- Khiến Cấu trúc Source Code rắc rối khủng khiếp vạn lần khi ép bạn phải chặt Cấu trúc Class thành 2 khúc. (Chia tay cái Dễ Đọc).
+- Trade-off giữa Bộ Nhớ và CPU rành rành. Bạn hy sinh CPU phải mất công mỗi lần gọi hàm tính toán tái gép Extrinsic vào Intrinsic nhưng tiết kiệm RAM vô địch.
+
+---
+
+## 5. Ví dụ minh họa (Render Hàng Ngàn Cây Rừng Game)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Trạng Thái Nằm Gắn Bên Trong (INTRINSIC STATE) - Lưu đúng 1 Lần, Ai cũng xài ké
+class TreeType {
+    constructor(private name: string, private color: string, private textureMesh: string) {}
+
+    // Bơm trạng thái Extrinsic bên ngoài lùi vào đây để Render Lần Lượt
+    draw(x: number, y: number): void {
+        console.log(`[Card Đồ Họa Họa Sĩ Trưởng Trạm]: Vẽ ngay lưới TreeType Texture [${this.name} - Màu Trộn ${this.color}] tại gốc tọa độ ảo (X: ${x}, Y: ${y})`);
+    }
+}
+
+// XƯỞNG SẢN XUẤT CÁC CỤC KÉ (FLYWEIGHT FACTORY)
+class TreeFactory {
+    private static treeTypes: { [key: string]: TreeType } = {};
+
+    public static getTreeType(name: string, color: string, textureMesh: string): TreeType {
+        const key = `${name}_${color}`;
+        if (!this.treeTypes[key]) {
+            console.log(`>> Khởi tạo Nhóm Cache Lưu Bộ Nhớ Mới Cho Loại Cây Mã: ${key}`);
+            this.treeTypes[key] = new TreeType(name, color, textureMesh);
+        }
+        return this.treeTypes[key];
+    }
+}
+
+// Trạng Thái Nằm Ngoại Động (EXTRINSIC STATE) - Rẻ Rúng, Chứa duy nhất cái Tọa độ và Trỏ Gốc
+class Tree {
+    constructor(private x: number, private y: number, private type: TreeType) {}
+
+    draw(): void {
+        this.type.draw(this.x, this.y);
+    }
+}
+
+// Môi trường Game Cần Gọi Lệnh
+const typesToDraw = [
+    { name: "Cây Sồi To Khổng Lồ Rễ Dài", color: "Xanh Đậm Nền", texture: "Oak.png" },
+    { name: "Cây Sồi To Khổng Lồ Rễ Dài", color: "Xanh Đậm Nền", texture: "Oak.png" }, # Trùng Lặp !!!
+    { name: "Cây Tre Xanh Nhỏ Khóm Bụi", color: "Xanh Chuối Hỏng", texture: "Bamboo.png" }
+];
+
+const forest = [];
+// Chèn Vô Game 
+for (let i = 0; i < typesToDraw.length; i++) {
+    const t = typesToDraw[i];
+    // Giờ nó chỉ Khởi tạo RAM nặng 1 Lần duy nhất cho 2 Cây Sồi !!!
+    const typeRef = TreeFactory.getTreeType(t.name, t.color, t.texture);
+    forest.push(new Tree(i * 10, i * 20, typeRef));
+}
+
+console.log("\n >>> LỆNH KÍCH HOẠT Render Hàng Loạt Trải Thảm Game << ");
+forest.forEach(f => f.draw());
+```
+
+### ☕ Java
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+// Tầng Nội Tại Data Nặng Chiếm Ram Khủng
+class TreeType {
+    private String name;
+    private String color;
+
+    public TreeType(String name, String color) {
+        this.name = name;
+        this.color = color;
+    }
+
+    public void draw(int x, int y) {
+        System.out.println("Máy Quét Đồ họa Áp Mã Vẽ Vạch Cây Kính Hiển Vi  " + name + " (Color: " + color + ") Tại Tâm Bản Đồ [" + x + ", " + y + "]");
+    }
+}
+
+// Nhà Xưởng Điều Chế & Giữ Kho Flyweight Rỗng Chặn
+class TreeFactory {
+    static Map<String, TreeType> cacheMemory = new HashMap<>();
+
+    public static TreeType getTreeType(String name, String color) {
+        TreeType t = cacheMemory.get(name);
+        if (t == null) {
+            System.out.println("> BÁO CÁO: Đốt RAM Nạp Texture Tự Nhiên Mới tinh loại: " + name);
+            t = new TreeType(name, color);
+            cacheMemory.put(name, t);
+        }
+        return t; // Nếu có rồi thì nhét Data cũ Trả lại Con Trỏ Share Memory
+    }
+}
+
+// Thân Xác Bọc Rỗng Chỉ Mang Toạ Độ
+class Tree {
+    private int x, y;
+    private TreeType type;
+
+    public Tree(int x, int y, TreeType type) {
+        this.x = x; this.y = y; this.type = type;
+    }
+    public void draw() { type.draw(x, y); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Render Đi Render Lại 2 Cây Tùng 
+        Tree t1 = new Tree(10, 20, TreeFactory.getTreeType("Thông Tuyết Bắc Quả Tú", "Trắng Bóp"));
+        Tree t2 = new Tree(50, 80, TreeFactory.getTreeType("Thông Tuyết Bắc Quả Tú", "Trắng Bóp"));
+        
+        t1.draw();
+        t2.draw();
+    }
+}
+```
+
+### 🐍 Python
+```python
+class TreeType:
+    def __init__(self, name, color):
+        self.name = name
+        self.color = color
+
+    def draw(self, x, y):
+        print(f"Hệ Điều Chế Phun Hạt Bụi: Trồng Thảm Thực Vật [{self.name} Cháy Đen {self.color}] ngóc ngách bản đồ tọa độ [{x}, {y}]")
+
+class TreeFactory:
+    _tree_types = {}
+
+    @classmethod
+    def get_tree_type(cls, name, color):
+        if name not in cls._tree_types:
+            print(f"** Mất thêm Xung Nhịp Nạp Loại Bộ Lưu Trữ Đĩa Cứng Mới Mang Tên Bộ Biến Nhớ: {name} **")
+            cls._tree_types[name] = TreeType(name, color)
+        return cls._tree_types[name]
+
+tree_nodes = []
+# Vòn lặp triệu Đơn Vị Phân Chia nhưng không Nghẽn Bình Bơm Memory
+for i in range(3):
+    t_type = TreeFactory.get_tree_type("Liễu Rủ Bờ Hồ Đao Buồn Bay", "Xanh Ngọc Nhạt Ố")
+    tree_nodes.append((i*5, i*10, t_type))
+
+print(" \n -> TRIỂN KHAI VẼ THẢM RỪNG TRONG THẾ GIỚI 3D:")
+for x, y, t_type in tree_nodes:
+    t_type.draw(x, y)
+```
+
+### 🐘 PHP
+```php
+<?php
+// Mô Hình Đóng Thuộc Tính RAM Heavy 
+class BulletType {
+    private $sprite;
+    public function __construct($texture) { 
+        $this->sprite = $texture; 
+        echo "> Bộ Đẩy RAM Băng Đạn Nạp Texture Lõi Bức Xạ Hình Ảnh Chết Người Đắt Đỏ...\n";
+    }
+    public function render($x, $y) {
+        echo "Cấu Hình Quét Bắn Sấm Sét Vẽ Đạn {$this->sprite} Đi Qua Lổ Hổng Tọa ({$x}, {$y})\n";
+    }
+}
+
+// Bảng Khảo Sát Cache Kẹt Mẫu
+class FlyweightBulletFactory {
+    private $cache = [];
+    public function getBullet($texture) {
+        if (!isset($this->cache[$texture])) {
+            $this->cache[$texture] = new BulletType($texture);
+        }
+        return $this->cache[$texture];
+    }
+}
+
+$factory = new FlyweightBulletFactory();
+
+// Xả Đạn 1000 Tiếng Liền nhưng RAM Load Texture 1 lần DUY NHẤT !!
+$b1Type = $factory->getBullet("Hỏa_Tiễn_Lửa_Đỏ_Dữ_Dội.png"); 
+$b2Type = $factory->getBullet("Hỏa_Tiễn_Lửa_Đỏ_Dữ_Dội.png");
+
+$b1Type->render(10, 50);
+$b2Type->render(15, 60);
+
+?>
+```
+
+### 🦀 Rust
+Rust bắt buộc cẩn thận với Memory ownership. Ta dùng `Rc` và `RefCell` để share Flyweight qua các đối tượng Rừng Gỗ.
+```rust
+use std::collections::HashMap;
+use std::rc::Rc;
+
+// Dữ liệu Nội Nặng Khí Hậu Cần Dùng Chung Quá Nhiều Nơi (InTrinsic)
+struct TreeType {
+    name: String,
+}
+
+impl TreeType {
+    fn draw(&self, x: i32, y: i32) {
+        println!("Thần Rừng Nổi Giận Cắm Xuống Mảnh Đất Gọi Mọc Lên Cây [ {} ] Ở Tọa độ Khắc Cốt ({}, {})", self.name, x, y);
+    }
+}
+
+struct TreeFactory {
+    // Lưu các Loại Cây bằng Bộ con trỏ tham chiếu lặp vòng Cứng Rc (Reference Counted)
+    types: HashMap<String, Rc<TreeType>>,
+}
+
+impl TreeFactory {
+    fn new() -> Self { TreeFactory { types: HashMap::new() } }
+
+    fn get_type(&mut self, name: &str) -> Rc<TreeType> {
+        if !self.types.contains_key(name) {
+            println!("!!! Quá Nặng Tính Phân Giải. Gọi Chớp RAM Hệ Xưởng Lưu Đề Can Base: {} !!!", name);
+            self.types.insert(name.to_string(), Rc::new(TreeType { name: name.to_string() }));
+        }
+        // Gọi Biến Trỏ Con Trỏ Cấp Thấp Lọc RAM
+        Rc::clone(self.types.get(name).unwrap())
+    }
+}
+
+// Giản Mỏng Cấu Bọc (Extrinsic)
+struct Tree {
+    x: i32,
+    y: i32,
+    tree_type: Rc<TreeType>,
+}
+
+fn main() {
+    let mut factory = TreeFactory::new();
+    let type1 = factory.get_type("Phong Lá Đỏ Sát Máu Mùa Thu Trút Muộn Lên Non");
+    
+    // Con Trỏ Phù Thủy Rust đã Share Memory xong
+    let t_1 = Tree { x: 10, y: 20, tree_type: Rc::clone(&type1) };
+    let t_2 = Tree { x: 50, y: 30, tree_type: Rc::clone(&type1) };
+
+    t_1.tree_type.draw(t_1.x, t_1.y);
+    t_2.tree_type.draw(t_2.x, t_2.y);
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <unordered_map>
+#include <string>
+#include <memory>
+
+class TreeType {
+private:
+    std::string name;
+public:
+    TreeType(std::string n) : name(n) {
+        std::cout << "** Engine Bọc Tái Kích Hoạt Tải Khung Mesh 3D Lõi Khổng Lồ Cho: " << name << " **\n";
+    }
+    void draw(int x, int y) {
+        std::cout << "Kéo Dãn Rải Phân Giải Mô Hình Vẽ Cành Lá Kích Thước Chóp " << name << " Xuống Tâm Trái Đất Ánh Sáng Tại (" << x << "," << y << ").\n";
+    }
+};
+
+class TreeFactory {
+private:
+    std::unordered_map<std::string, std::shared_ptr<TreeType>> cache;
+public:
+    std::shared_ptr<TreeType> getTreeType(const std::string& name) {
+        if (cache.find(name) == cache.end()) {
+            cache[name] = std::make_shared<TreeType>(name);
+        }
+        // Smart pointer std::shared_ptr cày chung Data Share Lọc
+        return cache[name];
+    }
+};
+
+int main() {
+    TreeFactory factory;
+    auto oakType = factory.getTreeType("Trúc Đào Đuổi Sặc Cành Mảnh Tiên");
+    
+    // Gọi Triệu Hồi Hàm Xâu Chéo Rừng Sâu
+    oakType->draw(100, 200);
+    
+    auto oakType2 = factory.getTreeType("Trúc Đào Đuổi Sặc Cành Mảnh Tiên");
+    oakType2->draw(400, 600); // 100% Không Khởi Tạo Lại Ổ Cứng !!
+    
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

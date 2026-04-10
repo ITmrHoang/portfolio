@@ -1,0 +1,325 @@
+---
+title: "Template Method Pattern"
+date: 2026-04-12T21:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Template Method (Phương thức Khuôn mẫu)** là mẫu thiết kế hành vi (Behavioral Pattern) định nghĩa sẵn một "bộ khung xương" hoặc cấu trúc vĩ mô của một thuật toán trong lớp Cha (Superclass). Qua đó, các lớp Con (Subclasses) sẽ được phép đè lên (override) và xác định lại một vài bước cụ thể của thuật toán đó mà không làm vỡ vụn hoặc thay đổi toàn bộ kiến trúc bao quát ban đầu.
+
+## 2. Mục đích
+- Loại bỏ tính trùng lặp code ghê gớm (code duplication) khi nhiều lớp chia sẻ chung một quy trình xử lý giống hệt nhau, chỉ khác nhau ở một hay hai bước xử lý lõi.
+- Điều khiển trật tự thực thi (The Hollywood Principle: "Don't call us, we'll call you" - "Đừng gọi tôi, tôi (Lớp cha) sẽ tự gọi hàm anh (Lớp con) theo lịch trình đã sắp xếp sẵn"). Bạn không phải lo lớp con gọi hàm sai thứ tự.
+- Cho phép mở rộng dễ dàng những bước logic nhỏ giọt thông qua ghi đè (hook methods) nếu cần thiết.
+
+## 3. Khi nào ứng dụng
+- Hệ thống Phân tích tệp tin (Data Mining / File Parsers): Quy trình luôn là (1) Mở File -> (2) Phân tích Data -> (3) Đóng File. Bước 1 và 3 hoàn toàn chung, chỉ có bước 2 là chia lớp con riêng như `XMLParser`, `CSVParser`, `PDFParser`.
+- Quy trình tự động Cấu hình & Build (CI/CD Pipelines): Luôn là Clone Git -> Cài thư viện -> Build -> Run Test -> Deploy.
+- Quy trình Thanh toán chung (Checkout process): Kiểm tra giỏ -> Lấy phương thức thanh toán -> Phê duyệt -> Xóa Giỏ.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Giải pháp "Don't Repeat Yourself" (DRY) chuẩn mực nhất nhờ dồn triệt để các mã lặp lại lên cấu trúc trừu tượng (abstract class).
+- Trật tự vòng đời ứng dụng luôn ở trạng thái vững vàng do Lớp Cha quản lý từ trên xuống (Top-down approach).
+
+**Nhược điểm:**
+- Bị gò bó bởi dàn khung cứng nhắc của Cấu trúc Thuật toán. Nếu sau này quy trình đột ngột muốn đổi ngược bước 3 lên bước 1, toàn bộ hệ thống lớp con có thể bị ảnh hưởng.
+- Vi phạm quy tắc chuyển giao ưu tiên cấu thành (Composition) bởi Template Method bị trói cứng vào Hệ thống Đa Kế Thừa (Inheritance). Tại các ngôn ngữ thiếu thừa kế linh hoạt như Rust, sẽ phải dùng Work-arounds.
+
+---
+
+## 5. Ví dụ minh họa (Data File Parser)
+
+### 🟨 JavaScript / TypeScript
+Thiết lập Template Method yêu cầu Lớp Cha xây form gốc và cấm bị thay đổi.
+```typescript
+abstract class DataMiner {
+    // TEMPLATE METHOD: Quy trình chuẩn ngặt nghèo (Khung xương)
+    public mineData(path: string): void {
+        console.log(`\n[Bắt đầu khai thác dữ liệu từ file: ${path}]`);
+        const file = this.openFile(path);
+        const rawData = this.extractData(file);
+        const parsedData = this.parseData(rawData);
+        this.analyzeResult(parsedData);
+        this.closeFile();
+        console.log("[Kết thúc quy trình thành công]");
+    }
+
+    // Các bước dùng chung (Không cần Overridden)
+    protected openFile(path: string): string {
+        console.log("-> Đang mở tệp tin từ cấu trúc vật lý của ổ cứng...");
+        return "Nội_Dung_Bộ_Nhớ_Ảo_" + path;
+    }
+
+    protected analyzeResult(data: string): void {
+        console.log(`-> Dữ liệu trích xuất đã được gửi đi phân tích AI: [${data}]`);
+    }
+
+    protected closeFile(): void {
+        console.log("-> Đóng tệp tin, dọn sạch bộ nhớ rác.");
+    }
+
+    // Các bước Tùy biến (Các lớp con BẮT BUỘC phải làm riêng rẽ)
+    protected abstract extractData(file: string): string;
+    protected abstract parseData(rawData: string): string;
+}
+
+// Lớp Con xử lý Riêng XML
+class XMLDataMiner extends DataMiner {
+    protected extractData(file: string): string {
+        console.log("--> Lấy mã theo chuỗi khóa thẻ DOM cho XML...");
+        return "XML_RAW_DATA";
+    }
+    protected parseData(rawData: string): string {
+        console.log("--> Phân tách XML Text sang kiểu Object chuẩn.");
+        return "Parsed_XML_Object";
+    }
+}
+
+// Lớp Con xử lý Riêng CSV
+class CSVDataMiner extends DataMiner {
+    protected extractData(file: string): string {
+        console.log("--> Quét ngẫu nhiên từng dòng phẩy (Comma) cho CSV...");
+        return "CSV_RAW_DATA";
+    }
+    protected parseData(rawData: string): string {
+        console.log("--> Bóc tách các ô mảng JSON Matrix.");
+        return "Parsed_CSV_Array";
+    }
+}
+
+const parseXML = new XMLDataMiner();
+parseXML.mineData("config.xml");
+
+const parseCSV = new CSVDataMiner();
+parseCSV.mineData("database.csv");
+```
+
+### ☕ Java
+```java
+abstract class BeverageMaker {
+    // Framework chính (Từ khóa 'final' cấm lớp con ghi đè khung này)
+    public final void prepareRecipe() {
+        boilWater();
+        brew();
+        pourInCup();
+        if (customerWantsCondiments()) {
+            addCondiments();
+        }
+    }
+
+    // Bước chung nền chung
+    private void boilWater() { System.out.println("Đun sôi nước suối"); }
+    private void pourInCup() { System.out.println("Rót dung dịch ra cốc"); }
+
+    // Các bước phải triển khai khác
+    protected abstract void brew();
+    protected abstract void addCondiments();
+
+    // Lớp Hook (Móc tùy chọn điều kiện có thể thay đổi ở Lớp Con)
+    protected boolean customerWantsCondiments() { return true; }
+}
+
+class Coffee extends BeverageMaker {
+    protected void brew() { System.out.println("Pha cà phê bằng phin châm giọt."); }
+    protected void addCondiments() { System.out.println("Thêm đường và sữa đặc."); }
+}
+
+class Tea extends BeverageMaker {
+    protected void brew() { System.out.println("Ngâm túi trà nhúng vào nước sôi."); }
+    protected void addCondiments() { System.out.println("Cho một lát chanh tươi vào."); }
+    
+    @Override
+    protected boolean customerWantsCondiments() { return false; } // Khách ko thích chanh
+}
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("========== MÓN CÀ PHÊ ==========");
+        BeverageMaker myCoffee = new Coffee();
+        myCoffee.prepareRecipe();
+        
+        System.out.println("\n========== MÓN TRÀ ==========");
+        BeverageMaker myTea = new Tea();
+        myTea.prepareRecipe();
+    }
+}
+```
+
+### 🐍 Python
+```python
+from abc import ABC, abstractmethod
+
+class GameTemplate(ABC):
+    def play(self):
+        print("\n--- Khởi động Trò Chơi ---")
+        self.initialize()
+        self.start_play()
+        self.end_play()
+        print("--- Trò Chương Kết Thúc ---\n")
+
+    @abstractmethod
+    def initialize(self): pass
+
+    @abstractmethod
+    def start_play(self): pass
+
+    @abstractmethod
+    def end_play(self): pass
+
+class MarioGame(GameTemplate):
+    def initialize(self): print("Mario: Đang tải Vương quốc Nấm.")
+    def start_play(self): print("Mario: Chờ cứu Công chúa, đi đập gạch.")
+    def end_play(self): print("Mario: Game Over do nhảy trượt rùa.")
+
+class ChessGame(GameTemplate):
+    def initialize(self): print("Chess: Thiết lập bàn cờ 64 ô.")
+    def start_play(self): print("Chess: Tốt đỏ tiến trước 2 bước.")
+    def end_play(self): print("Chess: Chiếu tướng! Cờ Vua Đen thắng.")
+
+game1 = MarioGame()
+game1.play()
+
+game2 = ChessGame()
+game2.play()
+```
+
+### 🐘 PHP
+```php
+<?php
+abstract class PageBuilder {
+    // Template
+    public final function buildPage() {
+        $this->printHeader();
+        $this->printBody();
+        $this->printFooter();
+    }
+
+    protected function printHeader() {
+        echo "<header>Tiêu đề Trang Web Mặc Định</header>\n";
+    }
+
+    protected function printFooter() {
+        echo "<footer>Copyright 2026.</footer>\n";
+    }
+
+    // Yêu cầu lớp con tùy chỉnh nội dung này
+    abstract protected function printBody();
+}
+
+class HomePage extends PageBuilder {
+    protected function printBody() {
+        echo "<main>Chào mừng đến với Trang Chủ Của Tôi!</main>\n";
+    }
+}
+
+class AboutPage extends PageBuilder {
+    protected function printBody() {
+        echo "<main>Đây là mục giới thiệu chi tiết công ty.</main>\n";
+    }
+}
+
+$home = new HomePage();
+$home->buildPage();
+echo "--------------\n";
+$about = new AboutPage();
+$about->buildPage();
+?>
+```
+
+### 🦀 Rust
+Rust không có lớp (Classes) và kế thừa (Inheritance). Thay vào đó, ta sử dụng Trait cung cấp các Default Implementations để giả lập Template Method.
+```rust
+trait WorkerTask {
+    // Quy trình tổng khuôn mẫu Framework chung
+    fn execute_daily_routine(&self) {
+        self.wake_up();
+        self.work();
+        self.sleep();
+    }
+
+    // Các hàm chung mặc định (Mọi class kế thừa đều có)
+    fn wake_up(&self) {
+        println!("  - Đổ chuông báo thức lúc 7h sáng & Đánh răng.");
+    }
+    
+    fn sleep(&self) {
+        println!("  - Leo lên giường chùm chăn đi ngủ lúc 11h đêm.");
+    }
+
+    // Các phương thức mà các đối tượng phải bắt buộc triển khai riêng
+    fn work(&self);
+}
+
+// Đối tượng 1
+struct Programmer;
+impl WorkerTask for Programmer {
+    fn work(&self) {
+        println!("  - Gõ phím, code Rust cực nhanh 8 tiếng, chửi sếp và uống Cà phê liên tục.");
+    }
+}
+
+// Đối tượng 2
+struct Firefighter;
+impl WorkerTask for Firefighter {
+    fn work(&self) {
+        println!("  - Kéo vòi xịt nước 6 tiếng ngoài đường, cứu hộ và tập gym.");
+    }
+}
+
+fn main() {
+    println!("=== Một ngày của Lập Trình Viên ===");
+    let dev = Programmer;
+    dev.execute_daily_routine();
+
+    println!("=== Một ngày của Lính Cứu Hỏa ===");
+    let hero = Firefighter;
+    hero.execute_daily_routine();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+
+class BaseAlgorithm {
+public:
+    // Cấu trúc khung xương, ngăn chặn override hàm này
+    void runFullCycle() const {
+        std::cout << "[Tiến trình bắt đầu]\n";
+        stepBaseLogic();
+        stepCustomTarget1();
+        stepCustomTarget2();
+        std::cout << "[Gỡ bỏ hệ thống hoàn tất]\n";
+    }
+    virtual ~BaseAlgorithm() {}
+
+protected:
+    void stepBaseLogic() const {
+        std::cout << "-> Xác thực thông tin Hệ Thống...\n";
+    }
+
+    // Hàm ảo (Chờ các lớp con điền ruột vào)
+    virtual void stepCustomTarget1() const = 0;
+    virtual void stepCustomTarget2() const = 0;
+};
+
+class WindowsMachine : public BaseAlgorithm {
+protected:
+    void stepCustomTarget1() const override {
+        std::cout << "-> Chạy C++ Runtime Library cho Windows exe.\n";
+    }
+    void stepCustomTarget2() const override {
+        std::cout << "-> Gọi Windows Registry thiết lập thông số Core.\n";
+    }
+};
+
+int main() {
+    WindowsMachine app;
+    app.runFullCycle(); // Gọi qua Template Root
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

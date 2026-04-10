@@ -1,0 +1,299 @@
+---
+title: "Abstract Factory Pattern"
+date: 2026-04-12T03:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Abstract Factory** là mẫu thiết kế khởi tạo (Creational Pattern) cung cấp một giao diện (interface) để nhào nặn ra các gia đình (families) của những đối tượng có liên hệ hoặc phụ thuộc lẫn nhau mà không cần phải chỉ rõ những lớp cụ thể (concrete classes) của chúng. Ngắn gọn, đây là một "Factory của các Factories".
+
+## 2. Mục đích
+- Gói gộp quá trình khởi tạo một nhóm các đối tượng (ví dụ: giao diện Nút Bấm, Checkbox, Menu của hệ Windows và MacOS) vào chung một xưởng sản xuất, thay màng vì tạo rời rạc từng Product một.
+- Đảm bảo tính tương thích vĩnh viễn (Compatibility) giữa các sản phẩm trong cùng một họ (Product Families). Không có chuyện app của bạn hiển thị Nút của Windows văng trúng Menu của iOS.
+- Ẩn giấu hoàn toàn lớp cài đặt chi tiết (Concrete Classes) khỏi Lớp ứng dụng Client. Client dùng code thông qua Interface cha.
+
+## 3. Khi nào ứng dụng
+- Viết ứng dụng giao diện hoạt động đa nền tảng (Cross-platform GUI - MacOS, Windows, Linux).
+- Kết nối tới nhiều loại Cơ sở Dữ liệu Database khác biệt (MySQL, PostgreSQL, Oracle), nơi mỗi cỗ xưởng sẽ sinh ra Connection, Command và Reader tương thích cho từng máy.
+- Phát triển Game cần hoán đổi nhiều môi trường / bộ quy tắc đồ họa (Gỗ Cổ Đại, Cốt thép Tương lai).
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Bảo đảm an toàn tính đồng nhất họ sản phẩm. (VD: Đồ nội thất IKEA hiện đại sẽ luôn match với Bàn IKEA hiện đại).
+- Tuân thủ SRP (Single Responsibility). Việc tạo lập các chùm đối tượng được quây chung lại gánh đỡ cho Client.
+- Nguyên tắc Khép Kín (OCP). Phát minh cực kì dễ dàng một chủng loài giao diện Factory mới mà chẳng phá gì app cũ.
+
+**Nhược điểm:**
+- Hệ thống bùng nổ quá nhiều File/Class, làm rối tung thư mục với hàng trăm class con để lấp đầy giao diện "Family".
+
+---
+
+## 5. Ví dụ minh họa (Cross-platform UI Components)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Họ Sản phẩm A: Nút Màn Hình
+interface Button { paint(): void; }
+// Họ Sản phẩm B: Checkbox
+interface Checkbox { paint(): void; }
+
+// --- Giao diện Windows ---
+class WinButton implements Button {
+    paint() { console.log("Hiển thị nút bấm chuẩn Win32 API"); } // Output tiếng Việt
+}
+class WinCheckbox implements Checkbox {
+    paint() { console.log("Hiển thị ô đánh dấu ô vuông Windows"); }
+}
+
+// --- Giao diện MacOS ---
+class MacButton implements Button {
+    paint() { console.log("Hiển thị nút bấm bo tròn Aqua kiểu MacOS"); }
+}
+class MacCheckbox implements Checkbox {
+    paint() { console.log("Hiển thị ô đánh dấu công tắc MacOS"); }
+}
+
+// ABSTRACT FACTORY: Xưởng sản xuất siêu cấp
+interface GUIFactory {
+    createButton(): Button;
+    createCheckbox(): Checkbox;
+}
+
+// Các Nhà máy lắp ráp cụ thể
+class WinFactory implements GUIFactory {
+    createButton(): Button { return new WinButton(); }
+    createCheckbox(): Checkbox { return new WinCheckbox(); }
+}
+
+class MacFactory implements GUIFactory {
+    createButton(): Button { return new MacButton(); }
+    createCheckbox(): Checkbox { return new MacCheckbox(); }
+}
+
+// Client Class chả cần biết nó đang chạy win hay mac
+class Application {
+    private factory: GUIFactory;
+    private button: Button;
+
+    constructor(f: GUIFactory) {
+        this.factory = f;
+        this.button = this.factory.createButton(); // Đẻ ra tùy biến theo xưởng
+    }
+
+    public render() { this.button.paint(); }
+}
+
+// Giả lập Runtime nhận dạng OS
+const currentOS = "MAC";
+const app = new Application(currentOS === "MAC" ? new MacFactory() : new WinFactory());
+
+app.render(); // Output: Hiển thị nút bấm bo tròn Aqua kiểu MacOS
+```
+
+### ☕ Java
+```java
+// Khai báo nhóm giao diện
+interface Button { void paint(); }
+interface Checkbox { void paint(); }
+
+// Sản phẩm MacOS
+class MacButton implements Button {
+    public void paint() { System.out.println("Vẽ nút bấm cực đẹp chuẩn macOS."); }
+}
+class MacCheckbox implements Checkbox {
+    public void paint() { System.out.println("Vẽ công tắc mượt mà chuẩn macOS."); }
+}
+
+// Sản phẩm Win
+class WinButton implements Button {
+    public void paint() { System.out.println("Vẽ nút bấm cửa sổ góc cạnh Windows."); }
+}
+class WinCheckbox implements Checkbox {
+    public void paint() { System.out.println("Vẽ ô tick màu xanh Windows."); }
+}
+
+// Tạo interface cho Factory Tối Cao
+interface GUIFactory {
+    Button createButton();
+    Checkbox createCheckbox();
+}
+
+class MacFactory implements GUIFactory {
+    public Button createButton() { return new MacButton(); }
+    public Checkbox createCheckbox() { return new MacCheckbox(); }
+}
+
+class WinFactory implements GUIFactory {
+    public Button createButton() { return new WinButton(); }
+    public Checkbox createCheckbox() { return new WinCheckbox(); }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Lựa chọn nhà xưởng Windows
+        GUIFactory factory = new WinFactory();
+        Button btn = factory.createButton();
+        
+        btn.paint(); // Output: Vẽ nút bấm cửa sổ góc cạnh Windows.
+    }
+}
+```
+
+### 🐍 Python
+```python
+from abc import ABC, abstractmethod
+
+class Button(ABC):
+    @abstractmethod
+    def paint(self): pass
+
+class MacButton(Button):
+    def paint(self): print("Hiển thị giao diện Nút Mac cổ điển")
+
+class WinButton(Button):
+    def paint(self): print("Hiển thị Nút Windows góc vuông 90 độ")
+
+class GUIFactory(ABC):
+    @abstractmethod
+    def create_button(self) -> Button: pass
+
+class MacFactory(GUIFactory):
+    def create_button(self) -> Button: return MacButton()
+
+class WinFactory(GUIFactory):
+    def create_button(self) -> Button: return WinButton()
+
+def application(factory: GUIFactory):
+    # App rỗng não không phụ thuộc HĐH
+    button = factory.create_button()
+    button.paint()
+
+# Chạy thử
+application(WinFactory()) # Output: Hiển thị Nút Windows góc vuông 90 độ
+```
+
+### 🐘 PHP
+```php
+<?php
+// Giao thức Tối cao
+interface GUIFactory {
+    public function createButton(): Button;
+}
+
+interface Button { public function paint(); }
+
+// Mac
+class MacButton implements Button {
+    public function paint() { echo "Cái nút này chạy trên Macbook xịn.\n"; }
+}
+class MacFactory implements GUIFactory {
+    public function createButton(): Button { return new MacButton(); }
+}
+
+// Win
+class WinButton implements Button {
+    public function paint() { echo "Cái nút này chạy trên Windows 11.\n"; }
+}
+class WinFactory implements GUIFactory {
+    public function createButton(): Button { return new WinButton(); }
+}
+
+// Phân luồng Cấu hình
+$config = "WIN";
+$factory = ($config === "MAC") ? new MacFactory() : new WinFactory();
+
+$btn = $factory->createButton();
+$btn->paint(); // Output: Cái nút này chạy trên Windows 11.
+?>
+```
+
+### 🦀 Rust
+```rust
+trait Button {
+    fn paint(&self);
+}
+
+// Nút Mac
+struct MacButton;
+impl Button for MacButton {
+    fn paint(&self) { println!("Sơn màu MacOS bo góc dịu dàng."); }
+}
+
+// Nút Windows
+struct WinButton;
+impl Button for WinButton {
+    fn paint(&self) { println!("Sơn màu Dark Mode hệ Windows hầm hố."); }
+}
+
+// Trái Tim của Abstract Factory
+trait GUIFactory {
+    fn create_button(&self) -> Box<dyn Button>;
+}
+
+struct MacFactory;
+impl GUIFactory for MacFactory {
+    fn create_button(&self) -> Box<dyn Button> { Box::new(MacButton) }
+}
+
+struct WinFactory;
+impl GUIFactory for WinFactory {
+    fn create_button(&self) -> Box<dyn Button> { Box::new(WinButton) }
+}
+
+fn render_application(factory: &dyn GUIFactory) {
+    let button = factory.create_button();
+    button.paint();
+}
+
+fn main() {
+    let mac_fac = MacFactory;
+    render_application(&mac_fac); // Output: Sơn màu MacOS bo góc dịu dàng.
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+
+class Button {
+public:
+    virtual void paint() const = 0;
+    virtual ~Button() {}
+};
+
+class WinButton : public Button {
+public:
+    void paint() const override { std::cout << "Kích xuất Hình dạng Nút bấm Windows 32-bit.\n"; }
+};
+
+class MacButton : public Button {
+public:
+    void paint() const override { std::cout << "Kích xuất Đồ họa HD Nút bấm Retina MacOS.\n"; }
+};
+
+class GUIFactory {
+public:
+    virtual std::unique_ptr<Button> createButton() const = 0;
+    virtual ~GUIFactory() {}
+};
+
+class WinFactory : public GUIFactory {
+public:
+    std::unique_ptr<Button> createButton() const override {
+        return std::make_unique<WinButton>();
+    }
+};
+
+int main() {
+    // Ép khởi chạy bằng Factory Windows
+    std::unique_ptr<GUIFactory> factory = std::make_unique<WinFactory>();
+    auto btn = factory->createButton();
+    
+    btn->paint(); // Output: Kích xuất Hình dạng Nút bấm Windows 32-bit.
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

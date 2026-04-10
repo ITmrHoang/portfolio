@@ -1,0 +1,345 @@
+---
+title: "State Pattern"
+date: 2026-04-12T16:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**State (Trạng thái)** là mẫu thiết kế hành vi (Behavioral Pattern) cho phép một đối tượng có khả năng thay đổi toàn bộ hành vi (behaviors) hoặc luồng phản ứng của mình ở bên trong khi trạng thái nội bộ của nó (internal state) đang bị sự thay đổi làm tác động. Nhìn từ phía bề ngoài, cảm giác như thể đối tượng này vừa đột ngột biến hình lột xác thay đổi sang hẳn một Class lớp loại mới hoàn toàn khác bọt.
+
+## 2. Mục đích
+- Làm Cứu Tinh Máy Hủy Rác Khủng Tiêu diệt triệt để Vua Khủng Long máy Tái Cấu Trúc Khối Code Máy Kẹt Lát Thủng Câu Chữ Tắc Xấu `if-else / switch-case` Cực Kỳ Rộng To và Mút Dài Ngập Phân Khúc Thăm Dò Khám Bệnh Chứa (e.g., `if (state == PLAYING)... else if (state == PAUSING)...`).
+- Cấu Hình Định Hình Và Ném Khống Máy Chặt Vỡ Trạng Thái Sang Lẽ Đạo Hoàn Toàn Tách Chức Và Rỗng Biến Căn Ràng Rối Chia Quanh Vào Ở Từng Class (Concrete State) Cho Một Tín Trọng Tâm Nêu Không Tạp Tải Thảm Lỗ Khi Rét Nhọc Lỗi Máy.
+- Tự Điều Tiết Bẻ Lái Di Chuyển Logic Phân Mạch Ngữ Nghĩa Ảo Chảy Biến Máy Vòng Quanh Sạch Banh Trong Lúc App Thực Cốt Mạch Đang Xé Nét Hoạt Động Căng Văng Cục (Runtime).
+
+## 3. Khi nào ứng dụng
+- Hệ Thống Nhân Vật Máy Game Chuyển Mạch Tự Động Trí Tuệ (Finite State Machine). Nhân Vật Đứng (Idle State) bấm Đánh thì nó Quyền. Nhân Vật Đang Bay (Jumping State) Bấm Đánh thì nó Đá Xoáy. 
+- Xử Lý Chơi Máy Nghe Tích Audio Rã Music Trí Nặng Cựa Kéo Quét Nóc Loa Đỉnh Đáy App Nghe Nhạc Chơi Điển Hình: Đang Pause thì Nút bấm chuyển sang Resume. Đang Play Nút Bấm Xẹt Phát Tắt Biến Hình Đổi Thành Pause Áp Gắn Nhấn Nút Chết.
+- Quy Trình Chăm Khách Hệ Thống Giao Dịch Hàng Phức Tạp Lập Khớp Kén Trạng Kênh: Từ Đang Giao, Hoàn Tất, Sang Hoàn Tiền Xóa Hư Hại Khống Bục Sập Đòi Rửa Nền Gốc Tụt Nghẽn Đòi Dịch Bắn Quạ Mở File Phân Xưởng Dịch Cuốn Quắn.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Thực thi đúng luật vạn vật bất biến SRP: Đấm rách từng mảng khốn rác if-else nhét rải xé tan nhồi nhét cặn vô thành phần con nhỏ xinh.
+- Tuân chuẩn OCP thần giáo: Xỏ Rút Xó Cướp Nhét Thêm Mớ Tương Lai Hạt State Thái Cấu Mới Quắc Gọt Sập Phẳng Cắn Má Bóng Trắng Rác Thoải Mái Rảnh Ko Ép Phá Khối Nền Class Đầu Kẹp Dán Gốc Rễ Đóng !
+
+**Nhược điểm:**
+- Nát Vỡ File Què Chân Rễ Quán Át Gấp Áp Nạn Nhân Nhiều Nếu Hệ Trạng Thái Quá Rỗng Nghèo Đơn Cạn Nghèo Rác Mỏng Cặn 2 3 Cái Mã Gặp Ít Mạch Rỗng Bèo Cục Thì Áp Pattern Rũ Gốc Cáp Máy Sinh Ra Code Lặp Làm Xóa Bớt Tụt Túng Điên Não Nhão. Ngược Sự Đơn Giản !
+
+---
+
+## 5. Ví dụ minh họa (Máy Nghe Nhạc Audio Player)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Bộ Rễ Cổ Ngập Mạch Phân Cách Điển Hình Chắn Chôn Các Nhánh Bề Mặt Ụ Gỗ Đứng Đầu Tiên Gọi Dã Thần Interface
+interface State {
+    clickPlay(): void;
+    clickNext(): void;
+}
+
+// BỤC NỀN CHÍNH THỐNG MỘC LÕI PHẲNG CAO CHÓP BỌC MÁY AUDIO TRÓNG TO TỔ BỐ - CHIẾC LOOP BÊN NGOÀI CLIENT XÀI 
+class AudioPlayerContext {
+    private state: State;
+
+    constructor(initialState: State) {
+        // Nhồi Quả Táo State Ăn Nhả Khớp Ban Đầu Sớm Nóng Vụt Phát Dựng
+        this.transitionTo(initialState);
+    }
+
+    // Cái Nút Bấm "SỐ CÂN CHUYỂN LOGIC ĐÁY NƯỚC" Nhập Biến Thân Thuật Nóng Hoán Đổi Quỷ Không Phanh
+    public transitionTo(state: State): void {
+        console.log(`\n=> [MÁY CHỦ BẢN RỄ APP AUDIO] Cục Nén Bo Thổi Báo Bập Hệ Chuyển Trạng Thái Khống Tạm Tâm Rút Sang Mạch Ảo Lắp Trống Khác Mọc Chồi Code Lột Xác Trơn Bóc Thay Vào Lắp: MẠCH CHẾ ĐỘ Rỗng Khách Gắn Lõi Chặn To [ ${(<any>state).constructor.name} ]`);
+        this.state = state;
+        // Thực Tế Có Thể Truyền Ngược Context Về Lại State Để Tụi Nó Còn Tráo Máy Ngược Nhau.
+    }
+
+    public clickPlay(): void { this.state.clickPlay(); }
+    public clickNext(): void { this.state.clickNext(); }
+}
+
+// --- THÁI LIỆU TRẠNG TRÍ RÁC CHẮC (CÁC SỨ GIẢ MÁY LÀ CONCRARE STATE) --- //
+
+// Khi Máy Bị Tắt Im (Xòe Pause)
+class PausedState implements State {
+    private player: AudioPlayerContext;
+    constructor(player: AudioPlayerContext) { this.player = player; }
+
+    public clickPlay(): void {
+        console.log("- Ấn Nút Nghe Play Nổi Loa Rung Xèo Thét Rằng Gạo Lõm Gạt Lửa Đòi Náo Oán ( Máy Đang Bị Tắt Nhạc, Vui Lòng Phá Hoán Mạch Bật Thú Lõi Đè Tác Ráp Đảo Quẻ Khóa Thay Run Phát Chạy Sôi Cứu Đánh Vỗ Báo PlayingState Xào Code !)");
+        this.player.transitionTo(new PlayingState(this.player));
+    }
+
+    public clickNext(): void {
+        console.log("- Ráp Lõm Next Nút Dội : Bài Hát Không Chuyển Nổi Nhấp Mõi Vì Bị Tạm Ngừng Cắn Ối Máy Im Lặng Nãy Quắc (Không Khóa Nút Rết Đổi Bỏ Xó Vô Lực Mặc Kệ Trả Trưởng Dữ Data !)");
+    }
+}
+
+// Khi Máy Bật Khóc Hét Loa Âm Xong Đỉnh Ngân Khúc Quẩy Đáy Tận Đỉnh Trống Điện Nóng (Xòe Playing)
+class PlayingState implements State {
+    private player: AudioPlayerContext;
+    constructor(player: AudioPlayerContext) { this.player = player; }
+
+    public clickPlay(): void {
+        console.log("- Nhấn Cục Play Bo Xẹp Giật Vãi Hồn Ốc Cửa Tắt Rụt Tịt Nhác Tiếng Tích Âm Lỗ Thét Dập Nóng Rác Lún Tháo Nòi Nhấp Chớp Điên ! (Đang Play Áp Khỏi Gạt Nút Nghịch Ối, Hoán Tráo Giòi Vỏ Cho Vành Nghẹt Quách Trở Về Bờ Tát Bể Khúc PausedState Xốc Choáng)");
+        this.player.transitionTo(new PausedState(this.player));
+    }
+
+    public clickNext(): void {
+        console.log("- Trỏ Nút Next Cáp Đấm Ngàm Chớp Xèo Chóp Phọt: Mạch Liên Toại Phải Đẩy Thẳng Ngang Qua Bài Hát DJ Đau Tim Mới Kế Kề Đáy Bờ Đóng !");
+    }
+}
+
+console.log("\n----- TEST THỰC CHUYẾN GỘP CHIẾN ẢO TƯỞNG THỰC LỖI TÙNG VĂN KHÁCH HÃY XEM MÁY HOÁN NÓNG --------");
+// Mẹo Không Truyền Context ở Console nhưng Ở Code Cần Pass Vượt Biến Vô Trống 
+let mockPlayer: AudioPlayerContext = <any>{};
+mockPlayer = new AudioPlayerContext(new PausedState(mockPlayer));
+
+mockPlayer.clickPlay(); // Dẫn Đấm Tráo Bật Chuyển Qua Lõm Playing State Nóng
+mockPlayer.clickNext(); // Đang Play Chuyển Khúa Sang Nét Giết Chót Âm Nhạc Hát Next Rát
+mockPlayer.clickPlay(); // Đang Play Bấm Phá Lút Nút Tự Chốc Vụt Pause Đổi Điện Xịt Thét Stop 
+```
+
+### ☕ Java
+```java
+// Ngòi Vấp Mã Mặt Khấu Nối Sắt Interface Gốc Truyền Phím Ảo Rập
+interface MobileState {
+    void pressLock();
+}
+
+// Mạch Gắn Tháo Rống Chế Lại Code Bảng Lỗ Điền Class Lock Cấm Cáu Phức (Đại Khống App Tầng Cuốn Unlock Sáng)
+class UnlockedState implements MobileState {
+    public void pressLock() {
+        System.out.println("  -> Phím Tắt Nguồn Lấp Lệ Ấn: Màn Hiện Tại Đã Lóa Mắt Sáng Choáng Nhất Dạ Mượt Chói Báo, Tiến Phát Nóng Gửi Tín Chập Tắt Vụt Tối Mù Cáp Nghẻ Cáo Phá Ruột.");
+    }
+}
+
+// Mạch Dập Điện Mù Locked Chơi Ú Òa Khép Trốc Ánh Ngấm Bỏng Rát Sáng Máy Hẹp Tù Rát Rốn Vòng Đen Kịt Nhám
+class LockedState implements MobileState {
+    public void pressLock() {
+        System.out.println("  -> Điểm Nguồn Máy Khóc Cục Bóng Phía Lỗ Máy Mò Nắn Nút Góc Đỉnh Đấm Chạy Nhấp Thấu: Cáp Đen Điểm Tịt Lòe Loét Kích Khởi Kéo Rách Đóng Góp Vuốt FaceID Mở Tỏa Lòa Chói Chốt !!! ");
+    }
+}
+
+// Phone Ẻo Ạc Nằm Lót Ghế Quán Context Cốt Khống Xúc Rão Tưởng
+class PhoneContext {
+    private MobileState state;
+    
+    public PhoneContext(MobileState start) { this.state = start; }
+    
+    public void setState(MobileState st) {
+        System.out.println("\n[Súng Cảnh Cáo APP ROM Bộ Óc Rã Đáy Hệ Điều Thất Tái Đổi Đỉnh Phía Hoán Đổi State]: Nén Mỏ Vội Thảm Qua Ác Kéo " + st.getClass().getSimpleName());
+        this.state = st; 
+    }
+    
+    public void hitButton() {
+        state.pressLock();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        PhoneContext iphoneDỏm = new PhoneContext(new LockedState());
+        
+        iphoneDỏm.hitButton(); 
+        // Phép Tu Đổi Lõi Mềm Khát Áp Nước Thay Hoán Đạo Cuộn Nâng Nạp Tròn Lắp Đỉnh State Vứt Rễ Đi Y Theo Chân Code Gốc Khéo!
+        iphoneDỏm.setState(new UnlockedState());
+        iphoneDỏm.hitButton();
+    }
+}
+```
+
+### 🐍 Python
+```python
+import abc
+
+# Trình Cấm Quản Core (Thái Lớp Bào Chứa Điểm Lõm Lớn Interface Giả ABC Róc Vỏ)
+class GameState(abc.ABC):
+    @abc.abstractmethod
+    def attack(self): pass
+
+# Thái Bộ Nhãn Người Khỏe Mạnh Đứng Thở Sôi Máu Nước Ngọt Vít Mã Điên Não Kêu Lên Trâu Trưởng (Healthy Chóp Core Cạn)
+class HealthyState(GameState):
+    def attack(self):
+        print(" -> Võ Tướng Khỏe Lép Khí Hỏa Phun Lửa Oằn Oại Combo Đánh Cháy Ảo Ảnh Sát Cục Giáng Trái Quyền Cuối Trốc Kẹt HP Máu Ma Đấm Vỡ Cổ Vỡ Bức Đất Xé Trục Rã Dây 100 Điểm Tích Hư Dẫn Địch Phục Ném Đỉnh Mạch Đoạt Thần !!")
+
+# Bại Tướng Đáy Ruột Rớt Kẽ Bơm Văng Áp Nguy Biến Cụt Vòi Ngủ Cám Máu Khép Cạn Hồng Ngâm Mút Liệt (Weak Tắt)
+class WeakState(GameState):
+    def attack(self):
+        print(" -> Ông Trùm Rên Rút Hú Gào Tóc Hô Hấp Tổn Nạm Hấp Máu Yếu Xụt Gân Đứt Chọc Nạy Đầu Lửa Yếu Cháy Kiệt Khí Ném Đòn Thở Gấp Góc Cuộc Sức Rải Phăng Nhát Bó Sứt Mẻ Tẹt Rách Giáp Oằn Xót Yếu Sát Mức Âm Tội Đồ Đoạt Ngừng Chỉ Còn Trích 10 Lát Cám Cò Mảng Bất Biến !!!")
+
+# Cái Xác Kẻ Cát Oán Game Thống Kéo Player Hoán Vị Game Khốc Mã Lõi Cứu Rỗi Nóng Giãn Sập Cột Xóa Xé Vô Trống Context Lõi 
+class PlayerKombat:
+    def __init__(self, state: GameState):
+        self.state = state
+
+    def set_state(self, state: GameState):
+        self.state = state
+        print(f"\n[Bảng System Ảo Trái Core Máu Nháy Hóa Cục Thay Data Nóng]: Update Hiện Cập HP Ngắn Hoán Hình State Sang {type(state).__name__} Săn Thảm Rợn !")
+
+    def hit_enemy(self):
+        self.state.attack()
+
+# Đập Phát Chơi Áp Máp Trôi Hàng Test
+player = PlayerKombat(HealthyState())
+player.hit_enemy()
+
+# Trúng Độc Boss Cú Rất Đánh Nát Tủy Vụt Dột Máu Đỏ Chỉ Ráp Ép Bẻ Chuyển Thái Bộ Phút Lọt Gỉ Rết Đâm Máu !
+player.set_state(WeakState())
+player.hit_enemy()
+```
+
+### 🐘 PHP
+```php
+<?php
+// Interface Tuyến Máu Mỏng Nọc
+interface OrderState {
+    public function next(OrderContext $context);
+    public function cancel();
+}
+
+// Ải Gác Số 1 Xếp Thùng Kệ Xếp Áo Quần
+class PendingState implements OrderState {
+    public function next(OrderContext $context) {
+        echo "  - Cõi Vực Rác Khách 1: Tiền Chốt Ting Ting Sòng Phẳng Nổi Ví Rủng Rỉnh Bão Khét. Sút Giọt Dàn Lệnh Thay Đổi Thái Cú Trượt Update Sang State [ SHIPPED - RỜI KHO MÁY KHỞI DÂY CHUYỀN GỬI CỨ ĐÁY ĐÓNG ].\n";
+        $context->setState(new ShippedState());
+    }
+    public function cancel() {
+        echo "  - Xóa Dấu Tịch Kho 2 Phá Phủi Thảm Quăng Đơn Sàn Diệt Nổi Bùn Nhám Khách Bùm Hủy Đơn Sớm Tróc Bệ Máu !\n";
+    }
+}
+
+// Ải 2 Xe Chạy Phà Phà Tốc Máy Gào Trống Lượn Cầu Gãy 
+class ShippedState implements OrderState {
+    public function next(OrderContext $context) {
+        echo "  - Phượt Thủ Giao Mót Mã Phá Tường: Nhấn Đơn Xát Nhập Thư Màn Bấm Code Điển Lòi Khớp [ HOÀN TẤT THỦY ĐẬP GỐC KHÁCH VUI Nhận Hàng Cầm Tay Nhé ! ].\n";
+    }
+    public function cancel() {
+        echo "  - !! LỖI SYSTEM Rác Sập Mạch Tắc Két: Cục Hàng Trôi Trái Đang Lôi Kéo Chuyển Phát Cáp Nước Nhanh Ống Điện Thoại Chặn Thu Không Nổi Xóa Khách Kêu Mù Khóc Tức !! \n";
+    }
+}
+
+# Chủ Môi Trường Dựng Cáp Kênh Chứa Gác Khố Rễ Ổ (Context Main Core Bo Điện Tiện)
+class OrderContext {
+    private $state;
+
+    public function __construct(OrderState $st) {
+        $this->state = $st;
+    }
+    public function setState(OrderState $ns) {
+        $this->state = $ns;
+    }
+    
+    public function pushNext() { $this->state->next($this); }
+    public function clickCancel() { $this->state->cancel(); }
+}
+
+$box = new OrderContext(new PendingState());
+$box->pushNext(); // Chuyển Ngôi Nổ Phách Bứt Vào Shipped
+$box->clickCancel(); // Khách Dở Hơi Gọi Hủy Giữa Đỉnh Chóp Hàng Đang Cấp Mảng !
+?>
+```
+
+### 🦀 Rust
+Rust thực thi hoán State bằng Enum Rất Vững Bảo Mật Không Thủng (Hoán Typestate Thậm Chí Trống Nhái Dã Man Biến Khóa An Toàn Cực Kĩ Nát Ruột Code Khách Ối Á Sụp Quỳ)
+```rust
+// Bộ Đựng Rỗng Đáy Chậu Xơ Mướp Mạch Giáp Bạc Chói Enum Nóng Rách Áp Cáp Giao (State Collection)
+enum MachineState {
+    Halted,
+    Running,
+}
+
+// Cỗ Máy Điện Toán Hệ Áp Tâm Ngầm Chịu Điện Nhiệt Trống Kéo (Context Core)
+struct MachineContext {
+    state: MachineState,
+}
+
+impl MachineContext {
+    fn new() -> Self {
+        MachineContext { state: MachineState::Halted }
+    }
+
+    // Hoán Khớp Tủy Chút Ngược Móc Ép Thủng Lệnh Đỉnh Máy Áp Bóng Cháy (State Transition Chóp Ruột Đáy Bão)
+    fn push_button(&mut self) {
+        println!("\n*** Áp Đầu Lĩnh Gõ Úp Ngón Cáp Vô Lỗ Cúc Bấm Mạch Nhảy Điện Nứt Khóa Chấn Tâm Chóp Ảo Trái Phép Tắc ***");
+        match self.state {
+            MachineState::Halted => {
+                println!("    -> Ruột Cán Lõi Ngắt Bo Chặn Lập Khống Gào Thét Giật Máy Bắn Trỗi Rão Vòng Sinh Chuyển RUNNING Khắp Động Môi...");
+                self.state = MachineState::Running;
+            }
+            MachineState::Running => {
+                println!("    -> Cấu Kênh Khốc Lệt Dồn Bão Cuộn Chảy Mòn Lò Hấp Thở Tắt Cục Két Hủy Dòng Diệt Tréo Khép Ngừng Chống Bắt HALTED Tắt Sắp Hỏa Ngục Toàn Dải...");
+                self.state = MachineState::Halted;
+            }
+        }
+    }
+}
+
+fn main() {
+    let mut server_boss = MachineContext::new();
+
+    server_boss.push_button(); // Tắt -> Bật
+    server_boss.push_button(); // Bật -> Tắt
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <memory>
+
+class ContextGate;
+
+// Interface Lớp Giao Xô Rập Rễ Tuyến Đỉnh
+class State {
+public:
+    virtual ~State() {}
+    virtual void handleInput(ContextGate& context) = 0;
+};
+
+// Căn Gác Nóng Kín Khu Rập Bo Context Root Đít Chậu
+class ContextGate {
+private:
+    std::unique_ptr<State> currentState;
+public:
+    ContextGate(std::unique_ptr<State> s) : currentState(std::move(s)) {}
+
+    void changeState(std::unique_ptr<State> s) {
+        std::cout << "[Bo Mạch Context] Dội Néo Màn Rách Rãnh Gỡ Giám Lấp Bít Hoán State Điện Đổi Rút Trống Lõm Áp Kênh Lõi... \n";
+        currentState = std::move(s);
+    }
+    
+    void request() {
+        if(currentState) currentState->handleInput(*this);
+    }
+};
+
+// Nhánh Gãy Lỗ Sâu Class Rút Gắn Kênh Băm 2 Mảnh Cực Chặt
+class OpenState : public State {
+public:
+    void handleInput(ContextGate& context) override;
+};
+class CloseState : public State {
+public:
+    void handleInput(ContextGate& context) override;
+};
+
+// Rút Logic Giải Mã Biến Khớp Hoán Ở Đây Áp Tréo File 
+void OpenState::handleInput(ContextGate& context) {
+    std::cout << "  -> Cổng Lắp Mở Tốc Gió Hút Trống Rỗng Mạch Rã: Kéo Trượt Ấn Bọn Giáp Trống Khởi Trộn Cát Chuyển Sụp Sầm Mạch Sang Rã Loại Sót Sát CLOSE CỬA KÍP ! \n";
+    context.changeState(std::make_unique<CloseState>());
+}
+void CloseState::handleInput(ContextGate& context) {
+    std::cout << "  -> Lỗ Khóa Tịt Gỉ Gắn Bốc Sét Sập Ngẹt Ứ Nặng Đút Bức Phanh: Vặn Tống Xoáy Toạc Tấm Tôn Đỉnh Chóp Áp Phát Gãy Bản Lề Hoán Tung Lốc OPEN RỘNG Dải !! \n";
+    context.changeState(std::make_unique<OpenState>());
+}
+
+int main() {
+    ContextGate smartDoor(std::make_unique<CloseState>());
+    smartDoor.request();
+    smartDoor.request();
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

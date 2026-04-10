@@ -1,0 +1,321 @@
+---
+title: "Composite Pattern"
+date: 2026-04-12T08:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Composite** là cấu trúc thiết kế (Structural Pattern) cho phép bạn tổng hợp và biên soạn các đối tượng lại với nhau để tạo thành cấu trúc phân cấp mạng lưới dạng cây (Tree structure). Ngay sau đó, bạn có thể tương tác với các cấu trúc lớn, các nhóm đối tượng (Composition) tương tự theo cách bạn tương tác với một đối tượng riêng lẻ duy nhất (Leaf).
+
+## 2. Mục đích
+- Giao tiếp đồng nhất giữa các đối tượng trong mô hình dữ liệu đệ quy (recursive data structures).
+- Khi bạn gọi chức năng tính toán lên đối tượng Rễ (Root), tất cả các nhánh (Branch), và từng đối tượng con Nút lá (Leaf) bên trong đều sẽ tự động gọi phương thức tính năng đó và dồn lại vào một kết quả tổng.
+- Giảm phụ thuộc và tiết kiệm công sức: Phía sử dụng đối tượng (Client) không quan tâm đó là đối tượng Leaf cơ sở hay là đối tượng nhánh Branch phức tạp vì chúng dùng chung một interface.
+
+## 3. Khi nào ứng dụng
+- Quản lý cấu trúc Hệ thống Tập tin (File System). Các Thư mục (Directory) chứa nhiều Thư mục con và Tập tin (File). Lệnh tính tổng dung lượng có thể phát động từ cấp cấu trúc cao nhất truyền sâu vào trong cấp con thấp nhất.
+- Hệ thống Giỏ hàng e-commerce kết hợp nhiều Sản phẩm Đơn (Single Product) hoặc Gói Sản phẩm lồng nhau (Combo Boxes).
+- Ráp cấu trúc giao diện đồ họa UI (Layouts, Panels, Buttons), nơi một UI element có thể chứa nhiều child elements khác rớt dần nội bộ bên trong nó.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ mạnh mẽ nguyên lý OCP (Open/Closed Principle) vì hệ thống hiện nay có thể thêm thành phần con mới hoặc tạo quy ước nhánh mới hoàn toàn mà không phá vỡ bất kì quy tắc nào trước đó.
+- Code linh hoạt xử lý dễ dàng với dạng cây phức tạp thông qua các giao diện hình mẫu đa hình.
+
+**Nhược điểm:**
+- Khó thiết lập các hạn chế (type restrictions) đối với các node con. Vì tất cả các node đều triển khai chung một interface, bạn sẽ gặp rắc rối để quy định một số chức năng "chỉ Component B mới gọi được".
+- Có thể khiến hệ thống dư thừa các file kế thừa nếu việc phân tách nhánh vốn dĩ không mang lại giá trị nào liên quan hình mẫu cây.
+
+---
+
+## 5. Ví dụ minh họa (Tệp tin và Thư mục)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao thức chung cho mọi Thành phần trong Cây
+interface FileSystemComponent {
+    getName(): string;
+    getSize(): number;
+    print(): void;
+}
+
+// Đối tượng Lá (File đơn lẻ, không chứa thêm gì)
+class FileComponent implements FileSystemComponent {
+    constructor(private name: string, private size: number) {}
+
+    getName(): string { return this.name; }
+    getSize(): number { return this.size; }
+    print(): void { console.log(`  - Loại Tập tin (File): ${this.name} (Kích cỡ: ${this.size}MB)`); }
+}
+
+// Đối tượng Nhánh (Thư mục, chứa nhiều Lá hoặc Nhánh con)
+class DirectoryComponent implements FileSystemComponent {
+    private components: FileSystemComponent[] = [];
+
+    constructor(private name: string) {}
+
+    // Kỹ thuật nhồi nhét đối tượng con vào bụng Nhánh
+    add(component: FileSystemComponent): void { this.components.push(component); }
+
+    getName(): string { return this.name; }
+    
+    // Gọi tịnh tiến đệ quy lan truyền toàn bộ con cháu
+    getSize(): number {
+        return this.components.reduce((total, comp) => total + comp.getSize(), 0);
+    }
+
+    print(): void {
+        console.log(`\n📁 Mở Thư Mục: [${this.name}] (Tổng quy mô ổ đĩa dung lượng: ${this.getSize()}MB)`);
+        for (const comp of this.components) { 
+            comp.print(); // Đệ quy gọi lệnh in
+        }
+    }
+}
+
+// Khởi chạy thực tiễn
+const file1 = new FileComponent("Bao_Cao_Tai_Chinh.pdf", 10);
+const file2 = new FileComponent("Hinh_Nen_Dep.png", 25);
+const subDir = new DirectoryComponent("Thư Mục Ảnh");
+subDir.add(file2);
+
+const rootDir = new DirectoryComponent("Ổ đĩa C:/");
+rootDir.add(file1);
+rootDir.add(subDir);
+
+// Gọi 1 lệnh tính ra tất cả
+rootDir.print(); 
+/* Output:
+📁 Mở Thư Mục: [Ổ đĩa C:/] (Tổng quy mô ổ đĩa dung lượng: 35MB)
+  - Loại Tập tin (File): Bao_Cao_Tai_Chinh.pdf (Kích cỡ: 10MB)
+
+📁 Mở Thư Mục: [Thư Mục Ảnh] (Tổng quy mô ổ đĩa dung lượng: 25MB)
+  - Loại Tập tin (File): Hinh_Nen_Dep.png (Kích cỡ: 25MB)
+*/
+```
+
+### ☕ Java
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+// Giao diện lõi Component
+interface Component {
+    void showDetails();
+}
+
+// Đối tượng chiếc Lá (Nhân viên)
+class Employee implements Component {
+    private String name;
+    public Employee(String name) { this.name = name; }
+    
+    public void showDetails() { System.out.println("   + Nhân Viên Cấp Dưới: Võ Danh " + name); }
+}
+
+// Nhánh quản lý Group
+class Department implements Component {
+    private String deptName;
+    private List<Component> children = new ArrayList<>();
+
+    public Department(String name) { this.deptName = name; }
+    public void addComponent(Component c) { children.add(c); }
+
+    public void showDetails() {
+        System.out.println("-------------------------");
+        System.out.println("Phòng Ban Trụ Sở Hành Chính: [ " + deptName + " ]");
+        // Duyệt chu kỳ truy ngược
+        for(Component c : children) {
+            c.showDetails();
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Employee emp1 = new Employee("Lê Văn Alpha");
+        Employee emp2 = new Employee("Trần Thị Beta");
+        
+        Department devTeam = new Department("Team Kỹ Thuật Máy Tính");
+        devTeam.addComponent(emp1);
+        devTeam.addComponent(emp2);
+        
+        Department company = new Department("Hội Sở Tổng Công Ty Cổ Phần Mẹ");
+        company.addComponent(devTeam);
+        
+        company.showDetails(); // Phát lệnh rà soát toàn bộ cây tổ chức
+    }
+}
+```
+
+### 🐍 Python
+```python
+from abc import ABC, abstractmethod
+
+class Graphic(ABC):
+    @abstractmethod
+    def draw(self): pass
+
+# Đối Tượng Lá - Không chứa con nhánh bên dưới
+class Circle(Graphic):
+    def draw(self):
+        print("  --> Bút điện tử phác họa thêm một Đường Tròn con.")
+
+# Đối Tượng Vùng Nhóm Khủng Tập Hợp Cấu Trúc Đám Đông Gốc
+class GraphicGroup(Graphic):
+    def __init__(self):
+        self.children = []
+
+    def add(self, graphic: Graphic):
+        self.children.append(graphic)
+
+    def draw(self):
+        print("\n[Hệ Điều Hành Gọi Render Bản Đồ]: Khởi độ lan truyền in cho từng lớp...")
+        for child in self.children:
+            child.draw()
+
+circle1 = Circle()
+circle2 = Circle()
+group = GraphicGroup()
+
+group.add(circle1)
+group.add(circle2)
+
+group.draw() 
+# Output: [Hệ Điều Hành Gọi Render...] \n --> Bút điện tử phác họa... \n --> Bút điện tử...
+```
+
+### 🐘 PHP
+```php
+<?php
+// Lõi Component Cơ Sở
+interface Component {
+    public function render(): string;
+}
+
+// Điểm Nhánh Nhỏ Lá 
+class InputElement implements Component {
+    public function render(): string {
+        return "   <input type='text' placeholder='Ô Nhập Liệu Biểu Mẫu Chuẩn...' />";
+    }
+}
+
+// Chuỗi Gốc Nhánh Cây Composite Khớp Lắp Ráp Cục Bự Chà Bá
+class FormComposite implements Component {
+    protected $elements = [];
+
+    public function addElement(Component $element) {
+        $this->elements[] = $element;
+    }
+
+    public function render(): string {
+        $formHTML = "<form id='Main-HTML-Form'>\n";
+        foreach ($this->elements as $el) {
+            $formHTML .= $el->render() . "\n";
+        }
+        $formHTML .= "</form>";
+        return $formHTML;
+    }
+}
+
+$form = new FormComposite();
+$form->addElement(new InputElement());
+$form->addElement(new InputElement());
+
+echo "Mã Nguồn Cấu Trúc Lớp Form Đã Gói Đè HTML Giao Diện Thành Công Nè:\n";
+echo $form->render();
+?>
+```
+
+### 🦀 Rust
+```rust
+trait FileComponent {
+    fn show_size(&self) -> u32;
+}
+
+struct File { size: u32 }
+impl FileComponent for File {
+    fn show_size(&self) -> u32 { self.size }
+}
+
+// Đối tượng Composite sử dụng con trỏ Heap để bảo hiểm dữ liệu con tùy biến đa hình
+struct Directory {
+    children: Vec<Box<dyn FileComponent>>
+}
+
+impl Directory {
+    fn new() -> Self { Directory { children: vec![] } }
+    fn add(&mut self, child: Box<dyn FileComponent>) {
+        self.children.push(child);
+    }
+}
+
+impl FileComponent for Directory {
+    fn show_size(&self) -> u32 {
+        let mut total = 0;
+        for child in &self.children {
+            total += child.show_size();
+        }
+        println!("Công Cụ Lõi Rust Tính Tổng Dung Lượng Nhánh Đệ Quy Cực Mạnh Là: {} bytes.", total);
+        total
+    }
+}
+
+fn main() {
+    let mut dir = Directory::new();
+    dir.add(Box::new(File { size: 100 }));
+    dir.add(Box::new(File { size: 250 }));
+    
+    dir.show_size();
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <vector>
+#include <memory>
+
+class Component {
+public:
+    virtual ~Component() {}
+    virtual int getPrice() const = 0;
+};
+
+// Item Không Chứa Đựng Component (Lá cành Cấp Cuối)
+class Product : public Component {
+private:
+    int price;
+public:
+    Product(int p) : price(p) {}
+    int getPrice() const override { return price; }
+};
+
+// Thùng Hộp Bao Chứa Thành Phần Con Kép Nested
+class Box : public Component {
+private:
+    std::vector<std::unique_ptr<Component>> children;
+public:
+    void add(std::unique_ptr<Component> c) {
+        children.push_back(std::move(c));
+    }
+    
+    int getPrice() const override {
+        int total = 0;
+        for (const auto& child : children) {
+            total += child->getPrice();
+        }
+        return total;
+    }
+};
+
+int main() {
+    Box mainBox;
+    mainBox.add(std::make_unique<Product>(50));
+    mainBox.add(std::make_unique<Product>(120));
+    
+    std::cout << "Tổng kết số tiền tính Tổng Hóa Đơn Trọn Gọi Hộp Đựng Sâu Bên Trong: " << mainBox.getPrice() << " Ngàn VNĐ.\n";
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*

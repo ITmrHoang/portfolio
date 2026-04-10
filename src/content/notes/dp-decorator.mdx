@@ -1,0 +1,320 @@
+---
+title: "Decorator Pattern"
+date: 2026-04-12T09:00:00Z
+topic: "Design Pattern"
+---
+
+## 1. Định nghĩa
+**Decorator** là một mẫu thiết kế cấu trúc (Structural Pattern) cho phép người dùng đính kèm các hành vi, chức năng mới (behaviors) hoặc trách nhiệm mới (responsibilities) vào các đối tượng (objects) độc lập thông qua việc đặt chúng bên trong các đối tượng chứa lớp bọc chuyên biệt (wrapper objects). 
+
+## 2. Mục đích
+- Gắn thêm lớp tính năng (add features) một cách linh hoạt, trơn tru lúc code đang chạy nhảy (Runtime) mà không ảnh hưởng tới đối tượng lõi bên trong.
+- Tránh tạo ra những cấu trúc thừa kế quái dị với tầng tầng lớp lớp subclass chồng chéo lên nhau. Ví dụ: Kế thừa sinh ra `ThongBao_Email_SMS_Facebook_Slack` thay vì thế chỉ cần bọc lớp Slack vào lớp Facebook, bọc Facebook vào Email...
+- Giữ cho class gốc ở mức tối giản (lightweight) và chỉ thêm các decorators khi thật sự cần tính năng đó.
+
+## 3. Khi nào ứng dụng
+- Hệ thống Thông báo (Notification systems) cần cấu hình động: Gửi cảnh báo qua Email. Nếu lỗi nặng thì bọc hệ thống đó vào Decorator SMS và Decorator Slack để gửi cảnh báo trên cả 3 nền tảng cùng lúc.
+- Lọc Streams Dữ Liệu, Luồng Đọc/Ghi I/O: Khi lưu dữ liệu xuống file, trước đó bọc bộ chuyển đổi nén File (Compression Decorator) và mã hóa nội dung (Encryption Decorator). Dữ liệu được nén, sau đó mã hóa mới đổ xuống ổ cứng Disk.
+- Thêm chức năng thanh toán (Tích điểm, Mã giảm giá, Thẻ VIP) xếp chống lên đơn giá hàng hóa mà không làm loạn lõi tính tiền của Sản phẩm.
+
+## 4. Ưu / Nhược điểm
+**Ưu điểm:**
+- Tuân thủ cực kì mạnh mẽ cả 2 nguyên lý hóc búa nhất: OCP (Open/Closed Principle) - Lớp cũ giữ nguyên, Thêm tính năng ở ngoài; và SRP (Single Responsibility) - Mã hóa, nén, báo cáo được băm nhuyễn thành các class Decorator nhỏ gọn.
+- Tạo ra vô vàn hỗn hợp tính năng mà không cần sinh mảng Subclass con thừa thãi.
+- Gắn hoặc gỡ thuộc tính (feature toggle) cực nhanh ngay trong Runtime.
+
+**Nhược điểm:**
+- Cực kì khó khăn nếu muốn viết hàm rút bớt lớp Decorator (lột vỏ bọc) ở chính giữa ngăn xếp (stack) đi. Hầu như là lớp bọc nào đã bọc là bọc dính luôn chuỗi thứ tự.
+- Gây tổn thương nặng nề cho não bộ người đọc code mới vì tầng lớp khởi tạo hàm `new A(new B(new C(new Core())))` nhìn rất lộn xộn.
+
+---
+
+## 5. Ví dụ minh họa (Data Encryption & Compression)
+
+### 🟨 JavaScript / TypeScript
+```typescript
+// Giao diện Lõi (Bắt buộc Lớp gốc và Lớp Vỏ bọc đều phải có chung)
+interface DataSource {
+    writeData(data: string): void;
+}
+
+// Đối Tượng Nòng Cốt Chính (Chỉ làm việc duy nhất là ghi đĩa File)
+class FileDataSource implements DataSource {
+    constructor(private filename: string) {}
+
+    public writeData(data: string): void {
+        console.log(`[Thao Tác Disk Cơ Bản]: Ghi thành công tệp tin chuỗi dữ liệu (${data}) thẳng vào ổ cứng tệp ${this.filename}`);
+    }
+}
+
+// Lớp Vỏ Bọc Gốc (Base Decorator / Wrapper)
+class DataSourceDecorator implements DataSource {
+    protected wrappee: DataSource;
+
+    constructor(source: DataSource) {
+        this.wrappee = source; // Nhét Lõi Gốc hoặc Vỏ Khác Vào Bụng
+    }
+
+    public writeData(data: string): void {
+        // Chỉ đùn đẩy công việc xuống class bị bọc bên trong
+        this.wrappee.writeData(data);
+    }
+}
+
+// ----------------------------------------------------- //
+// Các lớp tính năng VỎ BỌC CHI TIẾT (Concrete Decorators) //
+
+// 1. Áo Giáp Mã Hóa Lồng Ghép 
+class EncryptionDecorator extends DataSourceDecorator {
+    public writeData(data: string): void {
+        const encrypted = "(!@#!_Encrypted_Data_#@!$) - " + data;
+        console.log("Cảnh Báo [Decorator 1 Bọc Ruột]: Đang tiến hành băm nhỏ trộn lẫn mã hóa dữ liệu bảo mật...");
+        // Bắt đầu truyền dòng khí xuống lớp Vỏ bọc bên trong nó
+        super.writeData(encrypted);
+    }
+}
+
+// 2. Vỏ Bọc Nén Ép Dữ Liệu
+class CompressionDecorator extends DataSourceDecorator {
+    public writeData(data: string): void {
+        const compressed = "[Zip_Archive_Format]" + data;
+        console.log("Tiến Trình [Decorator 2 Bọc Ruột]: Thắt chặt nén data lại để tiết kiệm DiskSpace...");
+        // Truyền tiếp xuống lớp trong cùng
+        super.writeData(compressed);
+    }
+}
+
+// ---- Khởi chạy hệ Thống Thâm Sâu ----
+const plainFile = new FileDataSource("secret.txt");
+
+// Lõi Bọc Lõi: Compression Bọc Encryption, Encryption Bọc File
+const finalSuperFile = new CompressionDecorator(
+                            new EncryptionDecorator(plainFile)
+                        );
+
+// Khách Hàng Ghi Bình Thường
+finalSuperFile.writeData("Mã Khởi Động Vũ Khí Hạt Nhân Thô");
+/* Output:
+Tiến Trình [Decorator 2 Bọc Ruột]: Thắt chặt nén data lại để tiết kiệm DiskSpace...
+Cảnh Báo [Decorator 1 Bọc Ruột]: Đang tiến hành băm nhỏ trộn lẫn mã hóa dữ liệu bảo mật...
+[Thao Tác Disk Cơ Bản]: Ghi thành công tệp tin chuỗi dữ liệu ([Zip_Archive_Format](!@#!_Encrypted_Data_#@!$) - Mã Khởi Động Vũ Khí Hạt Nhân Thô) thẳng vào ổ cứng tệp secret.txt
+*/
+```
+
+### ☕ Java
+```java
+// Component Tiêu Điểm
+interface Notifier { void send(String msg); }
+
+// Lớp Nền Công Nghiệp Thực Thi
+class BaseNotifier implements Notifier {
+    public void send(String msg) {
+        System.out.println("Gửi Tin Nhắn Nội Bộ Công Ty Mặc Định (Coring): " + msg);
+    }
+}
+
+// Đóng Gói Nhựa Bọc Abstract Decorator
+abstract class NotifierDecorator implements Notifier {
+    private Notifier wrappee;
+    public NotifierDecorator(Notifier n) { this.wrappee = n; }
+    public void send(String msg) { wrappee.send(msg); }
+}
+
+// Áo Khoác Facebook
+class FacebookDecorator extends NotifierDecorator {
+    public FacebookDecorator(Notifier n) { super(n); }
+    public void send(String msg) {
+        super.send(msg); // Cho lớp cũ Cứ chạy trước
+        System.out.println("  --> [Decorator Kích Hoạt]: Đăng dội BOM tin nhắn cực mạnh tiếp qua nền tảng FACEBOOK MESSENGER.");
+    }
+}
+
+// Áo Khoác Slack
+class SlackDecorator extends NotifierDecorator {
+    public SlackDecorator(Notifier n) { super(n); }
+    public void send(String msg) {
+        super.send(msg); // Lớp dưới cứ chạy
+        System.out.println("  --> [Decorator Kích Hoạt]: Gửi còi báo động Alert tiếp qua Kênh SLACK GROUP DOANH NGHIỆP.");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Notifier core = new BaseNotifier();
+        Notifier fbWrapped = new FacebookDecorator(core);
+        Notifier fullWrappedStack = new SlackDecorator(fbWrapped); // Đóng Gói Kép
+        
+        fullWrappedStack.send("Server Kế toán Sập Hệ Thống Toàn Diện ĐÊ!!!!");
+    }
+}
+```
+
+### 🐍 Python
+```python
+class Component:
+    def operation(self) -> str: pass
+
+# Mầm Gốc Mặc định
+class BaseCoffee(Component):
+    def operation(self) -> str:
+        return "Cốc Cà Phê Đen Đá Tiêu Chuẩn Nguyên Bản"
+
+# Lớp Thân Áo Gắn Hờ
+class Decorator(Component):
+    def __init__(self, core_component: Component):
+        self._component = core_component
+
+    @property
+    def component(self) -> Component:
+        return self._component
+
+    def operation(self) -> str:
+        return self._component.operation()
+
+# Phụ Phí Sữa Tươi
+class MilkDecorator(Decorator):
+    def operation(self) -> str:
+        # Nhúng hàm tự động cộng dồn Tên Hiệu
+        return f"Menu Mix Thêm Sữa Đặc ({self.component.operation()})"
+
+# Phụ Phí Vani Vị Ngọc
+class VanillaDecorator(Decorator):
+    def operation(self) -> str:
+        return f"Xịt Thêm Si-Rô Vani Cao Cấp ({self.component.operation()})"
+
+# Một Lít Code Gọi Hàm Mix Đủ Thứ
+plain_coffee = BaseCoffee()
+milk_coffee = MilkDecorator(plain_coffee)
+super_coffee = VanillaDecorator(milk_coffee)
+
+print("Món Nước Đồ Uống Khách Đặt Bấm Hàng:", super_coffee.operation())
+# Output: Xịt Thêm Si-Rô Vani Cao Cấp (Menu Mix Thêm Sữa Đặc (Cốc Cà Phê Đen Đá Tiêu Chuẩn Nguyên Bản))
+```
+
+### 🐘 PHP
+```php
+<?php
+// Giao Diện Web Cốt Lõi
+interface WebPage {
+    public function display(): string;
+}
+
+// Mã Gốc Nhúng Web
+class BasicPage implements WebPage {
+    public function display(): string { return "Biểu Đồ Trang Trắng Khởi Thủy Thuần HTML Cứng Nhanh Nhất"; }
+}
+
+// Thiết lập lớp vỏ Form Decorator Trống
+class PageDecorator implements WebPage {
+    protected $page;
+    public function __construct(WebPage $page) { $this->page = $page; }
+    public function display(): string { return $this->page->display(); }
+}
+
+// Mặc Thêm Gói Layout Xác Thực Auth
+class AuthenticatedPage extends PageDecorator {
+    public function display(): string {
+        return "🔥 Bức Tường Lửa Check Auth Đăng Nhập Lọc Trước... -> " . parent::display();
+    }
+}
+
+class TrackingPage extends PageDecorator {
+    public function display(): string {
+        return "🎯 Mã Nhúng Theo Dõi Google Analytics Bám Chặt Đuôi... -> " . parent::display();
+    }
+}
+
+$core = new BasicPage();
+$safePage = new AuthenticatedPage($core);
+$finalPage = new TrackingPage($safePage);
+
+echo "Trình Duyệt Render Bào Cấu Cấp Vĩ Mô: \n";
+echo $finalPage->display();
+?>
+```
+
+### 🦀 Rust
+Rust không có Class phân cấp (Inheritance), nên việc cài Decorator xịn nhất là nhét `Box<dyn Component>` vào bên trong Struct khác (Composition Wrap).
+
+```rust
+trait DataStream {
+    fn read(&self) -> String;
+}
+
+// Củ Máy Chủ Tối Giản Base Thực Thi
+struct BaseStream;
+impl DataStream for BaseStream {
+    fn read(&self) -> String { "Mã Gốc Nguyên Bản Thông Điệp SOS!!!".to_string() }
+}
+
+// Vỏ Bọc Tăng Âm Tín Hiệu (Decorator 1)
+struct EncryptWrapper {
+    wrapee: Box<dyn DataStream>,
+}
+impl DataStream for EncryptWrapper {
+    fn read(&self) -> String {
+        let original_data = self.wrapee.read();
+        format!("(Khóa Chống Đánh Tráo Hacking) >>> {}", original_data)
+    }
+}
+
+fn main() {
+    let source = Box::new(BaseStream);
+    
+    // Gói Bọc Lại (Wrap)
+    let secured_source = Box::new(EncryptWrapper { wrapee: source });
+    
+    println!("Giao Diện Đầu Ra Cuối Cùng Dành Cho Rust Master Lõi Mạng:");
+    println!("{}", secured_source.read());
+}
+```
+
+### ⚙️ C++
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+
+class Component {
+public:
+    virtual ~Component() {}
+    virtual std::string getOperation() const = 0;
+};
+
+// Cấu Phân Vật Tự Nhiên
+class ConcreteComponent : public Component {
+public:
+    std::string getOperation() const override { return "Tín Hiệu Core Phát Ra Nhỏ Tí"; }
+};
+
+class Decorator : public Component {
+protected:
+    std::shared_ptr<Component> component;
+public:
+    Decorator(std::shared_ptr<Component> c) : component(c) {}
+    std::string getOperation() const override { return component->getOperation(); }
+};
+
+// Phụ Lục Chỉnh Sửa Quái Vật 1
+class ConcreteDecoratorA : public Decorator {
+public:
+    ConcreteDecoratorA(std::shared_ptr<Component> c) : Decorator(c) {}
+    std::string getOperation() const override {
+        return "Lò Vi Sóng Nung Đỏ Tín Hiệu Cấp Vĩ Mô ( " + Decorator::getOperation() + " )";
+    }
+};
+
+int main() {
+    auto simple = std::make_shared<ConcreteComponent>();
+    
+    auto dec1 = std::make_shared<ConcreteDecoratorA>(simple);
+    // Bọc Chồng Cùng 1 Lớp 2 Lần liên tiếp !!! (Sức mạnh Vĩnh cữu của Decorator)
+    auto dec2 = std::make_shared<ConcreteDecoratorA>(dec1); 
+
+    std::cout << "Kích Khởi C++ Stack Call Object Rồng Cắn Đuôi: \n" << dec2->getOperation() << "\n";
+    return 0;
+}
+```
+
+---
+*← [Quay lại mục lục Design Patterns](/notes/dp-overview)*
