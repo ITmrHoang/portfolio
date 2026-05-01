@@ -1,12 +1,15 @@
 /*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
+  Global styles for HiMo Portfolio — Astro + MDX Prose
+  Đảm bảo tất cả thành phần MDX hiển thị đẹp trên FullHD lẫn Mobile.
  */
 
+/* ============================================
+   1. CSS CUSTOM PROPERTIES (Design Tokens)
+   ============================================ */
 :root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
+	--accent: #4f46e5;
+	--accent-dark: #3730a3;
+	--accent-light: #818cf8;
 	--black: 15, 18, 25;
 	--gray: 96, 115, 159;
 	--gray-light: 229, 233, 240;
@@ -15,7 +18,20 @@
 	--box-shadow:
 		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
 		0 16px 32px rgba(var(--gray), 33%);
+	/* Table & Prose tokens */
+	--border-color: #d1d5db;
+	--border-light: #e5e7eb;
+	--bg-header: #f1f5f9;
+	--bg-stripe: #f8fafc;
+	--bg-hover: #eef2ff;
+	--text-primary: #1e293b;
+	--text-body: #334155;
+	--text-muted: #64748b;
 }
+
+/* ============================================
+   2. FONTS
+   ============================================ */
 @font-face {
 	font-family: "Atkinson";
 	src: url("/fonts/atkinson-regular.woff") format("woff");
@@ -23,6 +39,7 @@
 	font-style: normal;
 	font-display: swap;
 }
+
 @font-face {
 	font-family: "Atkinson";
 	src: url("/fonts/atkinson-bold.woff") format("woff");
@@ -30,6 +47,10 @@
 	font-style: normal;
 	font-display: swap;
 }
+
+/* ============================================
+   3. BASE RESET & BODY
+   ============================================ */
 body {
 	font-family: "Atkinson", sans-serif;
 	margin: 0;
@@ -40,15 +61,15 @@ body {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	color: rgb(var(--gray-dark));
-	font-size: 20px;
-	line-height: 1.7;
+	font-size: 18px;
+	line-height: 1.75;
 }
-main {
-	width: 720px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 3em 1em;
-}
+
+
+
+/* ============================================
+   4. GLOBAL TYPOGRAPHY (ngoài .prose)
+   ============================================ */
 h1,
 h2,
 h3,
@@ -59,134 +80,533 @@ h6 {
 	color: rgb(var(--black));
 	line-height: 1.2;
 }
+
 h1 {
-	font-size: 3.052em;
+	font-size: 2.5em;
 }
+
 h2 {
-	font-size: 2.441em;
+	font-size: 2em;
 }
+
 h3 {
-	font-size: 1.953em;
+	font-size: 1.6em;
 }
+
 h4 {
-	font-size: 1.563em;
+	font-size: 1.3em;
 }
+
 h5 {
-	font-size: 1.25em;
+	font-size: 1.1em;
 }
+
 strong,
 b {
 	font-weight: 700;
 }
+
 a {
 	color: var(--accent);
+	text-decoration: none;
+	transition: color 0.2s;
 }
+
 a:hover {
-	color: var(--accent);
+	color: var(--accent-dark);
+	text-decoration: underline;
 }
+
 p {
 	margin-bottom: 1em;
 }
-.prose p {
-	margin-bottom: 2em;
-}
+
 textarea {
 	width: 100%;
 	font-size: 16px;
 }
+
 input {
 	font-size: 16px;
 }
-table {
-	width: 100%;
-}
 
-/* === Prose Table Styling === */
-.prose table {
-	border-collapse: collapse;
-	width: 100%;
-	margin: 1.5em 0;
-	font-size: 0.9em;
-	border-radius: 8px;
-	overflow: hidden;
-	border: 1px solid #e5e7eb;
-}
-.prose thead {
-	background: #f1f5f9;
-}
-.prose thead th {
-	padding: 0.75rem 1rem;
-	text-align: left;
-	font-weight: 700;
-	color: #1e293b;
-	border-bottom: 2px solid #cbd5e1;
-	white-space: nowrap;
-}
-.prose tbody td {
-	padding: 0.65rem 1rem;
-	border-bottom: 1px solid #f1f5f9;
-	color: #334155;
-	vertical-align: top;
-}
-.prose tbody tr:nth-child(even) {
-	background: #f8fafc;
-}
-.prose tbody tr:hover {
-	background: #eef2ff;
-}
-.prose tbody td code {
-	font-size: 0.85em;
-}
-
-/* === Details/Summary clean marker === */
-.prose details > summary {
-	list-style: none;
-}
-.prose details > summary::-webkit-details-marker {
-	display: none;
-}
-
-/* === Prose table responsive wrapper === */
-.prose .table-wrapper {
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
-}
 img {
 	max-width: 100%;
 	height: auto;
 	border-radius: 8px;
 }
-code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
-}
-pre {
-	padding: 1.5em;
-	border-radius: 8px;
-}
-pre > code {
-	all: unset;
-}
-blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
-}
+
 hr {
 	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
+	border-top: 2px solid var(--border-light);
+	margin: 2.5em 0;
 }
-@media (max-width: 720px) {
+
+/* ============================================
+   5. INLINE CODE (global)
+   ============================================ */
+code {
+	padding: 2px 6px;
+	background-color: #f1f5f9;
+	border: 1px solid var(--border-light);
+	border-radius: 4px;
+	font-size: 0.88em;
+	color: #c7254e;
+	font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+}
+
+/* ============================================
+   6. CODE BLOCKS (pre > code)
+   ============================================ */
+pre {
+	padding: 1.25em 1.5em;
+	border-radius: 10px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	font-size: 0.88em;
+	line-height: 1.6;
+	border: 1px solid var(--border-light);
+}
+
+pre>code {
+	all: unset;
+	font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+}
+
+/* ============================================
+   7. BLOCKQUOTE (global)
+   ============================================ */
+blockquote {
+	border-left: 4px solid var(--accent);
+	padding: 0.75em 1.25em;
+	margin: 1.5em 0;
+	background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%);
+	border-radius: 0 8px 8px 0;
+	font-size: 1.05em;
+	color: var(--text-body);
+}
+
+blockquote p:last-child {
+	margin-bottom: 0;
+}
+
+/* ============================================
+   8. TABLE (global fallback)
+   ============================================ */
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* ============================================
+   9. .PROSE — MDX Content Comprehensive Styles
+   ============================================ */
+
+/* --- 9.1 Prose Paragraphs --- */
+.prose > :first-child {
+	margin-top: 0 !important;
+}
+
+.prose p {
+	margin-bottom: 1.5em;
+	margin-bottom: 1.2em;
+	line-height: 1.75;
+}
+
+/* --- 9.2 Prose Headings --- */
+.prose h1 {
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+	font-size: 2.2em;
+	font-weight: 800;
+	color: var(--text-primary);
+}
+
+.prose h2 {
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+	padding-bottom: 0.25em;
+	border-bottom: 2px solid var(--border-light);
+	font-size: 1.75em;
+}
+
+.prose h3 {
+	margin-top: 1.25em;
+	margin-bottom: 0.4em;
+	padding-left: 0.6em;
+	border-left: 4px solid var(--accent);
+	font-size: 1.4em;
+}
+
+.prose h4 {
+	margin-top: 1em;
+	margin-bottom: 0.25em;
+	color: var(--text-primary);
+	font-size: 1.2em;
+}
+
+/* --- 9.3 Prose Links --- */
+.prose a {
+	color: var(--accent);
+	font-weight: 500;
+	text-decoration: underline;
+	text-decoration-color: var(--accent-light);
+	text-underline-offset: 3px;
+	transition: all 0.2s;
+}
+
+.prose a:hover {
+	color: var(--accent-dark);
+	text-decoration-color: var(--accent-dark);
+}
+
+/* --- 9.4 Prose Lists (ul & ol) --- */
+.prose ul,
+.prose ol {
+	padding-left: 1.5em;
+	margin-bottom: 1.2em;
+}
+
+.prose ul {
+	list-style-type: disc;
+}
+
+.prose ol {
+	list-style-type: decimal;
+}
+
+.prose li {
+	margin-bottom: 0.25em;
+	line-height: 1.7;
+	color: var(--text-body);
+}
+
+.prose li>ul,
+.prose li>ol {
+	margin-top: 0.25em;
+	margin-bottom: 0.25em;
+}
+
+/* Nested list bullet variation */
+.prose ul ul {
+	list-style-type: circle;
+}
+
+.prose ul ul ul {
+	list-style-type: square;
+}
+
+/* --- 9.5 Prose Inline Code --- */
+.prose code {
+	padding: 2px 7px;
+	background: #f1f5f9;
+	border: 1px solid #e2e8f0;
+	border-radius: 4px;
+	font-size: 0.85em;
+	color: #6d28d9;
+	font-weight: 500;
+	font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+	word-break: break-word;
+}
+
+/* Reset cho code bên trong pre (code block) */
+.prose pre>code {
+	all: unset;
+	font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+	font-size: 1em;
+	color: inherit;
+	background: none;
+	border: none;
+	padding: 0;
+}
+
+/* --- 9.6 Prose Code Blocks --- */
+.prose pre {
+	padding: 1em 1.25em;
+	border-radius: 8px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	font-size: 0.85em;
+	line-height: 1.6;
+	border: 1px solid #e2e8f0;
+	margin: 1.2em 0;
+}
+
+/* --- 9.7 Prose Blockquote --- */
+.prose blockquote {
+	border-left: 4px solid var(--accent);
+	padding: 0.75em 1.25em;
+	margin: 1.2em 0;
+	background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 50%, #f8fafc 100%);
+	border-radius: 0 8px 8px 0;
+	font-style: italic;
+	color: var(--text-body);
+}
+
+.prose blockquote p {
+	margin-bottom: 0.5em;
+}
+
+.prose blockquote p:last-child {
+	margin-bottom: 0;
+}
+
+/* --- 9.8 Prose Images --- */
+.prose img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+	margin: 1.2em auto;
+	display: block;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 9.9 Prose HR --- */
+.prose hr {
+	border: none;
+	border-top: 2px solid var(--border-light);
+	margin: 2em 0;
+}
+
+/* --- 9.10 Prose Strong/Bold --- */
+.prose strong {
+	color: var(--text-primary);
+	font-weight: 700;
+}
+
+/* --- 9.11 Details/Summary --- */
+.prose details {
+	margin: 1.2em 0;
+	padding: 0.75em 1em;
+	background: #fafbfc;
+	border: 1px solid var(--border-light);
+	border-radius: 8px;
+}
+
+.prose details>summary {
+	list-style: none;
+	cursor: pointer;
+	font-weight: 600;
+	color: var(--text-primary);
+	padding: 0.25em 0;
+}
+
+.prose details>summary::-webkit-details-marker {
+	display: none;
+}
+
+.prose details[open]>summary {
+	margin-bottom: 0.75em;
+	padding-bottom: 0.75em;
+	border-bottom: 1px solid var(--border-light);
+}
+
+/* ============================================
+   10. .PROSE TABLE — Hiển thị đường viền rõ ràng
+   ============================================ */
+
+/* Bọc responsive cho bảng rộng (cuộn ngang trên mobile) */
+.prose .table-wrapper {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	margin: 1.2em 0;
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+}
+
+.prose table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1.2em 0;
+	font-size: 0.9em;
+	line-height: 1.5;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+/* Nếu table nằm trong wrapper thì wrapper lo viền ngoài */
+.prose .table-wrapper table {
+	margin: 0;
+	border: none;
+	border-radius: 0;
+}
+
+/* --- Header row (Hàng tiêu đề) --- */
+.prose thead {
+	background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+}
+
+.prose thead th {
+	padding: 0.75rem 1rem;
+	text-align: left;
+	font-weight: 700;
+	font-size: 0.95em;
+	color: var(--text-primary);
+	/* ĐƯỜNG VIỀN RÕ RÀNG cho cột tiêu đề */
+	border-bottom: 2px solid #94a3b8;
+	border-right: 1px solid #cbd5e1;
+	white-space: nowrap;
+}
+
+.prose thead th:last-child {
+	border-right: none;
+}
+
+/* --- Body cells (Ô dữ liệu) --- */
+.prose tbody td {
+	padding: 0.65rem 1rem;
+	color: var(--text-body);
+	vertical-align: top;
+	/* ĐƯỜNG VIỀN NGANG + DỌC giữa các ô dữ liệu */
+	border-bottom: 1px solid var(--border-light);
+	border-right: 1px solid var(--border-light);
+}
+
+.prose tbody td:last-child {
+	border-right: none;
+}
+
+/* Hàng cuối cùng không cần viền dưới */
+.prose tbody tr:last-child td {
+	border-bottom: none;
+}
+
+/* Zebra stripes (Sọc xen kẽ nhạt để dễ nhìn) */
+.prose tbody tr:nth-child(even) {
+	background: var(--bg-stripe);
+}
+
+/* Hover highlight */
+.prose tbody tr:hover {
+	background: var(--bg-hover);
+	transition: background-color 0.15s;
+}
+
+/* Code bên trong bảng */
+.prose tbody td code,
+.prose thead th code {
+	font-size: 0.82em;
+	padding: 1px 5px;
+}
+
+/* ============================================
+   11. RESPONSIVE — Mobile & Tablet
+   ============================================ */
+
+/* Tablet (< 768px) */
+@media (max-width: 768px) {
 	body {
-		font-size: 18px;
+		font-size: 17px;
+		line-height: 1.7;
 	}
-	main {
+
+
+
+	.prose h2 {
+		font-size: 1.5em;
+	}
+
+	.prose h3 {
+		font-size: 1.25em;
+	}
+
+	.prose pre {
 		padding: 1em;
+		font-size: 0.82em;
+		border-radius: 8px;
+	}
+
+	.prose table {
+		font-size: 0.85em;
+	}
+
+	.prose thead th {
+		padding: 0.6rem 0.75rem;
+	}
+
+	.prose tbody td {
+		padding: 0.5rem 0.75rem;
 	}
 }
 
+/* Mobile (< 640px) */
+@media (max-width: 640px) {
+	body {
+		font-size: 16px;
+		line-height: 1.65;
+	}
+
+
+
+	h1 {
+		font-size: 1.8em;
+	}
+
+	h2 {
+		font-size: 1.5em;
+	}
+
+	h3 {
+		font-size: 1.3em;
+	}
+
+	.prose h2 {
+		font-size: 1.35em;
+		margin-top: 2em;
+	}
+
+	.prose h3 {
+		font-size: 1.15em;
+		margin-top: 1.5em;
+		padding-left: 0.5em;
+	}
+
+	.prose p {
+		margin-bottom: 1.25em;
+	}
+
+	.prose ul,
+	.prose ol {
+		padding-left: 1.25em;
+	}
+
+	/* Bảng trên mobile: cho bọc cuộn ngang tự động */
+	.prose table {
+		font-size: 0.8em;
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		white-space: nowrap;
+	}
+
+	.prose thead th {
+		padding: 0.5rem 0.6rem;
+		font-size: 0.85em;
+	}
+
+	.prose tbody td {
+		padding: 0.4rem 0.6rem;
+	}
+
+	.prose pre {
+		padding: 0.75em 1em;
+		font-size: 0.78em;
+		margin-left: -0.5em;
+		margin-right: -0.5em;
+		border-radius: 6px;
+	}
+
+	.prose blockquote {
+		padding: 0.75em 1em;
+		margin: 1.25em 0;
+		font-size: 0.95em;
+	}
+}
+
+/* ============================================
+   12. ACCESSIBILITY
+   ============================================ */
 .sr-only {
 	border: 0;
 	padding: 0;
@@ -195,12 +615,8 @@ hr {
 	height: 1px;
 	width: 1px;
 	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
 	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
 	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
 	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
 	white-space: nowrap;
 }

@@ -3,6 +3,8 @@ interface Props {
   title: string;
 }
 
+import '../styles/global.css';
+
 const { title } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const baseJson = JSON.stringify(base);

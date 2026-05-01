@@ -20,18 +20,18 @@ const components = { Callout };
 ---
 
 <Layout title={entry.data.title}>
-  <article class="max-w-3xl mx-auto py-12 px-4 sm:px-6">
-    <header class="mb-10 text-center">
+  <article class="max-w-5xl mx-auto py-6 px-4 sm:px-6 w-full">
+    <header class="mb-6 text-center">
       <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{entry.data.title}</h1>
       {entry.data.date && <time class="text-gray-500">{entry.data.date.toLocaleDateString('vi-VN')}</time>}
     </header>
 
-    <div class="mt-8 border-t border-gray-100 pt-8 prose prose-lg prose-indigo mx-auto text-gray-800">
+    <div class="mt-6 border-t border-gray-100 pt-6 prose prose-lg prose-indigo mx-auto text-gray-800 max-w-none">
       <!-- Astro's built-in MDX renderer -->
       <Content components={components} />
     </div>
 
-    <div class="mt-16 text-center border-t border-gray-100 pt-8">
+    <div class="mt-12 text-center border-t border-gray-100 pt-8">
       <a href={`${base}/blog`} class="text-indigo-600 hover:underline font-medium">← Quay lại danh sách bài viết</a>
     </div>
   </article>
