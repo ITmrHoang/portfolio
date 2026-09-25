@@ -1,0 +1,88 @@
+---
+title: Lộ trình học ABAP
+date: 2026-25-09T01:00:00Z
+excerpt: Cơ bản về cách tự học và lộ trình học ABAP local
+---
+
+Cách 1: SAP NetWeaver AS ABAP Developer Edition (truyền thống)
+
+Cài trên:
+
+VirtualBox
+VMware
+Linux VM
+
+Yêu cầu phần cứng thường khoảng:
+
+RAM tối thiểu 4GB (khuyến nghị 8GB+)
+Khoảng 100GB ổ cứng trống
+
+Cách 2: ABAP Trial Docker (khuyên dùng nếu biết Docker)
+
+SAP hiện có image trial chạy bằng Docker.
+
+Ưu điểm:
+
+Dễ cài hơn VM
+Snapshot dễ
+Phù hợp developer
+
+Yêu cầu RAM khá cao (SAP khuyến nghị nhiều bộ nhớ hơn cho image trial).
+
+3. Chỉ học code ABAP có cần server không?
+
+Thực tế có.
+
+ABAP không giống Java hay Node.js:
+
+Code chạy trong SAP Application Server.
+IDE chỉ là công cụ kết nối tới server SAP.
+Bạn thường dùng:
+SAP GUI
+ABAP Development Tools (ADT) trên Eclipse
+
+ADT chỉ là client, không thay thế server SAP.
+
+4. Nếu mới học từ đầu thì nên đi đường nào?
+
+Mình khuyên:
+
+Lộ trình cá nhân năm 2026
+
+Học ABAP cơ bản
+
+Data types
+Internal tables
+Open SQL
+Modularization
+
+Cài ABAP Trial bằng Docker hoặc VM
+
+Cài Eclipse + ADT
+
+Thực hành:
+
+CRUD dữ liệu
+ALV Report
+CDS View
+OData
+RAP (RESTful ABAP Programming Model)
+
+Sau đó học:
+
+S/4HANA
+ABAP Cloud
+Fiori
+5. Nếu máy yếu thì sao?
+
+Bạn là dev và thường làm trên Windows, Docker, React, Cloudflare nên khả năng máy cá nhân cũng không quá yếu. Tuy nhiên:
+
+RAM 16GB: chạy được nhưng hơi nặng.
+RAM 32GB: khá thoải mái.
+CPU 6-8 nhân trở lên là ổn.
+
+Nếu máy yếu, có thể:
+
+Thuê VPS Cloud Linux
+Cài ABAP Trial trên VPS
+Remote vào học

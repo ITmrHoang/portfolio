@@ -12,8 +12,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // Fetch and group notes
 const allNotes = await getCollection('notes');
-const notes = allNotes.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const topics = [...new Set(notes.map((n) => n.data.topic))];
+const notes = allNotes.sort((a: {[key: string]: any }, b: {[key: string]: any }) => b.data.date.valueOf() - a.data.date.valueOf());
+const topics = [...new Set(notes.map((n: any) => n.data.topic))];
 ---
 
 <Layout title={title}>
@@ -56,8 +56,8 @@ const topics = [...new Set(notes.map((n) => n.data.topic))];
           {topics.length === 0 ? (
             <p class="text-gray-500 italic">Chưa có bài viết.</p>
           ) : topics.map(topic => {
-            const topicNotes = notes.filter(note => note.data.topic === topic);
-            const hasActive = topicNotes.some(note => currentSlug === note.slug);
+            const topicNotes = notes.filter((note:any) => note.data.topic === topic);
+            const hasActive = topicNotes.some((note:any) => currentSlug === note.slug);
             return (
             <details class="group" open={hasActive || undefined}>
               <summary class="font-bold text-gray-800 uppercase tracking-wider cursor-pointer flex items-center justify-between py-2 px-2 rounded-lg hover:bg-indigo-50/50 transition-colors select-none list-none">
@@ -68,7 +68,7 @@ const topics = [...new Set(notes.map((n) => n.data.topic))];
                 <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </summary>
               <ul class="space-y-2 border-l-2 border-indigo-50 ml-2 pl-4 mt-2 mb-3">
-                {topicNotes.map(note => {
+                {topicNotes.map((note:any) => {
                   const isActive = currentSlug === note.slug;
                   return (
                     <li>

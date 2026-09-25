@@ -1,17 +1,123 @@
 ---
-title: "Bắt đầu với Astro và TinaCMS"
+title: "Bắt đầu với Astro và Decap CMS"
 date: 2026-03-20T12:00:00Z
 excerpt: "Website tĩnh nhưng sở hữu hệ thống quản trị nội dung dễ sử dụng."
 ---
 
 Chào mừng bạn đến với Blog! Đây là bài viết mẫu được tạo bằng Markdown.
-Bạn có thể dễ dàng sửa nội dung này thông qua giao diện `/admin` (TinaCMS).
+Bạn có thể dễ dàng sửa nội dung này thông qua giao diện `/admin` (Decap CMS).
 
 <Callout title="Tin vui" type="success">
   Trang web của bạn đã tích hợp thành công React Components vào bài viết Markdown (MDX)!
 </Callout>
 
-Tính năng nổi bật:
+# Tính năng nổi bật:
 - Hiệu năng tối đa (100% Static HTML).
-- Visual Editing (Sửa trực tiếp trên trang).
+- Chỉnh sửa trực tiếp trên trang bằng Decap edit nội dung trực tiếp trang mdx push trực tiếp trên git hay Netlify Identity.
+- Tina cms cho phép visulting editing trên trang có tương tác database
 - Tailwind CSS styling.
+
+
+## Cơ bản về Astro
+
+### 1. Lấy env
+
+``` javascript
+// chạy trên astro/vite 
+import.meta.env
+import.meta.env.BASE_URL
+
+// chaỵ ở chế độ nodejs khi dùng server 
+process.env.NODE_ENV
+// argv = argument vector //trả ra mảng các value env
+ process.argv.includes("dev")
+```
+
+### 2. Lấy base url
+
+``` astro
+---
+import { withBase } from 'astro:config';
+const url = withBase('/path');
+
+import.meta.env.BASE_URL + "path"
+---
+```
+
+### Astro cơ bản
+frontmatter metadata "---" : astro dùng giữa 2 dấu "---" hay (Component Script) cài metadata CMS sẽ map các field này thành trực quan.
+Ở đây có thể
+- import
+- khai báo biến
+- gọi API
+- tính toán
+- TypeScript
+
+
+```astro
+
+chạy lúc render
+---
+import "../scripts/main.ts";
+{/* import dynamic */}
+const modules = import.meta.glob('./*.astro');
+{/* import */}
+import Card from '@/components/Card.astro';
+import type { Post } from '@/types';
+const posts: Post[] = await getPosts();
+---
+
+chạy gửi tới brower bundle với vite có thẻ gọp file , optimize hỗ trợ import 
+<script>
+  console.log("Hello")
+  import dayjs from "dayjs"
+</script>
+
+is:inline astro xử lý script này nhét nguyên văn html
+<script is:inline>
+  console.log("hello");
+</script>
+<script
+  type="application/ld+json"
+  is:inline
+  set:html={JSON.stringify(schema)}
+/>
+```
+
+## Hướng dẫn về Decap CMS
+
+### Cấu hình cơ bản
+
+Cấu hình cho phép chạy editer trên local
+
+public/admin/config.yml
+``` yml
+# chạy decap git/netilify trực tiếp, localback_end: true cho phép local trước mới push lên git nếu không sẽ edit trực tiếp push lên git
+backend:
+  # config cho local proxy để không cần kết nối Github lúc đang code
+  name: git-gateway
+  branch: main
+local_backend: true
+
+# chạy local qua proxy
+# backend:
+#   name: proxy
+#   proxy_url: http://localhost:8081/api/v1
+
+# cấu hình để collection save ra mdx
+
+collections:
+  - name: "projects"
+    label: "Dự án (Projects)"
+    folder: "src/content/projects"
+    create: true
+    slug: "{{slug}}"
+    extension: "mdx"
+    format: "frontmatter"
+    fields:
+      - {label: "Tiêu đề", name: "title", widget: "string"}
+      - {label: "Mô tả ngắn", name: "description", widget: "text", required: false}
+      - {label: "Ảnh bìa", name: "coverImage", widget: "image", required: false}
+      - {label: "Công nghệ sử dụng", name: "technologies", widget: "list", required: false}
+      - {label: "Nội dung chi tiết", name: "body", widget: "markdown"}
+```

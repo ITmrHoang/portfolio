@@ -1,0 +1,552 @@
+---
+title: "Hướng dãn cơ bản python UV"
+date: 2027-08-06T11:00:00Z
+excerpt: "Hướng dẫn sử dụng python uv cài đặt và lệnh cơ bản"
+---
+
+# UV Guide - Python Package & Version Manager
+
+## UV là gì?
+
+UV là công cụ của Astral thay thế:
+
+- pip
+- pip-tools
+- virtualenv
+- venv
+- pyenv (một phần)
+
+UV viết bằng Rust nên nhanh hơn pip rất nhiều.
+
+---
+
+# Cài đặt UV
+
+## Windows
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+## Linux / Mac
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Kiểm tra:
+
+```bash
+uv --version
+```
+
+---
+
+# Quản lý Python Version
+
+## Xem các bản Python khả dụng
+
+```bash
+uv python list
+```
+
+Ví dụ:
+
+```text
+Python gốc là cpython viết bằng C
+cpython-3.13.7 
+cpython-3.12.11
+cpython-3.11.13
+
+pypy là python kết hợp JTT
+pypy-3.11-v7.3.20
+```
+
+---
+
+## Cài Python
+
+trong windown sau khi cài python các phiên bản sẽ trong folder, có thể vào để cài env PYTHON tương ứng để các path sử dụng
+```
+%AppData%\Roaming\uv\python
+```
+
+### Cài Python 3.13
+
+```bash
+uv python install 3.13
+```
+
+### Cài Python 3.12
+
+```bash
+uv python install 3.12
+```
+
+### Cài PyPy
+
+```bash
+uv python install pypy
+```
+
+---
+
+## Xem các Python đã cài
+
+```bash
+uv python list --only-installed
+```
+
+---
+
+# Chuyển đổi Python Version
+
+## Pin version cho project
+
+```bash
+uv python pin 3.12
+```
+
+Tạo file:
+
+```text
+.python-version
+```
+
+Ví dụ:
+
+```text
+3.12
+```
+
+---
+
+## Đổi sang Python khác
+
+```bash
+uv python pin 3.13
+```
+
+---
+
+## Kiểm tra Python đang dùng
+
+```bash
+uv run python --version
+```
+
+---
+
+# Tạo Project Mới
+
+```bash
+uv init my-project
+```
+
+Kết quả:
+
+```text
+my-project/
+├── pyproject.toml
+├── main.py
+└── README.md
+```
+
+---
+
+# Virtual Environment
+
+## Tạo venv
+
+```bash
+uv venv
+```
+
+Sinh:
+
+```text
+.venv/
+```
+
+---
+
+## Chọn Python version
+
+```bash
+uv venv --python 3.12
+```
+
+```bash
+uv venv --python 3.13
+```
+
+---
+
+## Activate
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### Linux
+
+```bash
+source .venv/bin/activate
+```
+
+---
+
+# Package Management
+
+## Thêm package
+
+```bash
+uv add requests
+```
+
+```bash
+uv add fastapi
+```
+
+```bash
+uv add pandas
+```
+
+Nó sẽ update:
+
+```text
+pyproject.toml
+uv.lock
+```
+
+---
+
+## Thêm nhiều package
+
+```bash
+uv add fastapi uvicorn sqlalchemy
+```
+
+---
+
+## Package Dev
+
+```bash
+uv add --dev pytest
+```
+
+```bash
+uv add --dev black
+```
+
+```bash
+uv add --dev ruff
+```
+
+---
+
+## Xóa package
+
+```bash
+uv remove requests
+```
+
+---
+
+## Update package
+
+```bash
+uv lock --upgrade
+```
+
+---
+
+# Chạy chương trình
+
+Không cần activate venv.
+
+## Chạy file
+
+```bash
+uv run main.py
+```
+
+---
+
+## Chạy module
+
+```bash
+uv run python -m app
+```
+
+---
+
+## Chạy với version cụ thể
+
+```bash
+uv run --python 3.12 main.py
+```
+
+```bash
+uv run --python 3.13 main.py
+```
+
+---
+
+# Đồng bộ môi trường
+
+Khi clone project:
+
+```bash
+git clone <repo>
+cd project
+```
+
+Cài toàn bộ dependency:
+
+```bash
+uv sync
+```
+
+UV sẽ:
+
+- đọc pyproject.toml
+- đọc uv.lock
+- cài đúng version package
+
+---
+
+# Lock File
+
+Sinh:
+
+```text
+uv.lock
+```
+
+Giống:
+
+```text
+package-lock.json
+pnpm-lock.yaml
+poetry.lock
+```
+
+Commit file này lên git.
+
+---
+
+# Thêm package tạm thời
+
+Giống npx.
+
+## Chạy ruff
+
+```bash
+uvx ruff check .
+```
+
+---
+
+## Chạy black
+
+```bash
+uvx black .
+```
+
+---
+
+# Môi trường AI
+
+## Tạo project
+
+```bash
+uv init
+```
+
+---
+
+## Pin Python
+
+```bash
+uv python pin 3.12
+```
+
+---
+
+## Cài package AI
+
+```bash
+uv add \
+    fastapi \
+    uvicorn \
+    langchain \
+    chromadb \
+    sentence-transformers \
+    pydantic \
+    python-dotenv
+```
+
+---
+
+## Chạy
+
+```bash
+uv run main.py
+```
+
+---
+
+# UV vs PIP
+
+## Pip
+
+```bash
+python -m venv .venv
+
+activate
+
+pip install requests
+
+pip freeze > requirements.txt
+```
+
+---
+
+## UV
+
+```bash
+uv venv
+
+uv add requests
+
+uv run app.py
+```
+
+---
+
+# UV vs Pyenv
+
+## Pyenv
+
+```bash
+pyenv install 3.12
+pyenv local 3.12
+```
+
+---
+
+## UV
+
+```bash
+uv python install 3.12
+uv python pin 3.12
+```
+
+---
+
+# UV vs NVM
+
+## NVM
+
+Quản lý:
+
+```text
+Node.js
+npm
+```
+
+Ví dụ:
+
+```bash
+nvm install 22
+nvm use 22
+```
+
+---
+
+## UV
+
+Quản lý:
+
+```text
+Python Version
+Venv
+Package
+Lockfile
+```
+
+Ví dụ:
+
+```bash
+uv python install 3.12
+uv python pin 3.12
+```
+
+UV KHÔNG quản lý NodeJS.
+
+---
+
+# Checklist dự án mới
+
+## lần đầu
+
+```bash
+uv init
+uv python pin 3.12
+uv add fastapi uvicorn
+```
+
+---
+
+## clone từ git
+
+```bash
+git clone ...
+cd project
+
+uv sync
+```
+
+---
+
+## chạy project
+
+```bash
+uv run main.py
+```
+
+---
+
+# Lệnh hay dùng nhất
+
+```bash
+uv python list
+
+uv python install 3.12
+
+uv python pin 3.12
+
+uv venv
+
+uv add requests
+
+uv add fastapi
+
+uv remove requests
+
+uv sync
+
+uv run main.py
+
+uv lock --upgrade
+
+uvx black .
+
+uvx ruff check .
+```
+
+# Gợi ý:
+sử dụng mise để quản lý version nhiều ngôn ngữ lập trình python. node, java cùng một tool

@@ -57,7 +57,7 @@ body {
 	padding: 0;
 	text-align: left;
 	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
+	background-size: 100% 100%;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	color: rgb(var(--gray-dark));
