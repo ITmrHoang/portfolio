@@ -1,0 +1,34 @@
+---
+title: "Bài Kiểm Tra Thực Hành: Viết ứng dụng CLI đếm số từ"
+description: "Thử thách viết hàm xử lý chuỗi và đếm từ bằng ngôn ngữ Rust."
+categoryTitle: "Rust Programming"
+categoryOrder: 2
+sessionTitle: "Session 1: Nhập môn Rust"
+sessionOrder: 1
+order: 3
+type: "test"
+---
+
+# ⏱️ Bài Kiểm Tra Thực Hành (Thời gian làm bài: 15 phút)
+
+### 📋 Yêu cầu bài tập:
+Viết một chương trình Rust thực hiện các bước sau:
+1. Tạo một hàm `count_words(text: &str) -> usize` để đếm số lượng từ trong một chuỗi.
+2. In ra màn hình kết quả số từ đếm được.
+
+### 💻 Khung mã nguồn gợi ý:
+
+```rust
+fn count_words(text: &str) -> usize {
+    // TODO: Viết code tách chuỗi theo khoảng trắng và đếm số phần tử
+    text.split_whitespace().count()
+}
+
+fn main() {
+    let input = "Rust is fast and memory-efficient";
+    let total = count_words(input);
+    println!("Số từ: {}", total); // Kết quả mong đợi: 5
+}
+```
+
+> **Gợi ý:** Hãy dùng phương thức `.split_whitespace()` của kiểu `&str`.

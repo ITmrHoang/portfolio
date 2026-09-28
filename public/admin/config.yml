@@ -52,3 +52,23 @@ collections:
       - {label: "Ngày viết", name: "date", widget: "datetime"}
       - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "DSA", "Design Pattern", "Khác"]}
       - {label: "Nội dung", name: "body", widget: "markdown"}
+
+  - name: "learn"
+    label: "Góc Học Tập (Learn)"
+    folder: "src/content/learn"
+    nested:
+      depth: 3
+    create: true
+    slug: "{{slug}}"
+    extension: "mdx"
+    format: "frontmatter"
+    fields:
+      - {label: "Tiêu đề bài học", name: "title", widget: "string"}
+      - {label: "Mô tả ngắn", name: "description", widget: "text", required: false}
+      - {label: "Tên Thể loại (VD: Java)", name: "categoryTitle", widget: "string", required: false}
+      - {label: "Thứ tự Thể loại", name: "categoryOrder", widget: "number", default: 1, required: false}
+      - {label: "Tên Session (VD: Session 1)", name: "sessionTitle", widget: "string", required: false}
+      - {label: "Thứ tự Session", name: "sessionOrder", widget: "number", default: 1, required: false}
+      - {label: "Thứ tự Bài học", name: "order", widget: "number", default: 1, required: false}
+      - {label: "Loại bài học", name: "type", widget: "select", options: ["lesson", "quiz", "test", "reference"], default: "lesson", required: false}
+      - {label: "Nội dung", name: "body", widget: "markdown"}

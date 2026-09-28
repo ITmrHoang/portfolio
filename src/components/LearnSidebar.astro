@@ -1,0 +1,228 @@
+---
+import { getCollection } from 'astro:content';
+
+export interface Props {
+  category: string;
+  currentSlug?: string;
+}
+
+const { category: currentCategory, currentSlug = '' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const allEntries = await getCollection('learn');
+
+// Lọc bài viết thuộc Category hiện tại
+const categoryEntries = allEntries.filter((entry: any) => {
+  const parts = entry.slug.split('/');
+  return parts[0].toLowerCase() === currentCategory.toLowerCase();
+});
+
+// Lấy tiêu đề hiển thị cho Category
+let categoryTitle = currentCategory.toUpperCase();
+const firstWithTitle = categoryEntries.find((e: any) => e.data.categoryTitle);
+if (firstWithTitle && firstWithTitle.data.categoryTitle) {
+  categoryTitle = firstWithTitle.data.categoryTitle;
+}
+
+interface ArticleItem {
+  slug: string;
+  title: string;
+  order: number;
+  type?: 'lesson' | 'quiz' | 'test' | 'reference';
+}
+
+interface SessionGroup {
+  id: string;
+  title: string;
+  order: number;
+  articles: ArticleItem[];
+}
+
+// Phân nhóm theo schema (sessionTitle)
+const sessionsMap = new Map<string, SessionGroup>();
+
+categoryEntries.forEach((entry: any) => {
+  const parts = entry.slug.split('/');
+  // Ưu tiên sessionTitle trong frontmatter schema, nếu không có mới dùng tên thư mục
+  const sessTitle = entry.data.sessionTitle || parts[1] || 'General';
+  const sessKey = sessTitle.trim().toLowerCase();
+
+  if (!sessionsMap.has(sessKey)) {
+    sessionsMap.set(sessKey, {
+      id: sessKey,
+      title: sessTitle,
+      order: entry.data.sessionOrder ?? 99,
+      articles: [],
+    });
+  }
+
+  const session = sessionsMap.get(sessKey)!;
+
+  if (entry.data.sessionOrder !== undefined && entry.data.sessionOrder < session.order) {
+    session.order = entry.data.sessionOrder;
+  }
+
+  session.articles.push({
+    slug: entry.slug,
+    title: entry.data.title,
+    order: entry.data.order ?? 99,
+    type: entry.data.type || 'lesson',
+  });
+});
+
+const sessions = Array.from(sessionsMap.values())
+  .sort((a, b) => a.order - b.order)
+  .map((sess) => ({
+    ...sess,
+    articles: sess.articles.sort((a, b) => a.order - b.order),
+  }));
+
+// Helper render badge cho loại bài học (Quiz, Test, Reference)
+const getBadge = (type?: string) => {
+  switch (type) {
+    case 'quiz':
+      return { text: 'Quiz', class: 'bg-purple-500/20 text-purple-300 border-purple-500/40' };
+    case 'test':
+      return { text: 'Test', class: 'bg-red-500/20 text-red-300 border-red-500/40' };
+    case 'reference':
+      return { text: 'Ref', class: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
+    default:
+      return null;
+  }
+};
+---
+
+<aside class="w-full lg:w-72 shrink-0 bg-gray-900/90 backdrop-blur-md rounded-2xl border border-indigo-500/20 p-5 shadow-xl text-gray-200 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto custom-scrollbar">
+  <!-- Back to All Categories -->
+  <a
+    href={`${base}/learn`}
+    class="inline-flex items-center gap-2 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors mb-5 group"
+  >
+    <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+    </svg>
+    Tất cả chủ đề
+  </a>
+
+  <!-- Header: Category Title -->
+  <div class="mb-6 pb-4 border-b border-indigo-500/20">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+        </svg>
+      </div>
+      <h2 class="text-base font-bold text-white tracking-tight uppercase line-clamp-1">
+        {categoryTitle}
+      </h2>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="space-y-3">
+    {sessions.length === 0 ? (
+      <p class="text-xs text-gray-400 italic">Chưa có bài viết trong chủ đề này.</p>
+    ) : (
+      sessions.map((sess) => {
+        // TRƯỜNG HỢP 1: Session chỉ có 1 bài -> Hiển thị trực tiếp ở Level 1 (không có menu con)
+        if (sess.articles.length === 1) {
+          const singleArticle = sess.articles[0];
+          const isActive = currentSlug === singleArticle.slug;
+          const badge = getBadge(singleArticle.type);
+
+          return (
+            <div>
+              <a
+                href={`${base}/learn/${singleArticle.slug}`}
+                class={`flex items-center justify-between text-sm font-medium py-2 px-3 rounded-xl transition-all ${
+                  isActive
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-bold'
+                    : 'text-gray-200 hover:text-white hover:bg-gray-800/70 border border-transparent hover:border-gray-800'
+                }`}
+              >
+                <span class="flex items-center gap-2 truncate">
+                  <svg class="w-4 h-4 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <span class="truncate">{singleArticle.title || sess.title}</span>
+                </span>
+                {badge && (
+                  <span class={`px-1.5 py-0.5 text-[10px] font-bold rounded border uppercase shrink-0 ml-2 ${badge.class}`}>
+                    {badge.text}
+                  </span>
+                )}
+              </a>
+            </div>
+          );
+        }
+
+        // TRƯỜNG HỢP 2: Session có từ 2 bài trở lên -> Accordion Collapse Menu
+        const hasActiveChild = sess.articles.some((a) => a.slug === currentSlug);
+
+        return (
+          <details class="group/details" open={hasActiveChild}>
+            <summary class="flex items-center justify-between cursor-pointer list-none text-sm font-semibold text-gray-200 hover:text-white py-2 px-3 rounded-xl hover:bg-gray-800/60 transition-colors select-none">
+              <span class="flex items-center gap-2 truncate pr-2">
+                <svg class="w-4 h-4 text-indigo-400 shrink-0 transition-transform group-open/details:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span class="truncate">{sess.title}</span>
+              </span>
+              <span class="text-[10px] font-medium text-gray-400 bg-gray-800/80 px-2 py-0.5 rounded-full shrink-0 border border-gray-700/50">
+                {sess.articles.length} bài
+              </span>
+            </summary>
+
+            <!-- Level 2: Sub-lessons list -->
+            <ul class="mt-1 ml-4 pl-3 border-l-2 border-indigo-500/20 space-y-1 py-1">
+              {sess.articles.map((article) => {
+                const isActive = currentSlug === article.slug;
+                const badge = getBadge(article.type);
+
+                return (
+                  <li>
+                    <a
+                      href={`${base}/learn/${article.slug}`}
+                      class={`flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg transition-all ${
+                        isActive
+                          ? 'bg-indigo-500/20 text-indigo-300 font-semibold border-l-2 border-indigo-400 -ml-[14px] pl-[12px]'
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/40'
+                      }`}
+                      title={article.title}
+                    >
+                      <span class="truncate">{article.title}</span>
+                      {badge && (
+                        <span class={`px-1.5 py-0.2 text-[9px] font-bold rounded border uppercase shrink-0 ml-1.5 ${badge.class}`}>
+                          {badge.text}
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        );
+      })
+    )}
+  </nav>
+</aside>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.6);
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+title: "Cơ bản về Ngôn ngữ Lập trình Rust"
+description: "Tìm hiểu về Rust, tính năng Ownership độc đáo và lý do Rust đạt danh hiệu ngôn ngữ được yêu thích nhất."
+categoryTitle: "Rust Programming"
+categoryOrder: 2
+sessionTitle: "Session 1: Nhập môn Rust"
+sessionOrder: 1
+order: 1
+type: "lesson"
+---
+
+# 🦀 Chào mừng bạn đến với Rust!
+
+**Rust** là ngôn ngữ lập trình hệ thống tập trung vào **hiệu năng (performance)**, **an toàn bộ nhớ (memory safety)** và **tính song song (concurrency)** mà không cần Garbage Collector (trình thu gom rác).
+
+## 💡 Các tính năng nổi bật của Rust:
+1. **Ownership (Quyền sở hữu):** Quản lý bộ nhớ an toàn ngay tại thời điểm biên dịch (Compile-time).
+2. **Zero-cost Abstractions:** Không tốn chi phí hiệu năng cho các trừu tượng hóa cao cấp.
+3. **Thread Safety:** Ngăn chặn data race khi lập trình đa luồng.
+
+```rust
+fn main() {
+    let message = "Hello, Rustacean!";
+    println!("{}", message);
+}
+```

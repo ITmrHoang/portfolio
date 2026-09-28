@@ -28,8 +28,24 @@ const notesCollection = defineCollection({
     }),
 });
 
+const learnCollection = defineCollection({
+    type: 'content',
+    schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        categoryTitle: z.string().optional(),
+        categoryOrder: z.number().default(99),
+        sessionTitle: z.string().optional(),
+        sessionOrder: z.number().default(99),
+        order: z.number().default(99),
+        type: z.enum(['lesson', 'quiz', 'test', 'reference']).optional().default('lesson'),
+    }),
+});
+
+
 export const collections = {
     'projects': projectsCollection,
     'blog': blogCollection,
     'notes': notesCollection,
+    'learn': learnCollection,
 };
