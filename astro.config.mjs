@@ -13,8 +13,8 @@ const isDev = process.argv.includes('dev');
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://itmrhoang.github.io',
-    base: isDev ? '/portfolio' : '/portfolio',
+    site: process.env.SITE_URL ?? 'https://itmrhoang.github.io',
+    base: process.env.BASE_URL ?? (isDev ? '/' : '/portfolio'),
     integrations: [
         mdx({
             remarkPlugins: [remarkMath],
