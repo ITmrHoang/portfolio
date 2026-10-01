@@ -84,6 +84,82 @@ is:inline astro xử lý script này nhét nguyên văn html
 />
 ```
 
+## Các atribute trong astro
+``` astro
+{/* không cho pagefind  cho phép index, khi search bỏ qua thẻ này hay element này */}
+<div data-pagefind-index="false"></div>
+{/* ignore trong pagefind */}
+<div data-pagefind-ignore=""></div>
+{/* đặt tên file cho pagefind để search theo tiêu đề */}
+<div data-pagefind-heading="Tên file"></div>
+{/* meta data của pagefind */}
+<div data-pagefind-meta=""></div>
+{/* dùng cho flexbox */}
+<div data-pagefind-sort="date:desc">
+  <p>Thứ tự</p>
+</div>
+{/* đặt trọng số cho việc search, tăng mức ưu tiên khi search */}
+<div data-pagefind-weight="1.5"></div>
+{/* pagefind chỉ lấy nội dung trong thẻ này để search không lấy vùng khác*/}
+<div data-pagefind-body></div>
+
+{/* client:load
+Load JS ngay khi mở trang. tốt cho seo có nội dung luôn */}
+<script client:load>
+  console.log("client:load")
+</script>
+
+{/* client:visible
+Load JS khi component xuất hiện trên màn hình.
+Giảm JS tải ban đầu. */}
+<script client:visible>
+  console.log("Component đã hiện lên màn hình!");
+</script>
+
+{/* client:media
+Chỉ hydrate khi media query đúng. */}
+<MobileMenu
+  client:media="(max-width: 768px)"
+/>
+{/* client:only chỉ chạy client không ssr*/}
+<div client:only="react" />
+
+{/* client:idle
+Load JS khi trình duyệt rảnh rỗi (Idle). Tốt nhất cho các thành phần không quan trọng về mặt tương tác tức thì. */}
+<script client:idle>
+  console.log("Client idle");
+</script>
+{/* astro:page-load
+
+Trigger khi Astro hoàn tất tải và hydrate (kích hoạt JS) cho trang mới sau khi điều hướng (navigate).
+Phù hợp với logic cần chạy khi chuyển trang bằng router nội bộ của Astro. 
+astro:page-load là custom event của Astro được bắn ra sau khi một trang Astro được tải xong hoặc sau mỗi lần chuyển trang bằng View Transitions.
+*/}
+<script client:page-load>
+  console.log("Trang đã tải xong!");
+</script>
+
+document.addEventListener("astro:page-load", () => {
+console.log("Page loaded!");
+});
+
+
+{/* is:inline 
+astro xử lý script này nhét nguyên văn vào html có thể lặp lại vào đầu nếu component lặp lại 
+nên những hàm dùng chung viết file js và import vào một script is:inline chung ở layout hoặc dùng script thường 
+hoặc dùng script có thêm thuộc tính type="module" và type="module" hỗ trợ import */}
+<script is:inline>
+  console.log("hello");
+</script>
+{/* is:global chỉ cho css global */}
+<style is:global>
+  .title {
+    color: red;
+  }
+</style>
+```
+
+
 ## Hướng dẫn về Decap CMS
 
 ### Cấu hình cơ bản

@@ -9,30 +9,67 @@ order: 2
 type: "quiz"
 ---
 
-# ❓ Trắc Nghiệm Nhanh: Rust Ownership
+import QuizQuestion from '../../../../components/react/QuizQuestion.jsx';
 
-Hãy thử sức với các câu hỏi bên dưới để củng cố kiến thức:
+# ❓ Bài Trắc Nghiệm Tương Tác: Rust Ownership
 
----
-
-### Câu 1: Quy tắc Ownership nào sau đây là DÚNG trong Rust?
-- [ ] A. Một giá trị có thể có nhiều Variable Owner cùng một lúc.
-- [x] **B. Mỗi giá trị trong Rust chỉ có DUY NHẤT một Owner tại một thời điểm.**
-- [ ] C. Khi Owner ra khỏi scope, giá trị vẫn tồn tại trong bộ nhớ RAM.
-- [ ] D. Rust sử dụng Garbage Collector để giải phóng bộ nhớ.
+Hãy thử sức với các câu hỏi tương tác bên dưới. Chọn đáp án và click ra ngoài câu hỏi để kiểm tra kết quả!
 
 ---
 
-### Câu 2: Từ khóa nào dùng để khai báo biến có thể thay đổi giá trị (mutable)?
-- [ ] A. `let`
-- [x] **B. `let mut`**
-- [ ] C. `const`
-- [ ] D. `static`
+<QuizQuestion
+  client:load
+  title="Câu 1"
+  question="Quy tắc Ownership nào sau đây là DÚNG trong ngôn ngữ Rust?"
+  options={[
+    "Một giá trị có thể có nhiều Variable Owner cùng một lúc.",
+    "Mỗi giá trị trong Rust chỉ có DUY NHẤT một Owner tại một thời điểm.",
+    "Khi Owner ra khỏi scope, giá trị vẫn tồn tại vĩnh viễn trong RAM.",
+    "Rust sử dụng Garbage Collector (GC) để giải phóng bộ nhớ tự động."
+  ]}
+  correct={1}
+  explanation="Trong Rust, mỗi giá trị chỉ được sở hữu bởi duy nhất 1 biến tại một thời điểm (Single Owner rule). Khi Owner đi ra khỏi Scope, biến đó sẽ tự động bị hủy (dropped) mà không cần Garbage Collector."
+/>
 
----
+<QuizQuestion
+  client:load
+  title="Câu 2"
+  question="Từ khóa nào dùng để khai báo biến có thể thay đổi giá trị (mutable) trong Rust?"
+  options={[
+    "let",
+    "let mut",
+    "const",
+    "static"
+  ]}
+  correct={1}
+  explanation="Trong Rust, tất cả các biến khai báo bằng 'let' mặc định đều là hằng số (immutable). Để biến có thể gán lại giá trị mới, ta phải dùng từ khóa 'let mut'."
+/>
 
-### Câu 3: Ký tự nào đại diện cho References (&) trong Rust?
-- [x] **A. `&`**
-- [ ] B. `*`
-- [ ] C. `#`
-- [ ] D. `@`
+<QuizQuestion
+  client:load
+  title="Câu 3 (Nhiều đáp án)"
+  question="Những khẳng định nào sau đây là DÚNG về Borrowing (&) trong Rust?"
+  options={[
+    "Bạn có thể tạo không giới hạn số lượng Immutable References (&T) tại một thời điểm.",
+    "Bạn có thể tạo nhiều Mutable References (&mut T) cùng một lúc cho một biến.",
+    "Chỉ được phép có duy nhất 1 Mutable Reference (&mut T) trong cùng một phạm vi.",
+    "Không thể vừa có Immutable Reference vừa có Mutable Reference cùng lúc."
+  ]}
+  correct={[0, 2, 3]}
+  explanation="Rust tuân thủ quy tắc Aliasing XOR Mutability: Có thể có nhiều &T ngắm nhìn dữ liệu (immutable), HOẶC chỉ 1 &mut T duy nhất thay đổi dữ liệu, không bao giờ kết hợp cả hai cùng lúc để tránh Data Race."
+/>
+
+<QuizQuestion
+  client:load
+  title="Câu 4 (Kèm Hình Ảnh/Video)"
+  question="Xem hình minh họa dưới đây và cho biết hàmprintln! trong Rust nhận tham chiếu hay chiếm quyền sở hữu?"
+  media="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop"
+  options={[
+    "Chiếm hoàn toàn quyền sở hữu của biến.",
+    "Chỉ mượn tham chiếu (Reference) để in ra console.",
+    "Tự động giải phóng bộ nhớ của biến sau khi in.",
+    "Chuyển biến thành kiểu chuỗi String."
+  ]}
+  correct={1}
+  explanation="Macro println! trong Rust tự động mượn tham chiếu (&) của biến truyền vào thay vì chiếm Ownership, giúp biến vẫn tái sử dụng được sau lệnh print."
+/>

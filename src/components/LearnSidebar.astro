@@ -92,7 +92,42 @@ const getBadge = (type?: string) => {
 };
 ---
 
-<aside class="w-full lg:w-72 shrink-0 bg-gray-900/90 backdrop-blur-md rounded-2xl border border-indigo-500/20 p-5 shadow-xl text-gray-200 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto custom-scrollbar">
+<!-- Nút Toggle Sidebar ở chế độ Mobile (Màn hình < lg) -->
+<div class="lg:hidden w-full mb-3 sticky top-16 z-40">
+  <button
+    id="learn-mobile-toggle"
+    type="button"
+    class="w-full flex items-center justify-between px-4 py-3 bg-gray-900/95 border border-indigo-500/30 rounded-xl text-white shadow-xl backdrop-blur-md font-semibold text-sm hover:border-indigo-400 transition-all active:scale-[0.99]"
+  >
+    <div class="flex items-center gap-2.5 truncate">
+      <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+        </svg>
+      </div>
+      <span class="truncate">{categoryTitle} — Mục lục</span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-bold border border-indigo-500/30">
+        {sessions.length} phần
+      </span>
+      <svg id="learn-mobile-chevron" class="w-4 h-4 text-indigo-400 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </div>
+  </button>
+</div>
+
+<!-- Mobile Backdrop Overlay -->
+<div id="learn-mobile-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+<!-- Sidebar Menu chính -->
+<aside
+  id="learn-sidebar-container"
+  class="bg-gray-900/95 backdrop-blur-md rounded-2xl border border-indigo-500/20 p-5 shadow-2xl text-gray-200 custom-scrollbar
+         lg:w-72 lg:shrink-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:block lg:z-auto
+         hidden fixed inset-x-4 top-32 max-h-[75vh] overflow-y-auto z-50"
+>
   <!-- Back to All Categories -->
   <a
     href={`${base}/learn`}
@@ -106,15 +141,28 @@ const getBadge = (type?: string) => {
 
   <!-- Header: Category Title -->
   <div class="mb-6 pb-4 border-b border-indigo-500/20">
-    <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-        </svg>
+    <div class="flex items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5 truncate">
+        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+        <h2 class="text-base font-bold text-white tracking-tight uppercase line-clamp-1">
+          {categoryTitle}
+        </h2>
       </div>
-      <h2 class="text-base font-bold text-white tracking-tight uppercase line-clamp-1">
-        {categoryTitle}
-      </h2>
+      <!-- Close button ở mobile -->
+      <button
+        id="learn-mobile-close"
+        type="button"
+        class="lg:hidden p-1 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+        title="Đóng menu"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -226,3 +274,51 @@ const getBadge = (type?: string) => {
     display: none;
   }
 </style>
+
+<script is:inline>
+  const initLearnMobileSidebar = () => {
+    const toggleBtn = document.getElementById('learn-mobile-toggle');
+    const closeBtn = document.getElementById('learn-mobile-close');
+    const backdrop = document.getElementById('learn-mobile-backdrop');
+    const sidebar = document.getElementById('learn-sidebar-container');
+    const chevron = document.getElementById('learn-mobile-chevron');
+
+    if (!toggleBtn || !sidebar) return;
+
+    const openSidebar = () => {
+      sidebar.classList.remove('hidden');
+      if (backdrop) backdrop.classList.remove('hidden');
+      if (chevron) chevron.classList.add('rotate-180');
+    };
+
+    const closeSidebar = () => {
+      sidebar.classList.add('hidden');
+      if (backdrop) backdrop.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+    };
+
+    toggleBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (sidebar.classList.contains('hidden')) {
+        openSidebar();
+      } else {
+        closeSidebar();
+      }
+    };
+
+    if (closeBtn) closeBtn.onclick = closeSidebar;
+    if (backdrop) backdrop.onclick = closeSidebar;
+
+    // Đóng sidebar khi chọn bài học trên mobile
+    sidebar.querySelectorAll('a').forEach((link) => {
+      link.onclick = () => {
+        if (window.innerWidth < 1024) {
+          closeSidebar();
+        }
+      };
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', initLearnMobileSidebar);
+  document.addEventListener('astro:page-load', initLearnMobileSidebar);
+</script>

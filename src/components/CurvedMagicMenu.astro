@@ -8,77 +8,101 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <div id="magic-indicator" class="magic-indicator"></div>
         <li class="magic-nav-item active" data-path={`${base}/`}>
             <a href={`${base}/`}>
-                <span class="icon"
-                    ><svg
+                <span class="icon">
+                    <svg
                         class="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        ><path
+                    >
+                        <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                        ></path></svg
-                    ></span
-                >
+                        ></path>
+                    </svg>
+                </span>
                 <span class="text">Trang chủ</span>
             </a>
         </li>
         <li class="magic-nav-item" data-path={`${base}/projects`}>
             <a href={`${base}/projects`}>
-                <span class="icon"
-                    ><svg
+                <span class="icon">
+                    <svg
                         class="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        ><path
+                    >
+                        <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
                             d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        ></path></svg
-                    ></span
-                >
+                        ></path>
+                    </svg>
+                </span>
                 <span class="text">Dự án</span>
             </a>
         </li>
         <li class="magic-nav-item" data-path={`${base}/blog`}>
             <a href={`${base}/blog`}>
-                <span class="icon"
-                    ><svg
+                <span class="icon">
+                    <svg
                         class="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        ><path
+                    >
+                        <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
                             d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
-                        ></path></svg
-                    ></span
-                >
+                        ></path>
+                    </svg>
+                </span>
                 <span class="text">Blog</span>
             </a>
         </li>
-        <li class="magic-nav-item" data-path={`${base}/notes`}>
-            <a href={`${base}/notes`}>
-                <span class="icon"
-                    ><svg
+        <li class="magic-nav-item" data-path={`${base}/learn`}>
+            <a href={`${base}/learn`}>
+                <span class="icon">
+                    <svg
                         class="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
-                        ><path
+                    >
+                        <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                        ></path></svg
-                    ></span
-                >
+                            d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+                        ></path>
+                    </svg>
+                </span>
+                <span class="text">Học tập</span>
+            </a>
+        </li>
+        <li class="magic-nav-item" data-path={`${base}/notes`}>
+            <a href={`${base}/notes`}>
+                <span class="icon">
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 012.828 0L20.586 6a2 2 0 010 2.828l-9.9 9.9-4.242.707.707-4.242 9.9-9.9z"
+                        ></path>
+                    </svg>
+                </span>
                 <span class="text">Ghi chú</span>
             </a>
         </li>
@@ -106,7 +130,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     .magic-nav-list {
         display: flex;
         width: 100%;
-        max-width: 400px;
+        max-width: 450px;
         position: relative;
         justify-content: space-around;
     }
@@ -143,7 +167,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         transform: translateY(
             -25px
         ); /* Khớp tuyệt đối với tâm của Indicator width 50 */
-        color: var(--active-color, #ec4899);
+        color: var(--active-color, #ffff);
     }
     .magic-nav-item .text {
         position: absolute;
@@ -172,7 +196,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             #f8fafc 100%
         ); /* Nền nhạt bên trong viên nang */
         border-radius: 50%;
-        border: 4px solid var(--active-color, #ec4899); /* Viền màu động ôm trọn vòm */
+        border: 4px solid var(--active-color, #ffff); /* Viền màu động ôm trọn vòm */
         transition: 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55);
     }
     /* Cánh vòm bên trái (Wing Effect) */
@@ -185,7 +209,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         height: 15px;
         background: transparent;
         border-top-right-radius: 15px;
-        box-shadow: 0px -4px 1px -1px var(--active-color, #ec4899);
+        box-shadow: 0px -4px 1px -1px var(--active-color, #ffff);
     }
     /* Cánh vòm bên phải (Wing Effect) */
     .magic-indicator::after {
@@ -197,6 +221,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         height: 15px;
         background: transparent;
         border-top-left-radius: 15px;
-        box-shadow: 0px -4px 1px -1px var(--active-color, #ec4899);
+        box-shadow: 0px -4px 1px -1px var(--active-color, #ffff);
     }
 </style>
