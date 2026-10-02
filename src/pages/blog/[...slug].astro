@@ -1,38 +1,55 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { Callout } from '../../components/react/Callout';
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+// import { Callout } from "../../components/react/Callout";
 
 export async function getStaticPaths() {
-  const entries = await getCollection('blog');
-  return entries.map((entry) => ({
+  const entries = await getCollection("blog");
+  return entries.map((entry: any) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry }: { entry: any } = Astro.props;
 const { Content } = await entry.render();
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // Mapping cho phép dùng <Callout> bên trong Markdown Editor
-const components = { Callout };
+// const components = { Callout };
 ---
 
 <Layout title={entry.data.title}>
   <article class="max-w-5xl mx-auto py-6 px-4 sm:px-6 w-full">
     <header class="mb-6 text-center">
-      <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{entry.data.title}</h1>
-      {entry.data.date && <time class="text-gray-500">{entry.data.date.toLocaleDateString('vi-VN')}</time>}
+      <h1
+        class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4"
+      >
+        {entry.data.title}
+      </h1>
+      {
+        entry.data.date && (
+          <time class="text-gray-500">
+            {entry.data.date.toLocaleDateString("vi-VN")}
+          </time>
+        )
+      }
     </header>
 
-    <div class="mt-6 border-t border-gray-100 pt-6 prose prose-lg prose-indigo mx-auto text-gray-800 max-w-none">
+    <div
+      class="mt-6 border-t border-gray-100 pt-6 prose prose-lg prose-indigo mx-auto text-gray-800 max-w-none"
+    >
       <!-- Astro's built-in MDX renderer -->
-      <Content components={components} />
+      <!-- <Content components={components} /> -->
+      <Content />
     </div>
 
     <div class="mt-12 text-center border-t border-gray-100 pt-8">
-      <a href={`${base}/blog`} class="text-indigo-600 hover:underline font-medium">← Quay lại danh sách bài viết</a>
+      <a
+        href={`${base}/blog`}
+        class="text-indigo-600 hover:underline font-medium"
+        >← Quay lại danh sách bài viết</a
+      >
     </div>
   </article>
 </Layout>

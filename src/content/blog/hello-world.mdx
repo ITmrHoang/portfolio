@@ -159,6 +159,58 @@ hoặc dùng script có thêm thuộc tính type="module" và type="module" hỗ
 </style>
 ```
 
+{/* tạo like SPA không load lại toàn bộ trang khi chuyển trang 
+    dùng ClientRouter của astro 7 mặc định enableRouter= true để dùng
+*/}
+```astro
+<!-- layouts/GameLayout.astro -->
+
+---
+const { enableRouter = true } =
+  Astro.props;
+---
+
+<html>
+<head>
+  {
+    enableRouter && (
+      <ClientRouter />
+    )
+  }
+</head>
+
+<body>
+  <slot />
+</body>
+</html>
+// nếu muốn dùng navigation chuyển trang
+<script>
+  import { navigate } from "astro:transitions/client";
+
+  const button = document.getElementById("myButton");
+  if (button) {
+    button.onclick = () => {
+      navigate("/about");
+    };
+  }
+</script>
+`
+```
+```astro
+<!-- layouts/games/game2.astro không muốn dùng like SPA by ClientRouter-->
+
+---
+import GameLayout from
+'../../layouts/GameLayout.astro'
+---
+
+<GameLayout
+  enableRouter={false}
+>
+  ...
+</GameLayout>
+```
+
 
 ## Hướng dẫn về Decap CMS
 

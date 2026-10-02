@@ -167,7 +167,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         transform: translateY(
             -25px
         ); /* Khớp tuyệt đối với tâm của Indicator width 50 */
-        color: var(--active-color, #ffff);
+        color: var(--active-color, #ec4899);
     }
     .magic-nav-item .text {
         position: absolute;
@@ -196,7 +196,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             #f8fafc 100%
         ); /* Nền nhạt bên trong viên nang */
         border-radius: 50%;
-        border: 4px solid var(--active-color, #ffff); /* Viền màu động ôm trọn vòm */
+        border: 4px solid var(--active-color, #ec4899); /* Viền màu động ôm trọn vòm */
         transition: 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55);
     }
     /* Cánh vòm bên trái (Wing Effect) */
@@ -209,7 +209,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         height: 15px;
         background: transparent;
         border-top-right-radius: 15px;
-        box-shadow: 0px -4px 1px -1px var(--active-color, #ffff);
+        box-shadow: 0px -4px 1px -1px var(--active-color, #ec4899);
     }
     /* Cánh vòm bên phải (Wing Effect) */
     .magic-indicator::after {
@@ -221,6 +221,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         height: 15px;
         background: transparent;
         border-top-left-radius: 15px;
-        box-shadow: 0px -4px 1px -1px var(--active-color, #ffff);
+        box-shadow: 0px -4px 1px -1px var(--active-color, #ec4899);
     }
 </style>
