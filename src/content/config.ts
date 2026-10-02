@@ -1,3 +1,4 @@
+// astro 5 dung src/content.config.ts file này bỏ
 import { z, defineCollection } from 'astro:content';
 
 const projectsCollection = defineCollection({

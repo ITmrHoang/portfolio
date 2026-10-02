@@ -2,6 +2,7 @@
 import NotesLayout from '../../layouts/NotesLayout.astro';
 import { getCollection } from 'astro:content';
 import { Callout } from '../../components/react/Callout';
+import mdxComponents from "../../components/mdxComponents";
 
 export async function getStaticPaths() {
   const entries = await getCollection('notes');
@@ -15,7 +16,7 @@ const { entry } = Astro.props;
 const { Content } = await entry.render();
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const components = { Callout };
+const components = mdxComponents;
 ---
 
 <NotesLayout title={entry.data.title} currentSlug={entry.slug}>

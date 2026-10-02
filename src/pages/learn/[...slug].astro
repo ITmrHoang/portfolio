@@ -13,6 +13,7 @@ export async function getStaticPaths() {
 
 const { entry }: any = Astro.props;
 const { Content } = await entry.render();
+import mdxComponents from "../../components/mdxComponents";
 
 const parts = entry.slug.split("/");
 const category = parts[0];
@@ -87,7 +88,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       <article
         class="prose prose-indigo max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-indigo-600 prose-img:rounded-xl prose-pre:bg-gray-900 prose-pre:shadow-lg"
       >
-        <Content />
+        <Content components={mdxComponents} />
       </article>
     </main>
   </div>

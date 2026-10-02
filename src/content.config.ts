@@ -1,20 +1,51 @@
-import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
-import { z } from 'astro/zod';
-// config của tina
-const blog = defineCollection({
-	// Load Markdown and MDX files in the `src/content/blog/` directory.
-	loader: glob({ base: './src/content/blog', pattern: '**/*.{md,mdx}' }),
-	// Type-check frontmatter using a schema
-	schema: ({ image }) =>
-		z.object({
-			title: z.string(),
-			description: z.string(),
-			// Transform string to Date object
-			pubDate: z.coerce.date(),
-			updatedDate: z.coerce.date().optional(),
-			heroImage: z.optional(image()),
-		}),
+import { z, defineCollection } from 'astro:content';
+
+const projectsCollection = defineCollection({
+    type: 'content',
+    schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        coverImage: z.string().optional(),
+        technologies: z.array(z.string()).optional(),
+    }),
 });
 
-export const collections = { blog };
+const blogCollection = defineCollection({
+    type: 'content',
+    schema: z.object({
+        title: z.string(),
+        date: z.date(),
+        excerpt: z.string().optional(),
+    }),
+});
+
+const notesCollection = defineCollection({
+    type: 'content',
+    schema: z.object({
+        title: z.string(),
+        date: z.date(),
+        topic: z.string(),
+    }),
+});
+
+const learnCollection = defineCollection({
+    type: 'content',
+    schema: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        categoryTitle: z.string().optional(),
+        categoryOrder: z.number().default(99),
+        sessionTitle: z.string().optional(),
+        sessionOrder: z.number().default(99),
+        order: z.number().default(99),
+        type: z.enum(['lesson', 'quiz', 'test', 'reference']).optional().default('lesson'),
+    }),
+});
+
+
+export const collections = {
+    'projects': projectsCollection,
+    'blog': blogCollection,
+    'notes': notesCollection,
+    'learn': learnCollection,
+};

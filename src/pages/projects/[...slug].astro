@@ -1,10 +1,10 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { Callout } from '../../components/react/Callout';
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import mdxComponents from "../../components/mdxComponents";
 
 export async function getStaticPaths() {
-  const entries = await getCollection('projects');
+  const entries = await getCollection("projects");
   return entries.map((entry) => ({
     params: { slug: entry.slug },
     props: { entry },
@@ -14,39 +14,56 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-const components = { Callout };
 ---
 
 <Layout title={entry.data.title}>
   <article class="max-w-4xl mx-auto py-12 px-4 sm:px-6">
     <header class="mb-10 text-center">
-      <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">{entry.data.title}</h1>
-      <p class="text-xl text-gray-500 max-w-2xl mx-auto">{entry.data.description}</p>
-      
-      {entry.data.technologies && entry.data.technologies.length > 0 && (
-        <div class="mt-6 flex flex-wrap justify-center gap-2">
-          {entry.data.technologies.map(tech => (
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-              {tech}
-            </span>
-          ))}
-        </div>
-      )}
+      <h1
+        class="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4"
+      >
+        {entry.data.title}
+      </h1>
+      <p class="text-xl text-gray-500 max-w-2xl mx-auto">
+        {entry.data.description}
+      </p>
+
+      {
+        entry.data.technologies && entry.data.technologies.length > 0 && (
+          <div class="mt-6 flex flex-wrap justify-center gap-2">
+            {entry.data.technologies.map((tech) => (
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                {tech}
+              </span>
+            ))}
+          </div>
+        )
+      }
     </header>
 
-    {entry.data.coverImage && (
-      <div class="mb-12 rounded-2xl overflow-hidden shadow-xl border border-gray-100">
-        <img src={entry.data.coverImage} alt={entry.data.title} class="w-full h-auto object-cover max-h-[500px]" />
-      </div>
-    )}
+    {
+      entry.data.coverImage && (
+        <div class="mb-12 rounded-2xl overflow-hidden shadow-xl border border-gray-100">
+          <img
+            src={entry.data.coverImage}
+            alt={entry.data.title}
+            class="w-full h-auto object-cover max-h-[500px]"
+          />
+        </div>
+      )
+    }
 
-    <div class="mt-8 border-t border-gray-100 pt-8 max-w-3xl mx-auto prose prose-lg prose-indigo text-gray-800">
-      <Content components={components} />
+    <div
+      class="mt-8 border-t border-gray-100 pt-8 max-w-3xl mx-auto prose prose-lg prose-indigo text-gray-800"
+    >
+      <Content components={mdxComponents} />
     </div>
 
     <div class="mt-16 text-center border-t border-gray-100 pt-8">
-      <a href={`${base}/projects`} class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center">
+      <a
+        href={`${base}/projects`}
+        class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center"
+      >
         ← Quay lại danh sách dự án
       </a>
     </div>
