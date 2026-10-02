@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
-// import { Callout } from "../../components/react/Callout";
+import { Callout } from "../../components/react/Callout";
 
 export async function getStaticPaths() {
   const entries = await getCollection("blog");
@@ -16,7 +16,7 @@ const { Content } = await entry.render();
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // Mapping cho phép dùng <Callout> bên trong Markdown Editor
-// const components = { Callout };
+const components = { Callout };
 ---
 
 <Layout title={entry.data.title}>
@@ -40,8 +40,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       class="mt-6 border-t border-gray-100 pt-6 prose prose-lg prose-indigo mx-auto text-gray-800 max-w-none"
     >
       <!-- Astro's built-in MDX renderer -->
-      <!-- <Content components={components} /> -->
-      <Content />
+      <Content components={components} />
+      <!-- <Content /> -->
     </div>
 
     <div class="mt-12 text-center border-t border-gray-100 pt-8">

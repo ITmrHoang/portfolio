@@ -1,4 +1,7 @@
 {
     "commentTranslate.source": "Bing",
-    "commentTranslate.targetLanguage": "vi"
+    "commentTranslate.targetLanguage": "vi",
+    "mdx.plugins": [
+        "remark-math"
+    ]
 }

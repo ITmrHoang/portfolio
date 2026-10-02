@@ -41,3 +41,5 @@ export const Typewriter = ({ strings = ["Xin chào!", "Tôi là lập trình vi�
         </span>
     );
 };
+
+export default Typewriter;

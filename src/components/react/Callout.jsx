@@ -19,3 +19,5 @@ export const Callout = ({ title, type, children }) => {
         </div>
     );
 };
+
+export default Callout;
