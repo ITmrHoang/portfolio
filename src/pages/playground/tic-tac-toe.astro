@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TicTacToe from '../../apps/react/TicTacToe';
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Layout title="Tic Tac Toe">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+    <a href={`${base}/playground`} class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Playground
+    </a>
+    <span class="text-gray-300">/</span>
+    <span class="text-gray-900 font-medium">Tic Tac Toe</span>
+  </nav>
+
+  <div class="max-w-lg mx-auto">
+    <!-- Game Container -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+      <TicTacToe client:load />
+    </div>
+
+    <!-- Info -->
+    <div class="mt-8 bg-indigo-50 rounded-2xl p-6 border border-indigo-100">
+      <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Về trò chơi này
+      </h3>
+      <ul class="text-sm text-gray-600 space-y-1.5">
+        <li>🎯 <strong>Chế độ 2 người</strong>: Chơi cùng bạn bè, lần lượt đánh X và O</li>
+        <li>🤖 <strong>Chế độ vs AI</strong>: Đấu với AI sử dụng thuật toán Minimax — không thể thắng!</li>
+        <li>📊 <strong>Bảng điểm</strong>: Theo dõi số ván thắng/thua/hòa</li>
+        <li>⚡ <strong>Tech stack</strong>: React + TypeScript, không dependency ngoài</li>
+      </ul>
+    </div>
+  </div>
+</Layout>

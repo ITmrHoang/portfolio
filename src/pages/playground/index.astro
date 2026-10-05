@@ -1,0 +1,103 @@
+---
+import Layout from '../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// Registry tất cả games/apps — thêm vào đây khi có game mới
+const apps = [
+  {
+    slug: 'tic-tac-toe',
+    title: 'Tic Tac Toe',
+    description: 'Cờ caro mini 3x3 kinh điển. Chơi với bạn bè hoặc đấu với AI thông minh!',
+    emoji: '❌⭕',
+    tags: ['React', 'Game', 'AI'],
+    color: 'from-indigo-500 to-purple-500',
+    bgLight: 'bg-indigo-50',
+    borderColor: 'border-indigo-200',
+  },
+  {
+    slug: 'memory-game',
+    title: 'Memory Game',
+    description: 'Lật thẻ tìm cặp — rèn luyện trí nhớ với 3 cấp độ thử thách!',
+    emoji: '🧠🃏',
+    tags: ['React', 'Game', 'Puzzle'],
+    color: 'from-amber-500 to-rose-500',
+    bgLight: 'bg-amber-50',
+    borderColor: 'border-amber-200',
+  },
+];
+---
+
+<Layout title="Playground">
+  <!-- Hero -->
+  <section class="text-center py-12 md:py-16">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold mb-6">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Khu vui chơi & thí nghiệm
+    </div>
+    
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 animate-gradient">
+        🎮 Playground
+      </span>
+    </h1>
+    
+    <p class="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+      Bộ sưu tập mini-games và web apps thú vị được xây dựng bằng React & Vue. 
+      Tất cả đều chạy trực tiếp trong trình duyệt — không cần cài đặt gì cả!
+    </p>
+  </section>
+
+  <!-- Game Grid -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+    {apps.map((app) => (
+      <a
+        href={`${base}/playground/${app.slug}`}
+        class={`group relative block p-6 rounded-2xl border-2 ${app.borderColor} ${app.bgLight} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden`}
+      >
+        {/* Gradient orb */}
+        <div class={`absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br ${app.color} rounded-full opacity-10 group-hover:opacity-20 group-hover:scale-150 transition-all duration-500`} />
+        
+        {/* Emoji badge */}
+        <div class="relative text-4xl mb-4 w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-gray-100 group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
+          <span class="text-2xl">{app.emoji.slice(0, 2)}</span>
+        </div>
+
+        {/* Content */}
+        <div class="relative">
+          <h2 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">
+            {app.title}
+          </h2>
+          <p class="text-gray-600 text-sm leading-relaxed mb-4">
+            {app.description}
+          </p>
+
+          {/* Tags */}
+          <div class="flex flex-wrap gap-2">
+            {app.tags.map((tag) => (
+              <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-white/80 text-gray-600 border border-gray-200">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Play arrow */}
+        <div class="absolute bottom-6 right-6 w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </a>
+    ))}
+
+    {/* Placeholder card for upcoming */}
+    <div class="relative block p-6 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 flex flex-col items-center justify-center min-h-[200px] text-center">
+      <div class="text-4xl mb-3 opacity-40">🚧</div>
+      <h3 class="text-lg font-bold text-gray-400">Sắp ra mắt...</h3>
+      <p class="text-sm text-gray-400 mt-1">Thêm nhiều game & tools đang được phát triển!</p>
+    </div>
+  </section>
+</Layout>

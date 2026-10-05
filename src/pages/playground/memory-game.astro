@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import MemoryGame from '../../apps/react/MemoryGame';
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Layout title="Memory Game">
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+    <a href={`${base}/playground`} class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Playground
+    </a>
+    <span class="text-gray-300">/</span>
+    <span class="text-gray-900 font-medium">Memory Game</span>
+  </nav>
+
+  <div class="max-w-2xl mx-auto">
+    <!-- Game Container -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+      <MemoryGame client:load />
+    </div>
+
+    <!-- Info -->
+    <div class="mt-8 bg-amber-50 rounded-2xl p-6 border border-amber-100">
+      <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Về trò chơi này
+      </h3>
+      <ul class="text-sm text-gray-600 space-y-1.5">
+        <li>🧠 <strong>Rèn luyện trí nhớ</strong>: Lật thẻ và tìm các cặp emoji trùng nhau</li>
+        <li>🎯 <strong>3 cấp độ</strong>: Dễ (6 cặp), Vừa (8 cặp), Khó (12 cặp)</li>
+        <li>⏱️ <strong>Theo dõi tiến trình</strong>: Đếm số bước đi, thời gian, và kỷ lục cá nhân</li>
+        <li>⚡ <strong>Tech stack</strong>: React + TypeScript, hiệu ứng mượt mà</li>
+      </ul>
+    </div>
+  </div>
+</Layout>
