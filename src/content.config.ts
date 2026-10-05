@@ -16,6 +16,7 @@ const blogCollection = defineCollection({
         title: z.string(),
         date: z.date(),
         excerpt: z.string().optional(),
+        tags: z.array(z.string()).optional().default([]),
     }),
 });
 
@@ -24,7 +25,8 @@ const notesCollection = defineCollection({
     schema: z.object({
         title: z.string(),
         date: z.date(),
-        topic: z.string(),
+        topic: z.string().optional(),
+        tags: z.array(z.string()).optional().default([]),
     }),
 });
 
@@ -39,6 +41,7 @@ const learnCollection = defineCollection({
         sessionOrder: z.number().default(99),
         order: z.number().default(99),
         type: z.enum(['lesson', 'quiz', 'test', 'reference']).optional().default('lesson'),
+        tags: z.array(z.string()).optional().default([]),
     }),
 });
 

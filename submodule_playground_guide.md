@@ -409,7 +409,26 @@ UMD (Universal Module Definition): Là định dạng "đa năng". File JS sau k
 Nếu chạy bằng thẻ <script src="..."> trên browser ➔ Tự động gán vào window (giống hệt IIFE).
 Nếu dùng trong Node.js (CommonJS) ➔ Tự hỗ trợ module.exports.
 Nếu dùng trong RequireJS (AMD) ➔ Tự hỗ trợ define()
+umd không cần module, nhúng html thuần dễ nhưng bundle lớn công nghệ cũ iife gọn nhẹ hơn phù hợp chyaj độc lập
 
+vd umd
+``` js
+(function (root, factory) {
+  root.PortfolioWidget = factory();
+})(this, function () {
+  return {
+    hello() {
+      console.log("hello");
+    }
+  };
+});
+// khi nhúng
+<script src="/get.jsscript>
+
+<script>
+  PortfolioWidget.hello();
+</script>
+```
 ### 1. Hướng dẫn Config build UMD trong Vite (Repo Vue phụ)
 Trong dự án Vue phụ của bạn, sửa file vite.config.js:
 ```javascript

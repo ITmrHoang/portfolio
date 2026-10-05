@@ -38,6 +38,7 @@ collections:
       - {label: "Tiêu đề", name: "title", widget: "string"}
       - {label: "Ngày đăng", name: "date", widget: "datetime"}
       - {label: "Đoạn trích", name: "excerpt", widget: "text", required: false}
+      - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
 
   - name: "notes"
@@ -51,6 +52,7 @@ collections:
       - {label: "Tiêu đề", name: "title", widget: "string"}
       - {label: "Ngày viết", name: "date", widget: "datetime"}
       - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "DSA", "Design Pattern", "Khác"]}
+      - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
 
   - name: "learn"
@@ -71,4 +73,5 @@ collections:
       - {label: "Thứ tự Session", name: "sessionOrder", widget: "number", default: 1, required: false}
       - {label: "Thứ tự Bài học", name: "order", widget: "number", default: 1, required: false}
       - {label: "Loại bài học", name: "type", widget: "select", options: ["lesson", "quiz", "test", "reference"], default: "lesson", required: false}
+      - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
