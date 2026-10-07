@@ -6,7 +6,8 @@
     "node": "^22.0.0"
   },
   "scripts": {
-    "dev": "concurrently \"astro dev\" \"decap-server\"",
+    "dev": "astro dev",
+    "devcms": "concurrently \"astro dev\" \"decap-server\"",
     "build": "astro build && pagefind --site dist",
     "build:github": "cross-env SITE_URL=https://itmrhoang.github.io BASE_URL=/portfolio astro build",
     "build:netlify": "cross-env SITE_URL=https://himo.netlify.app BASE_URL=/ astro build",

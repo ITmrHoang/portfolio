@@ -27,6 +27,7 @@ const baseJson = JSON.stringify(base);
   <body
     class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col"
   >
+  <div class="progress-reading"></div>
     <!-- Navbar -->
 
     <Header />
@@ -46,7 +47,9 @@ const baseJson = JSON.stringify(base);
 
       <!-- Nội dung chính (Tràn 100% khung giữa) -->
       <main class="flex-grow w-full py-8 sm:py-10 px-4 lg:px-6 pb-24 md:pb-10">
-        <slot />
+        <article id="article-page" class="w-full">
+          <slot />
+        </article>
       </main>
 
       <!-- Cột Phải chứa Quảng cáo (Dính sát viền phải màn hình) -->

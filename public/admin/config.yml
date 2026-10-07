@@ -51,7 +51,7 @@ collections:
     fields:
       - {label: "Tiêu đề", name: "title", widget: "string"}
       - {label: "Ngày viết", name: "date", widget: "datetime"}
-      - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "DSA", "Design Pattern", "Khác"], create: true}
+      - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "DSA", "Design Pattern", "CSS", "HTML", "Vanilla JS", "Khác"], create: true}
       - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
 

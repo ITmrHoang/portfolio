@@ -1,14 +1,14 @@
 ---
 title: "Bí kíp Tái tạo Menu Magic Curved Navigation xịn sò như Mobile App"
 date: 2026-03-24T12:00:00Z
-topic: "Vanilla JS"
+topic: "HTML/CSS/JS"
 ---
 
 Bạn vừa thấy thanh Menu Bo Tròn uốn lượn dưới đáy trang tự động trượt theo tab hoạt động rất uyển chuyển đúng không? Đặc biệt là **mỗi khi chuyển Tab, nó lại tự động phát sáng một dải màu nền động (Dynamic Color)** khác nhau!
 
 <Callout title="Download Source Code Gốc" type="success">
   Tôi có trích xuất mã nguồn HTML/CSS/JS thuần không lai tạp (tuyệt đối không cần Tailwind hay React) vào thư mục gốc của website. Trong File này đã bao gồm cả thuật toán đổi màu Động.
-  **Tải / Copy Code tại đây:** 👉 [magic-menu.html](/magic-menu.html)
+  **Tải / Copy Code tại đây:** 👉 <a href='/source/notes/vaninajs/magic-menu.html' download='magic-menu'> magic-menu.html</a>
 </Callout>
 
 ### 1. Bí quyết tạo "Cánh Vòm" (Glowing Wing Effect)
@@ -51,5 +51,38 @@ Thì trên CSS, cục tròn phát sáng và Font chữ lập tức sẽ tự đ�
   background: var(--active-color); /* Lắng nghe biến truyền từ JS */
 }
 ```
+
+Javascript cho phần xử lý màu sắc:
+
+```html
+ <script>
+        const list = document.querySelectorAll('.list');
+        const nav = document.querySelector('.navigation');
+        const indicator = document.querySelector('.indicator');
+        const ul = document.querySelector('.navigation ul');
+        const colors = ['#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
+
+        function activateLink(element) {
+            list.forEach((item) =>
+                item.classList.remove('active'));
+            element.classList.add('active');
+
+            // Đổi màu sinh động dựa trên Tab đã chọn
+            const index = Array.from(list).indexOf(element);
+            nav.style.setProperty('--active-color', colors[index]);
+
+            // Dịch chuyển Indicator (ĐÃ ĐƯỢC ẨN ĐI VÌ SỬ DỤNG CSS THUẦN)
+            // const itemRect = element.getBoundingClientRect();
+            // const parentRect = ul.getBoundingClientRect();
+            // indicator.style.transform = `translateX(${itemRect.left - parentRect.left}px)`;
+        }
+
+        // Cài màu mặc định và dịch chuyển về Tab 1
+        nav.style.setProperty('--active-color', colors[0]);
+        setTimeout(() => activateLink(list[0]), 50);
+    </script>
+```
+
+
 
 Sức mạnh của Javascript kết hợp với Vanilla CSS thực sự là vũ khí huỷ diệt có thể làm bất cứ Graphic Layout rườm rà nào bạn nghĩ ra! Mời bạn tải file `/magic-menu.html` về để tự do vọc phá nhé.
