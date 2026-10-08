@@ -1,0 +1,11 @@
+/_astro/*
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.js
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.css
+  Cache-Control: public, max-age=2592000, immutable
+
+/*
+  Cache-Control: public, max-age=86400

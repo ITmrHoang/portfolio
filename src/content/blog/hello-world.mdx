@@ -85,6 +85,89 @@ is:inline astro xử lý script này nhét nguyên văn html
 />
 ```
 
+## Meata data trong astro
+
+``` astro
+---
+title: "Bắt đầu với Astro và Decap CMS"
+date: 2026-03-20T12:00:00Z
+excerpt: "Website tĩnh nhưng sở hữu hệ thống quản trị nội dung dễ sử dụng."
+slug: "bat-dau-voi-astro-va-decap-cms"
+tags: [tag1, tag2]
+tags:
+  - tag1
+  - tag2
+---
+```
+1. Các meta data có thể tự định nghĩa, dùng trong frontmatter hay trong components
+2. defineCollection để định nghĩa các meta đó trong schema để CMS hiểu và hiển thị cho người dùng khi edit
+```astro
+// content.config.ts
+import { z, defineCollection } from 'astro:content';
+
+export const collections = {
+  blog: defineCollection({
+    schema: z.object({
+      title: z.string(),
+      description: z.string(),
+      author: z.string(),
+      tags: z.array(z.string()),
+      difficulty: z.string(),
+      published: z.boolean()
+    })
+  })
+};
+```
+3. getCollection để lấy dữ liệu các meta data đó nằm trong database
+```astro
+---
+import { getCollection } from "astro:content";
+const blogs = await getCollection('blog');
+//  một item sẽ có blog
+{
+  id,
+  slug,
+  body,
+  collection,
+  data
+}
+id: trả về từ sau collection ralative path full filename extension
+slug: trả về url path file trên domain = uri
+collection: cụm folder nơi chứa file
+data: là object chứa các meta data đã định nghĩa 
+body: nội dung file content sau khi render từ md 
+Content: component render nội dung file md
+// lấy content nội dung của file
+const slug = Astro.params.slug;
+const entry = await getEntry("blog", slug);
+const { Content } = await entry.render();
+
+//  dùng getStaticPaths trong [...slug].astro để formart qua mỗi bài viết
+export async function getStaticPaths() {
+  const entries = await getCollection("blog");
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+//  để hiển thị nội dung ra 
+<Content /> 
+//  mặc định trong Astro có
+Astro.params // đến từ url 
+Astro.url // đến từ request hiện tại
+Astro.site // đến từ config astro.config.ts
+Astro.generator
+// Astro.request  // không nên dùng 
+Astro.cookies
+Astro.redirect
+Astro.rewrite
+Astro.locals
+// còn Astro.props ra {} nếu không có export function getStaticPaths truyền dữ liệu
+```
+
 ## Các atribute trong astro
 ``` astro
 {/* không cho pagefind  cho phép index, khi search bỏ qua thẻ này hay element này */}
@@ -160,6 +243,7 @@ hoặc dùng script có thêm thuộc tính type="module" và type="module" hỗ
 </style>
 ```
 
+## like SPA bằng ClientRouter
 {/* tạo like SPA không load lại toàn bộ trang khi chuyển trang 
     dùng ClientRouter của astro 7 mặc định enableRouter= true để dùng
 */}
@@ -212,6 +296,25 @@ import GameLayout from
 </GameLayout>
 ```
 
+### Lấy url page khi dùng 
+
+``` astro
+
+---
+const path = new URL(Astro.url.pathname, Astro.site)
+---
+```
+
+### Chỉnh tài nền cho các thẻ a
+
+```astro
+<!-- Load nền khi link lọt vào tầm mắt người dùng (Mặc định hiện tại) -->
+<a href="/notes/my-post" data-astro-prefetch="viewport">Đọc tiếp</a>
+<!-- Load nền ngay khi di chuột qua link -->
+<a href="/notes/my-post" data-astro-prefetch="hover">Bài viết liên quan</a>
+<!-- Tải ngay lập tức khi trang load xong -->
+<a href="/about" data-astro-prefetch="load">Về tôi</a>
+```
 
 ## Hướng dẫn về Decap CMS
 

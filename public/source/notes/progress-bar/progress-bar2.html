@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Bar</title>
+    <style>
+        .progress-reading { 
+            width: 100%; 
+            height: 6px; /* Độ dày thanh */ 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            background: #e2e8f0; /* Màu nền thanh rỗng */ 
+            border-radius: 4px; 
+            z-index: 9999; 
+            overflow: hidden; /* Chứa thanh con bên trong */ 
+            } 
+
+            /* Thanh hiển thị tiến trình thực tế */ 
+            .progress-reading::before { 
+            content: ""; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            height: 100%; 
+            width: 100%; /* Đặt thành 100% để scale hoạt động chính xác */
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Hiệu ứng Gradient */ 
+            border-radius: 4px; 
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.6); /* Hiệu ứng Glow nhẹ */ 
+
+            /* Điểm neo biến đổi nằm bên trái để thanh dài dần từ trái sang phải */
+            transform-origin: left; 
+
+            /* Đồng bộ animation trực tiếp với tiến trình cuộn trang */
+            animation: progress linear;
+            animation-timeline: scroll(root block); 
+            } 
+
+            @keyframes progress { 
+            from { 
+            transform: scaleX(0); 
+            } 
+            to { 
+            transform: scaleX(1); 
+            } 
+            }
+    </style>
+</head>
+
+<body>
+    <div class="progress-reading"></div>
+    <div style="width: 100%; height: 100vh;background-color: red;"></div>    
+    <div style="width: 100%; height: 100vh;background-color: rgb(25, 0, 255);"></div>    
+    <div style="width: 100%; height: 100vh;background-color: rgb(9, 255, 0);"></div>    
+</body>
+
+</html>

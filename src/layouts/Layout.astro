@@ -1,6 +1,11 @@
 ---
+import type { ImageMetadata } from 'astro';
+
 interface Props {
   title: string;
+  description?: string;
+  image?: ImageMetadata;
+  enableRouter?: boolean;
 }
 
 import "../styles/global.css";
@@ -9,8 +14,10 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import CurvedMagicMenu from "../components/CurvedMagicMenu.astro";
 import AdSlot from "../components/AdSlot.astro";
+import { ClientRouter } from "astro:transitions";
+import BaseHead from "@/components/BaseHead.astro";
 
-const { title } = Astro.props;
+const { title, description, image, enableRouter = false } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const baseJson = JSON.stringify(base);
 ---
@@ -18,11 +25,8 @@ const baseJson = JSON.stringify(base);
 <!doctype html>
 <html lang="vi">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="description" content="Portfolio cá nhân" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/png" href={`${base}/favicon.png`} />
-    <title>{title} | HiMo Portfolio</title>
+    <BaseHead title={title} description={description} image={image} />
+    {enableRouter && <ClientRouter />}
   </head>
   <body
     class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col"
@@ -223,6 +227,19 @@ const baseJson = JSON.stringify(base);
           scrollBtn.addEventListener("click", () => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           });
+        }
+
+        // --- TÍNH NĂNG 3: REGISTER SERVICE WORKER FOR PWA & CACHING ---
+        if ("serviceWorker" in navigator) {
+          const swUrl = BASE ? `${BASE}/sw.js` : "/sw.js";
+          navigator.serviceWorker
+            .register(swUrl, { scope: BASE ? `${BASE}/` : "/" })
+            .then((reg) => {
+              console.log("[PWA] Service Worker registered:", reg.scope);
+            })
+            .catch((err) => {
+              console.error("[PWA] Service Worker registration failed:", err);
+            });
         }
       });
     </script>

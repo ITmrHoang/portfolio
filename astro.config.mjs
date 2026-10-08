@@ -15,6 +15,11 @@ const isDev = process.argv.includes('dev');
 export default defineConfig({
     site: process.env.SITE_URL ?? 'https://itmrhoang.github.io',
     base: process.env.BASE_URL ?? (isDev ? '/' : '/portfolio'),
+    // bất kỳ liên kết nào trên màn hình viewport sẽ được tự động tải trước.
+    // prefetch: {
+    //     prefetchAll: true,
+    //     defaultStrategy: 'viewport',
+    // },
     integrations: [
         mdx({
             remarkPlugins: [remarkMath],

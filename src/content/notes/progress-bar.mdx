@@ -1,0 +1,315 @@
+---
+title: "Thanh cuộn tiến trình đọc (Progress Reading Bar) trên trang Blog"
+date: 2026-10-06T12:00:00Z
+topic: "CSS"
+tags: ["css"]
+---
+Tạo Progress Bar cho trang hoặc phần đọc
+
+<Callout title="Download Source Code Gốc" type="success">
+  Tôi có trích xuất mã nguồn HTML/CSS thuần có thể dùng trực tiếp tích hợp dễ dàng và website hoặc dùng để tạo component
+
+  - [Xem code ví dụ 1](/assets/source/notes/progress-bar/progress-bar1.html)
+  - [Xem code ví dụ 2](/assets/source/notes/progress-bar/progress-bar2.html)
+</Callout>
+
+Cách dùng trực tiếp trên HTML bằng js thường thấy hay dùng nhưng để làm progress bar bạn chỉ cần các thuộc tính css là đủ
+
+```html
+  const readProgress = () => {
+      let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      let clientHeight = document.documentElement.clientHeight;
+      let scrollHeight = document.documentElement.scrollHeight;
+      let progress = Math.min((scrollTop / (scrollHeight - clientHeight)) * 100, 100);
+      document.querySelector('.progress-bar').style.width = progress + '%';
+  };
+  window.addEventListener('scroll', readProgress);
+```
+
+## 1. Chỉ dùng CSS không cần javascript
+Các thuộc tính/ các làm
+
+<table>
+  <tr>
+    <th>API</th>
+    <th>Mô tả Đo cái gì</th>
+    <th>Cách dùng</th>
+  </tr>
+  <tr>
+    <td>scroll(`<scroller> <axis>`)</td> 
+    <td>
+      <div>% scroll cuộn củ container mặc định là body là scroll(root block) </div>
+      <div>theo chiều dọc trang animation-timeline: scroll();</div>
+      <div>thứ tự tự tìm theo scroller: nearest/scroll/container/ancestor cho progress luôn </div>
+      <div>scroller : <br/> 1. root trang window <br/> 2. nearest(phần tử cha gần nhất)<br/> 3. self(chính element)</div>
+      <div>axis : block =  y(trục dọc), x(trục ngang)= inline(theo chiều nội dung)</div>
+    </td>
+    <td>
+      trực tiếp chỉ 1 div đơn giản
+  ```css
+  .progress-reading {
+    /* 1. Thiết lập thanh này luôn chiếm toàn bộ chiều rộng màn hình (100%) */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    /* 2. Cấu hình thanh cuộn (Thanh rỗng) */
+    height: 4px; /* Độ dày thanh (Bạn có thể thay đổi tùy ý, ví dụ: 6px, 8px) */
+    background: rgba(0, 0, 0, 0.1); /* Màu nền mờ */
+    backdrop-filter: blur(10px); /* Hiệu ứng mờ nền (tùy chọn) */
+    z-index: 9999; /* Đảm bảo nằm trên cùng */
+    border-radius: 4px;
+    animation: progress linear;
+    animation-timeline: scroll();
+    background: blue;
+
+  }
+  /* cách 2 */
+  .progress-bar-y {
+  /* Kích hoạt Animation */
+  animation: progress linear;
+  animation-timeline: scroll( --y-axis ); /* Sử dụng custom timeline được định nghĩa bên dưới */
+  animation-range: entry; /* Bắt đầu từ khi bắt đầu thấy thanh, kết thúc khi thanh cuộn hết trang */
+  
+  /* Đặt cơ sở cho việc nhân bản (Scaling) */
+  transform-origin: top left;
+}
+
+  /* Định nghĩa Timeline Tùy Chỉnh cho Scroll Ngang */
+  @scroll-timeline y-axis {
+    /* scroller: Xác định đối tượng cuộn (ở đây là root tức là toàn bộ trang) */
+    source: auto; 
+    
+    /* axis: Xác định hướng cuộn */
+    orientation: block;
+    
+    /* Dùng auto để tự động tính toán chiều dài dựa trên chiều cao nội dung (scrollHeight) */
+    scroll-synthesis: auto; 
+    
+    /* Đặt range cho thanh (từ khi bắt đầu thấy đến khi kết thúc) */
+    /* Nếu muốn thanh xuất hiện từ 0% đến 100% */
+    animation-range-name: entry; 
+  }
+
+  /* (Optional) Bạn có thể dùng view() thay cho scroll() cho trường hợp hiển thị phần trăm view, nhưng scroll() thường dùng cho progress bar toàn trang */
+  /* 
+  @scroll-timeline y-axis {
+      source: auto;
+      orientation: block;
+      animation-range: entry;  
+  }
+  */
+
+  /* animation */
+  @keyframes progress {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+  }
+  ```
+      <a href="/source/notes/progress-bar1.html" class="font-bold hover:underline" download={'progess-bar1'}>Xem code ví dụ 1</a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+        dùng scroll-timeline: `<name> <axis>`
+    </td>
+    <td>
+        `<name>` : tên đặt biến giá trị của scroller hoặc scroll-timeline-name: --scroll-reading <br/>
+        `<axis>` : block =  y(trục dọc), x(trục ngang)= inline(theo chiều nội dung) <br/>
+        hoặc dùng scroll-timeline-axis: block/inline/x/y/inherit/initial/revert/revert-layer/unset  <br/>
+    </td>
+    <td>
+  ```css
+  /* trong div container */
+  .container{
+    position: fixed;
+    width: 100%;
+    scroll-timeline: --container block;
+  }
+  /* trong div progress nằm trong container */
+  .progress{
+    animation: progress linear;
+    animation-timeline: --container;
+    transform-origin: left;
+  }
+
+  /* animation */
+  @keyframes progress {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+  }
+  ```
+    </td>
+  </tr>
+<tr>
+  <td>
+      dùng view() hoặc view-timeline
+  </td>
+  <td>
+      view() tạo timeline dựa trên quá trình một element đi qua viewport <br/>
+      không phải % diện tích element đang hiển thị <br/>
+      timeline tăng từ 0% → 100% khi element di chuyển qua viewport <br/>
+      thường dùng cho fade-in, slide-in, reveal animation <br/>
+      <br/>
+      <b>view-timeline-name</b>: đặt tên timeline của element <br/>
+      <b>view-timeline-axis</b>: block/inline/x/y
+  </td>
+  <td>
+``` cs
+/* element được theo dõi */
+.article {
+  view-timeline-name: --article;
+  view-timeline-axis: block;
+}
+
+/* element chạy animation */
+.progress {
+  animation: progress linear;
+  animation-timeline: --article;
+  transform-origin: left;
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+```
+
+  </td>
+</tr>
+
+<tr>
+  <td>
+      dùng view() trực tiếp
+  </td>
+  <td>
+      không cần đặt tên timeline <br/>
+      tự động dùng timeline của chính element đó <br/>
+      phù hợp fade-in hoặc reveal animation
+  </td>
+  <td>
+
+```css
+  .card {
+    animation: fade-up linear;
+    animation-timeline: view();
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+```
+  </td>
+</tr>
+
+<tr>
+  <td>
+      IntersectionObserver ratio
+  </td>
+  <td>
+      khác view() <br/>
+      đo % diện tích element đang hiển thị trong viewport <br/>
+      giá trị từ 0 → 1 <br/>
+      0 = không thấy <br/>
+      0.5 = thấy 50% <br/>
+      1 = thấy toàn bộ element
+  </td>
+  <td>
+``` js
+const observer = new IntersectionObserver(
+  ([entry]) => {
+    console.log(entry.intersectionRatio);
+  },
+  {
+    threshold: [0, 0.25, 0.5, 0.75, 1]
+  }
+);
+
+observer.observe(article);
+```
+
+  </td>
+</tr>
+
+<tr>
+  <td>
+      Progress bằng IntersectionObserver
+  </td>
+  <td>
+      tạo progress theo % diện tích element đang hiển thị <br/>
+      chính xác theo visibility <br/>
+      không phải progress đọc bài
+  </td>
+  <td>
+
+
+```js
+const article = document.querySelector("article");
+const progress = document.querySelector(".progress");
+
+const observer = new IntersectionObserver(
+  ([entry]) => {
+    progress.style.transform =
+      `scaleX(${entry.intersectionRatio})`;
+  },
+  {
+    threshold: Array.from(
+      { length: 101 },
+      (_, i) => i / 100
+    )
+  }
+);
+
+observer.observe(article);
+```
+```css
+.progress {
+  transform-origin: left;
+}
+```
+
+  </td>
+</tr>
+
+<tr>
+  <td>
+      So sánh
+  </td>
+  <td colspan="2">
+      <pre><code>
+      scroll()                => % scroll của container
+      scroll(root block)      => % scroll của page
+      scroll(nearest block)   => % scroll của container gần nhất
+
+      view()                  => tiến trình element đi qua viewport
+      view-timeline           => timeline của element được đặt tên
+
+      intersectionRatio       => % diện tích element đang visible
+      </code></pre>
+  </td>
+</tr>
+</table>
