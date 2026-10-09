@@ -1,0 +1,107 @@
+---
+title: "Tính năng Popup Sider Chạy Thử Code Đa Ngôn Ngữ Trực Tiếp Trên Web"
+date: 2026-10-09T09:00:00Z
+topic: "React & Web Tools"
+tags: ["react", "webassembly", "python", "rust", "javascript", "tools"]
+---
+
+import CodeRunnerTrigger from '../../components/react/CodeRunner/CodeRunnerTrigger';
+
+Tính năng **Popup Sider Code Runner** cho phép bạn mở một bảng điều khiển ghim/popup bên phải màn hình để thực thi và test mã nguồn trực tiếp mà không cần rời khỏi bài viết blog.
+
+<CodeRunnerTrigger 
+  client:load
+  variant="card"
+  buttonText="🚀 Khởi Động Code Runner Popup Sider"
+  title="Trình Chạy Mã Nguồn Đa Ngôn Ngữ Trực Tiếp"
+  description="Bấm vào đây để mở bảng Popup Sider bên phải. Hỗ trợ chuyển đổi giữa JS, TS, Python 3.11 (Pyodide WebAssembly), Rust (Playground Server API), SQL và HTML Live UI!"
+/>
+
+## 1. Các Tính Năng Nổi Bật Của Popup Sider
+
+<Callout title="Kiến trúc thiết kế linh hoạt" type="info">
+- **Chế độ Ghim (Pin Sider)**: Ghim bảng điều khiển cố định bên phải màn hình hoặc mở dạng Modal Overlay.
+- **Bảng Mô Tả Bên Trái (Left Panel)**: Cho phép ẩn/hướng dẫn bài tập, option cấu hình hoặc thu gọn 100% để tập trung viết code.
+- **Đa Ngôn Ngữ Trực Tiếp**:
+  - **JavaScript / TypeScript**: Chạy cách ly trực tiếp qua JS Sandbox Runtime.
+  - **Python**: Tích hợp Pyodide WebAssembly (chạy Python 3.11 trực tiếp trong trình duyệt).
+  - **Rust**: Gửi mã nguồn biên dịch tới **Rust Playground Server API** và hiển thị kết quả log compilation & stdout.
+  - **HTML / CSS / Live UI**: Live preview giao diện trực quan trong iframe độc lập.
+  - **SQL**: Thực thi truy vấn SQLite trực tiếp qua WebAssembly.
+- **Bộ Kiểm Thử & Debug Logs**: Tùy chọn thu gọn / mở rộng bảng Console Output và Test Cases với trạng thái Passed/Failed và thời gian thực thi (ms).
+</Callout>
+
+## 2. Thử Nghiệm Trực Tiếp Với Nhiều Loại Bài Tập
+
+Dưới đây là ví dụ trigger bài tập thuật toán hai số tổng (Two Sum):
+
+<CodeRunnerTrigger 
+  client:load
+  variant="button"
+  buttonText="⚡ Thử bài tập Two Sum (JavaScript & Python)"
+  title="Bài tập: Two Sum (Thuật toán tìm cặp số)"
+  language="javascript"
+  code={`// Viết hàm tìm vị trí 2 số có tổng bằng target
+function twoSum(nums, target) {
+  const map = new Map();
+  for (let i = 0; i < nums.length; i++) {
+    const diff = target - nums[i];
+    if (map.has(diff)) {
+      return [map.get(diff), i];
+    }
+    map.set(nums[i], i);
+  }
+  return [];
+}
+
+console.log("Two Sum result:", twoSum([2, 7, 11, 15], 9));
+`}
+  testCases={[
+    { id: 1, name: "Case 1: [2, 7, 11, 15], target = 9", input: "[2, 7, 11, 15], 9", expected: "[0,1]" },
+    { id: 2, name: "Case 2: [3, 2, 4], target = 6", input: "[3, 2, 4], 6", expected: "[1,2]" }
+  ]}
+/>
+
+### 3. Demo Chạy Python Trực Tiếp Không Cần Backend Server
+
+Bấm vào badge bên dưới để chạy thử Python 3.11 trực tiếp bằng WebAssembly trong trình duyệt:
+
+<CodeRunnerTrigger 
+  client:load
+  variant="badge"
+  buttonText="🐍 Chạy thử Python 3.11 Pyodide"
+  language="python"
+  title="Python 3.11 Execution Test"
+  code={`import math
+import sys
+
+print("🐍 Hello from Python in Browser!")
+print("Python Version:", sys.version)
+
+numbers = [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+roots = [math.sqrt(n) for n in numbers]
+print("Square roots:", roots)
+`}
+/>
+
+### 4. Demo Chạy Rust Server API
+
+Đối với ngôn ngữ như Rust cần biên dịch binary, hệ thống sẽ kết nối trực tiếp đến **Rust Playground Server API** hoặc dùng Cargo Runner Server:
+
+<CodeRunnerTrigger 
+  client:load
+  variant="button"
+  buttonText="🦀 Mở Rust Playground Runner"
+  language="rust"
+  title="Rust Playground API Runner"
+  code={`fn main() {
+    println!("🦀 Hello from Rust Server Compiler!");
+    
+    let scores = vec![85, 92, 78, 95, 88];
+    let avg: f64 = scores.iter().sum::<i32>() as f64 / scores.len() as f64;
+    
+    println!("Scores: {:?}", scores);
+    println!("Average score: {:.2}", avg);
+}
+`}
+/>

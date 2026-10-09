@@ -15,14 +15,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5",
-    "@astrojs/react": "^5",
-    "@astrojs/vue": "^5",
     "@astrojs/check": "^0.9.10",
     "@astrojs/mdx": "^4",
+    "@astrojs/react": "^5",
     "@astrojs/rss": "^4.0.5",
     "@astrojs/sitemap": "^3.1.1",
     "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vue": "^5",
+    "astro": "^5",
     "katex": "^0.18.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "@types/sql.js": "^1.4.11",
     "concurrently": "^9.2.1",
     "decap-server": "^3.5.2",
     "pagefind": "^1.4.0",

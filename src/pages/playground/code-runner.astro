@@ -1,0 +1,141 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CodeRunnerTrigger from '../../components/react/CodeRunner/CodeRunnerTrigger';
+import CodeRunnerSider from '../../components/react/CodeRunner/CodeRunnerSider';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<Layout title="Code Runner Popup Sider - Multi-Language Web Playground">
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+      <a href={`${base}/playground`} class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors mb-4">
+        ← Quay lại Playground
+      </a>
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl border border-slate-800 shadow-2xl">
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
+            ⚡ WebAssembly & Multi-Language Runner
+          </div>
+          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+            Code Runner Popup Sider Demo
+          </h1>
+          <p class="text-sm text-slate-300 max-w-2xl">
+            Chạy thử mã nguồn JS, TS, Python (Pyodide Wasm), Rust (Server API) và HTML Live UI ngay trên trình duyệt với bảng Popup Sider bên phải!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Trigger Demo Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-md flex flex-col justify-between">
+        <div>
+          <div class="text-3xl mb-2">⚡</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-1">JavaScript / TypeScript Sandbox</h3>
+          <p class="text-xs text-slate-600 mb-4">
+            Chạy JavaScript và TypeScript trực tiếp trong trình duyệt với console log capture và bộ kiểm thử Test Cases.
+          </p>
+        </div>
+        <CodeRunnerTrigger
+          client:load
+          buttonText="Mở JS/TS Playground Sider"
+          title="JavaScript & TypeScript Interactive Sandbox"
+          language="javascript"
+          code={`// Demo JavaScript Execution
+function calculateStats(numbers) {
+  const sum = numbers.reduce((acc, curr) => acc + curr, 0);
+  const avg = sum / numbers.length;
+  return { sum, avg };
+}
+
+console.log("Stats result:", calculateStats([10, 20, 30, 40, 50]));
+`}
+        />
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-md flex flex-col justify-between">
+        <div>
+          <div class="text-3xl mb-2">🐍</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-1">Python 3.11 (Pyodide Wasm)</h3>
+          <p class="text-xs text-slate-600 mb-4">
+            Thực thi Python 3.11 trực tiếp bằng WebAssembly trong trình duyệt mà không cần máy chủ backend!
+          </p>
+        </div>
+        <CodeRunnerTrigger
+          client:load
+          buttonText="Mở Python Pyodide Sider"
+          title="Python 3.11 WebAssembly Engine"
+          language="python"
+          code={`import math
+
+def primes_up_to(n):
+    primes = []
+    for num in range(2, n + 1):
+        if all(num % i != 0 for i in range(2, int(math.isqrt(num)) + 1)):
+            primes.append(num)
+    return primes
+
+print("🐍 Prime numbers up to 50:")
+print(primes_up_to(50))
+`}
+        />
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-md flex flex-col justify-between">
+        <div>
+          <div class="text-3xl mb-2">🦀</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-1">Rust Server API Runner</h3>
+          <p class="text-xs text-slate-600 mb-4">
+            Gửi code Rust đến Rust Playground Server API để biên dịch và nhận log stdout/stderr tức thì.
+          </p>
+        </div>
+        <CodeRunnerTrigger
+          client:load
+          buttonText="Mở Rust Playground Sider"
+          title="Rust Playground API Runner"
+          language="rust"
+          code={`fn main() {
+    println!("🦀 Rust execution via Rust Playground API!");
+    let nums = vec![1, 2, 3, 4, 5];
+    let product: i32 = nums.iter().product();
+    println!("Product of {:?} = {}", nums, product);
+}
+`}
+        />
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-md flex flex-col justify-between">
+        <div>
+          <div class="text-3xl mb-2">🌐</div>
+          <h3 class="text-lg font-bold text-slate-900 mb-1">HTML / CSS / JS Live UI</h3>
+          <p class="text-xs text-slate-600 mb-4">
+            Tạo và chỉnh sửa giao diện web trực tiếp với khung Live Preview độc lập trong iframe.
+          </p>
+        </div>
+        <CodeRunnerTrigger
+          client:load
+          buttonText="Mở HTML Live UI Sider"
+          title="HTML/CSS Live UI Playground"
+          language="html"
+        />
+      </div>
+    </div>
+
+    <!-- Default Open Embedded Sider -->
+    <div class="mt-8">
+      <h2 class="text-lg font-bold text-slate-900 mb-3">Mở Sider Trực Tiếp Mặc Định:</h2>
+      <CodeRunnerTrigger
+        client:load
+        variant="card"
+        buttonText="⚡ Mở Full Feature Sider"
+        title="Bảng Chạy Code Sider Với Đầy Đủ Chức Năng"
+        description="Mở bảng điều khiển Popup Sider ghim bên phải màn hình với bộ test case đầy đủ và nút chuyển đổi ngôn ngữ linh hoạt."
+      />
+    </div>
+
+    <!-- Global Code Runner Listener Drawer -->
+    <CodeRunnerSider client:only="react" isOpen={false} />
+  </main>
+</Layout>

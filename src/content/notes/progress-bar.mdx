@@ -201,7 +201,8 @@ Các thuộc tính/ các làm
   <td>
       không cần đặt tên timeline <br/>
       tự động dùng timeline của chính element đó <br/>
-      phù hợp fade-in hoặc reveal animation
+      phù hợp fade-in hoặc reveal animation nếu muốn cho progess-bar <br/>
+      thì cần dùng befor hoặc after vì chúng mượn timelien của el gốc
   </td>
   <td>
 
@@ -211,15 +212,29 @@ Các thuộc tính/ các làm
     animation-timeline: view();
   }
 
-  @keyframes fade-up {
+  /* ví dụ với before, after để cho progess-bar chạy theo card 
+  ::before/::after luôn lấy viewport-progress của element chủ sở hữu pseudo-element, không phải của pseudo-element.
+  */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: blue;
+    transform-origin: left;
+    animation: progress linear;
+    animation-timeline: view();
+  }
+
+  @keyframes progress {
     from {
-      opacity: 0;
-      transform: translateY(30px);
+      transform: scaleX(0);
     }
 
     to {
-      opacity: 1;
-      transform: translateY(0);
+      transform: scaleX(1);
     }
   }
 ```
