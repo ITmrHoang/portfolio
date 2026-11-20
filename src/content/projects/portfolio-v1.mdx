@@ -1,16 +1,38 @@
 ---
-title: "Xây dựng Portfolio Cá nhân"
-description: "Dự án phát triển website cá nhân tích hợp quản trị nội dung hiện đại dùng Astro."
+title: "HiMo Portfolio — Website cá nhân"
+description: "Website cá nhân tĩnh dựng bằng Astro: trưng bày dự án, blog kiến thức lập trình và sổ tay ghi chú DSA, quản trị nội dung bằng Decap CMS, tự động deploy lên GitHub Pages."
 coverImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80"
+role: "Thiết kế & phát triển toàn bộ"
+date: 2026-03-20T00:00:00Z
+github: "https://github.com/ITmrHoang/portfolio"
+demo: "https://itmrhoang.github.io/portfolio/"
 technologies:
-  - Astro
+  - Astro 5
   - Tailwind CSS
-  - Depcap CMS
   - React
+  - Vue
+  - MDX
+  - WebAssembly
+  - Decap CMS
+  - Pagefind
+  - KaTeX
+  - GitHub Actions
 ---
 
-Đây là trang thông tin chi tiết về dự án. Bạn có thể trình bày mọi khía cạnh của sản phẩm tại đây.
+Đây là chính website bạn đang xem: nơi mình trưng bày dự án, viết blog và ghi chép lộ trình học Cấu trúc dữ liệu & Giải thuật.
 
-<Callout title="Lưu ý quan trọng" type="warning">
-  Mọi nội dung ở đây có thể được thay đổi động từ Depcap CMS.
+## Tính năng chính
+
+- **Trang tĩnh 100%** dựng bằng Astro, tải nhanh, deploy tự động lên GitHub Pages qua GitHub Actions mỗi lần push lên `main`.
+- **Quản trị nội dung bằng Decap CMS** tại `/admin`: viết bài, thêm ghi chú, dự án và chứng chỉ mà không cần sửa code.
+- **Blog & Ghi chú viết bằng MDX**: nhúng được React component (`<Callout>`), công thức toán bằng KaTeX.
+- **Sổ tay ghi chú** (DSA, Design Pattern...) chia theo chủ đề và cấp độ (Cơ bản → Chuyên sâu), có tag để lọc nhanh.
+- **Góc học tập** `/learn`: lộ trình theo thể loại → session → bài học, có quiz.
+- **Lab / Playground**: chạy thử code JS, Python, Rust ngay trên trình duyệt (WebAssembly) và vài mini game.
+- **PWA**: cài được như app, có service worker để cache.
+- **Tìm kiếm toàn site** bằng Pagefind (chạy hoàn toàn phía trình duyệt, không cần server).
+- **SEO**: sitemap, RSS feed, thẻ Open Graph để chia sẻ lên mạng xã hội đẹp hơn.
+
+<Callout title="Mã nguồn" type="info">
+  Toàn bộ mã nguồn công khai trên GitHub, link ở đầu trang.
 </Callout>

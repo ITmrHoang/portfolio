@@ -1,0 +1,13 @@
+{
+  "name": "Nguyễn Văn Hoàng",
+  "nickname": "HiMo",
+  "headline": "Web Developer · Tech Blogger",
+  "avatar": "/logo-himo.png",
+  "intro": "Mình là một lập trình viên web yêu thích xây dựng sản phẩm gọn gàng, nhanh và dễ dùng. Ngoài viết code, mình ghi chép lại kiến thức Cấu trúc dữ liệu & Giải thuật, nguyên lý thiết kế phần mềm để vừa học sâu hơn vừa chia sẻ cho người mới.",
+  "skills": [
+    { "group": "Ngôn ngữ", "items": ["JavaScript", "TypeScript", "Python", "Rust"] },
+    { "group": "Frontend", "items": ["Astro", "React", "Tailwind CSS", "HTML/CSS"] },
+    { "group": "Nền tảng", "items": ["Cấu trúc dữ liệu & Giải thuật", "SOLID & Design Patterns", "Kiến trúc phần mềm"] },
+    { "group": "Công cụ", "items": ["Git & GitHub", "GitHub Actions (CI/CD)", "Decap CMS"] }
+  ]
+}

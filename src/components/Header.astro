@@ -29,7 +29,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 				</a>
 			</div>
 			<!-- Desktop Navigation -->
-			<nav class="hidden md:flex space-x-6 items-center">
+			<nav class="hidden md:flex space-x-3 lg:space-x-6 items-center whitespace-nowrap text-sm lg:text-base">
 				<HeaderLink
 					href={`${base}/`}
 					class="text-gray-300 hover:text-indigo-400 font-medium transition-colors"
@@ -59,6 +59,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 					href={`${base}/playground`}
 					class="text-gray-300 hover:text-indigo-400 font-medium transition-colors"
 					>🎮 Lab</HeaderLink
+				>
+				<HeaderLink
+					href={`${base}/about`}
+					class="text-gray-300 hover:text-indigo-400 font-medium transition-colors"
+					>Giới thiệu</HeaderLink
 				>
 				<div
 					class="relative group flex items-center justify-end bg-transparent rounded-full border border-transparent hover:border-indigo-100 transition-all focus-within:border-indigo-500 ml-4"

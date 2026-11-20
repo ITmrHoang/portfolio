@@ -24,6 +24,10 @@ collections:
       - {label: "Tiêu đề", name: "title", widget: "string"}
       - {label: "Mô tả ngắn", name: "description", widget: "text", required: false}
       - {label: "Ảnh bìa", name: "coverImage", widget: "image", required: false}
+      - {label: "Vai trò", name: "role", widget: "string", required: false}
+      - {label: "Thời gian", name: "date", widget: "datetime", required: false}
+      - {label: "Link GitHub", name: "github", widget: "string", required: false}
+      - {label: "Link Demo", name: "demo", widget: "string", required: false}
       - {label: "Công nghệ sử dụng", name: "technologies", widget: "list", required: false}
       - {label: "Nội dung chi tiết", name: "body", widget: "markdown"}
 
@@ -37,6 +41,8 @@ collections:
     fields:
       - {label: "Tiêu đề", name: "title", widget: "string"}
       - {label: "Ngày đăng", name: "date", widget: "datetime"}
+      - {label: "Ngày cập nhật", name: "updatedDate", widget: "datetime", required: false}
+      - {label: "Ảnh bìa", name: "coverImage", widget: "image", required: false}
       - {label: "Đoạn trích", name: "excerpt", widget: "text", required: false}
       - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
@@ -51,7 +57,9 @@ collections:
     fields:
       - {label: "Tiêu đề", name: "title", widget: "string"}
       - {label: "Ngày viết", name: "date", widget: "datetime"}
-      - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "DSA", "Design Pattern", "CSS", "HTML", "Vanilla JS", "Khác"], create: true}
+      - {label: "Ngày cập nhật", name: "updatedDate", widget: "datetime", required: false}
+      - {label: "Chủ đề (Topic)", name: "topic", widget: "select", options: ["Frontend", "Backend", "AI", "DevOps", "Design", "DSA", "Design Pattern", "Software Engineering", "CSS", "HTML", "HTML/CSS/JS", "Vanilla JS", "React & Web Tools", "Khác"], create: true, hint: "Thứ tự nhóm chủ đề chỉnh trong src/consts.ts (TOPIC_ORDER)"}
+      - {label: "Cấp độ", name: "level", widget: "select", required: false, options: ["Cơ bản", "Trung cấp", "Nâng cao", "Chuyên sâu"]}
       - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
 
@@ -75,3 +83,38 @@ collections:
       - {label: "Loại bài học", name: "type", widget: "select", options: ["lesson", "quiz", "test", "reference"], default: "lesson", required: false}
       - {label: "Thẻ (Tags)", name: "tags", widget: "list", required: false}
       - {label: "Nội dung", name: "body", widget: "markdown"}
+
+  - name: "certificates"
+    label: "Chứng chỉ (Certificates)"
+    folder: "src/content/certificates"
+    create: true
+    slug: "{{slug}}"
+    extension: "yml"
+    format: "yml"
+    identifier_field: "title"
+    fields:
+      - {label: "Tên chứng chỉ", name: "title", widget: "string"}
+      - {label: "Đơn vị cấp", name: "issuer", widget: "string"}
+      - {label: "Ngày cấp", name: "date", widget: "datetime"}
+      - {label: "Ảnh chứng chỉ", name: "image", widget: "image"}
+      - {label: "Link xác minh", name: "credentialUrl", widget: "string", required: false}
+
+  - name: "profile"
+    label: "Hồ sơ cá nhân (About)"
+    files:
+      - label: "Thông tin giới thiệu"
+        name: "profile"
+        file: "src/data/profile.json"
+        format: "json"
+        fields:
+          - {label: "Họ tên", name: "name", widget: "string"}
+          - {label: "Biệt danh", name: "nickname", widget: "string"}
+          - {label: "Dòng giới thiệu", name: "headline", widget: "string"}
+          - {label: "Ảnh đại diện", name: "avatar", widget: "image"}
+          - {label: "Giới thiệu ngắn", name: "intro", widget: "text"}
+          - label: "Kỹ năng"
+            name: "skills"
+            widget: "list"
+            fields:
+              - {label: "Nhóm", name: "group", widget: "string"}
+              - {label: "Danh sách", name: "items", widget: "list"}

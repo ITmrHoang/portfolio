@@ -1,36 +1,51 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import PostCover from '../../components/PostCover.astro';
+import TagFilter from '../../components/TagFilter.astro';
 import { getCollection } from 'astro:content';
+import { BASE, readingTime } from '../../utils/site';
 
 const allPosts = await getCollection('blog');
+// Bài mới nhất lên đầu
 const posts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
-<Layout title="Kiến thức lập trình">
+<Layout title="Kiến thức lập trình" description="Blog chia sẻ kiến thức lập trình: nguyên lý thiết kế, design pattern, kiến trúc phần mềm và kỹ nghệ phần mềm.">
   <div class="w-full mx-auto py-12 px-4 sm:px-6">
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-8 tracking-tight">Blog & Ghi chú</h1>
-    
-    <div class="space-y-8">
-      {posts.length === 0 ? (
-        <p class="text-gray-500">Chưa có bài viết nào.</p>
-      ) : (
-        posts.map((post) => (
-          <article class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <h2 class="text-2xl font-bold text-gray-900 mb-3">
-              <a href={`${base}/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">
-                {post.data.title}
-              </a>
-            </h2>
-            {post.data.date && <time class="text-sm text-gray-500 block mb-4">{post.data.date.toLocaleDateString('vi-VN')}</time>}
-            <p class="text-gray-600 mb-4">{post.data.excerpt}</p>
-            <a href={`${base}/blog/${post.slug}`} class="inline-flex items-center text-indigo-600 font-semibold group">
-              Đọc tiếp
-              <span class="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-6 tracking-tight">Blog & Kiến thức</h1>
+
+    <TagFilter items={posts.map((p) => p.data)} />
+
+    {posts.length === 0 ? (
+      <p class="text-gray-500">Chưa có bài viết nào.</p>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        {posts.map((post) => (
+          <article data-tags={JSON.stringify(post.data.tags)} class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col">
+            <a href={`${BASE}/blog/${post.slug}`} tabindex="-1">
+              <PostCover title={post.data.title} src={post.data.coverImage} tag={post.data.tags[0]} class="h-44" />
             </a>
+            <div class="p-6 flex flex-col flex-grow">
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-500 mb-2">
+                <time datetime={post.data.date.toISOString()}>{post.data.date.toLocaleDateString('vi-VN')}</time>
+                <span>· {readingTime(post.body)} phút đọc</span>
+                {post.data.updatedDate && <span class="text-emerald-600">· Cập nhật {post.data.updatedDate.toLocaleDateString('vi-VN')}</span>}
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 mb-3 leading-snug">
+                <a href={`${BASE}/blog/${post.slug}`} class="hover:text-indigo-600 transition-colors">{post.data.title}</a>
+              </h2>
+              <p class="text-gray-600 mb-4 line-clamp-3 flex-grow">{post.data.excerpt}</p>
+              {post.data.tags.length > 0 && (
+                <div class="flex flex-wrap gap-2">
+                  {post.data.tags.slice(0, 4).map((t) => (
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">#{t}</span>
+                  ))}
+                </div>
+              )}
+            </div>
           </article>
-        ))
-      )}
-    </div>
+        ))}
+      </div>
+    )}
   </div>
 </Layout>

@@ -1,10 +1,7 @@
 ---
-import type { ImageMetadata } from 'astro';
+import type { SeoProps } from '../components/BaseHead.astro';
 
-interface Props {
-  title: string;
-  description?: string;
-  image?: ImageMetadata;
+interface Props extends SeoProps {
   enableRouter?: boolean;
 }
 
@@ -17,7 +14,7 @@ import AdSlot from "../components/AdSlot.astro";
 import { ClientRouter } from "astro:transitions";
 import BaseHead from "@/components/BaseHead.astro";
 
-const { title, description, image, enableRouter = false } = Astro.props;
+const { enableRouter = false, ...seo } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const baseJson = JSON.stringify(base);
 ---
@@ -25,7 +22,7 @@ const baseJson = JSON.stringify(base);
 <!doctype html>
 <html lang="vi">
   <head>
-    <BaseHead title={title} description={description} image={image} />
+    <BaseHead {...seo} />
     {enableRouter && <ClientRouter />}
   </head>
   <body
@@ -131,7 +128,7 @@ const baseJson = JSON.stringify(base);
 
         if (navItems.length > 0 && indicator) {
           // Bảng màu 5 Tabs (Hồng, Tím, Xanh ngọc, Xanh lá, Cam mờ)
-          const tabColors = ["#ec4899", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b"];
+          const tabColors = ["#ec4899", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#f43f5e"];
           const navList = document.querySelector(".magic-nav-list");
 
           let activeItem =

@@ -1,0 +1,80 @@
+---
+// Bộ lọc tag phía trình duyệt.
+// - Mục cần lọc: gắn data-tags='["A","B"]'
+// - Nhóm chứa mục (tự ẩn khi rỗng): gắn data-tag-group
+// - Hỗ trợ link ?tag=Tên-tag
+interface Props {
+  items: { tags: string[] }[];
+  /** Số tag hiện sẵn; phần còn lại ẩn sau nút "+N tag" */
+  limit?: number;
+}
+const { items, limit = 14 } = Astro.props;
+const counts = new Map<string, number>();
+for (const it of items) for (const t of it.tags) counts.set(t, (counts.get(t) ?? 0) + 1);
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'vi'));
+const extra = Math.max(0, tags.length - limit);
+---
+
+{tags.length > 0 && (
+  <div class="tag-filter flex flex-wrap gap-2 mb-8" role="toolbar" aria-label="Lọc theo tag">
+    <button type="button" data-tag-btn="" class="tag-chip is-active">Tất cả</button>
+    {tags.map(([tag, n], i) => (
+      <button type="button" data-tag-btn={tag} class:list={['tag-chip', i >= limit && 'tag-extra hidden']}>
+        #{tag} <span class="opacity-60">{n}</span>
+      </button>
+    ))}
+    {extra > 0 && (
+      <button type="button" id="tag-more" class="px-3 py-1 rounded-full text-sm font-medium text-indigo-600 hover:underline">+{extra} tag</button>
+    )}
+  </div>
+)}
+
+<style is:global>
+  [data-tags][hidden],
+  [data-tag-group][hidden] {
+    display: none !important;
+  }
+  .tag-chip {
+    @apply px-3 py-1 rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors;
+  }
+  .tag-chip.is-active {
+    @apply bg-indigo-600 border-indigo-600 text-white hover:text-white;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const apply = (tag) => {
+      const active = tag && document.querySelector(`[data-tag-btn="${CSS.escape(tag)}"]`);
+      if (active && active.classList.contains('tag-extra')) showAll();
+      document.querySelectorAll('[data-tag-btn]').forEach((b) =>
+        b.classList.toggle('is-active', b.getAttribute('data-tag-btn') === tag),
+      );
+      document.querySelectorAll('[data-tags]').forEach((el) => {
+        const tags = JSON.parse(el.getAttribute('data-tags') || '[]');
+        el.hidden = !!tag && !tags.includes(tag);
+      });
+      document.querySelectorAll('[data-tag-group]').forEach((g) => {
+        const any = [...g.querySelectorAll('[data-tags]')].some((el) => !el.hidden);
+        g.hidden = !any;
+        if (tag && any && g.tagName === 'DETAILS') g.open = true;
+      });
+      const url = new URL(location.href);
+      tag ? url.searchParams.set('tag', tag) : url.searchParams.delete('tag');
+      history.replaceState(null, '', url);
+    };
+    const showAll = () => {
+      document.querySelectorAll('.tag-extra').forEach((b) => b.classList.remove('hidden'));
+      document.getElementById('tag-more')?.remove();
+    };
+    const init = () => {
+      document.getElementById('tag-more')?.addEventListener('click', showAll);
+      document.querySelectorAll('[data-tag-btn]').forEach((b) =>
+        b.addEventListener('click', () => apply(b.getAttribute('data-tag-btn'))),
+      );
+      const initial = new URLSearchParams(location.search).get('tag');
+      if (initial) apply(initial);
+    };
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
+  })();
+</script>

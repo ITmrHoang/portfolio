@@ -1,0 +1,31 @@
+---
+// Ảnh bìa bài viết. Không có ảnh → tự tạo bìa gradient từ tiêu đề.
+import { withBase } from '../utils/site';
+
+interface Props {
+  title: string;
+  src?: string;
+  class?: string;
+  tag?: string;
+}
+const { title, src, tag, class: className = '' } = Astro.props;
+const palettes = [
+  'from-indigo-500 via-purple-500 to-pink-500',
+  'from-sky-500 via-indigo-500 to-violet-600',
+  'from-emerald-500 via-teal-500 to-sky-600',
+  'from-amber-500 via-orange-500 to-rose-500',
+  'from-fuchsia-500 via-purple-600 to-indigo-700',
+];
+let h = 0;
+for (const c of title) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+const palette = palettes[h % palettes.length];
+---
+
+{src ? (
+  <img src={withBase(src)} alt={title} loading="lazy" class={`w-full object-cover ${className}`} />
+) : (
+  <div class={`w-full bg-gradient-to-br ${palette} flex flex-col justify-end p-6 text-white ${className}`} aria-hidden="true">
+    {tag && <span class="text-xs font-semibold uppercase tracking-widest opacity-80 mb-2">#{tag}</span>}
+    <span class="text-xl sm:text-2xl font-extrabold leading-snug line-clamp-3 drop-shadow">{title}</span>
+  </div>
+)}

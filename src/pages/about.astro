@@ -1,0 +1,140 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import profile from '../data/profile.json';
+import { SOCIAL_LINKS } from '../consts';
+import { BASE, withBase } from '../utils/site';
+
+const certificates = (await getCollection('certificates')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const projectCount = (await getCollection('projects')).length;
+const blogCount = (await getCollection('blog')).length;
+const noteCount = (await getCollection('notes')).length;
+---
+
+<Layout title="Giới thiệu" description={`${profile.name} — ${profile.headline}. ${profile.intro}`} image={profile.avatar}>
+  <div class="max-w-5xl mx-auto space-y-10">
+    <!-- Giới thiệu ngắn -->
+    <section class="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-8 items-center md:items-start">
+      <img src={withBase(profile.avatar)} alt={profile.name} class="w-32 h-32 rounded-3xl object-cover shadow-neon flex-shrink-0" />
+      <div class="text-center md:text-left">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-500 mb-2">{profile.nickname}</p>
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-2">{profile.name}</h1>
+        <p class="text-lg font-medium text-gray-500 mb-5">{profile.headline}</p>
+        <p class="text-gray-700 leading-relaxed text-lg">{profile.intro}</p>
+        <div class="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
+          <a href={SOCIAL_LINKS.github} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 text-white font-medium hover:bg-gray-700 transition">
+            <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+          </a>
+          <a href={`${BASE}/projects`} class="inline-flex items-center px-5 py-2.5 rounded-full border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition">Xem dự án</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Số liệu nhanh -->
+    <section class="grid grid-cols-3 gap-4">
+      {[
+        { n: projectCount, label: 'Dự án', href: '/projects' },
+        { n: blogCount, label: 'Bài viết', href: '/blog' },
+        { n: noteCount, label: 'Ghi chú', href: '/notes' },
+      ].map((s) => (
+        <a href={`${BASE}${s.href}`} class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:border-indigo-200 transition">
+          <div class="text-3xl font-extrabold text-indigo-600">{s.n}</div>
+          <div class="text-sm text-gray-500 mt-1">{s.label}</div>
+        </a>
+      ))}
+    </section>
+
+    <!-- Kỹ năng -->
+    <section class="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Kỹ năng</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {profile.skills.map((g) => (
+          <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">{g.group}</h3>
+            <div class="flex flex-wrap gap-2">
+              {g.items.map((s) => (
+                <span class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-medium border border-indigo-100">{s}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Chứng chỉ -->
+    <section class="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-6 gap-4">
+        <h2 class="text-2xl font-bold text-gray-900">Chứng chỉ</h2>
+        {certificates.length > 1 && (
+          <div class="flex gap-2">
+            <button type="button" data-cert-scroll="-1" aria-label="Chứng chỉ trước" class="p-2 rounded-full border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button type="button" data-cert-scroll="1" aria-label="Chứng chỉ tiếp theo" class="p-2 rounded-full border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {certificates.length === 0 ? (
+        <div class="rounded-2xl border-2 border-dashed border-indigo-100 bg-indigo-50/40 p-10 text-center text-gray-500">
+          Chưa có chứng chỉ nào. Thêm ảnh chứng chỉ trong trang quản trị <span class="font-medium text-indigo-600">/admin → Chứng chỉ</span>.
+        </div>
+      ) : (
+        <div id="cert-track" class="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2 scroll-smooth">
+          {certificates.map((c) => (
+            <figure class="snap-start flex-shrink-0 w-[260px] sm:w-[300px] bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+              <button type="button" class="block w-full aspect-[4/3] bg-white" data-cert-open={withBase(c.data.image)} data-cert-title={c.data.title}>
+                <img src={withBase(c.data.image)} alt={c.data.title} loading="lazy" class="w-full h-full object-contain hover:scale-105 transition-transform duration-300" />
+              </button>
+              <figcaption class="p-4">
+                <p class="font-semibold text-gray-900 leading-snug">{c.data.title}</p>
+                <p class="text-sm text-gray-500 mt-1">{c.data.issuer} · {c.data.date.toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })}</p>
+                {c.data.credentialUrl && (
+                  <a href={c.data.credentialUrl} target="_blank" rel="noopener" class="inline-block mt-2 text-sm text-indigo-600 font-medium hover:underline">Xác minh →</a>
+                )}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+    </section>
+  </div>
+
+  <!-- Xem ảnh chứng chỉ phóng to -->
+  <dialog id="cert-dialog" class="backdrop:bg-gray-900/70 rounded-2xl p-0 max-w-4xl w-[92vw]">
+    <form method="dialog" class="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+      <p id="cert-dialog-title" class="font-semibold text-gray-900"></p>
+      <button class="text-gray-400 hover:text-red-500 text-2xl leading-none" aria-label="Đóng">&times;</button>
+    </form>
+    <img id="cert-dialog-img" alt="" class="w-full max-h-[80vh] object-contain bg-gray-50" />
+  </dialog>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const track = document.getElementById('cert-track');
+      document.querySelectorAll('[data-cert-scroll]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (!track) return;
+          const dir = Number(btn.getAttribute('data-cert-scroll'));
+          track.scrollBy({ left: dir * (track.clientWidth * 0.8), behavior: 'smooth' });
+        });
+      });
+      const dialog = document.getElementById('cert-dialog');
+      const img = document.getElementById('cert-dialog-img');
+      const title = document.getElementById('cert-dialog-title');
+      document.querySelectorAll('[data-cert-open]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          img.src = btn.getAttribute('data-cert-open');
+          img.alt = title.textContent = btn.getAttribute('data-cert-title');
+          dialog.showModal();
+        });
+      });
+      dialog?.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    });
+  </script>
+</Layout>
