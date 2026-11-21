@@ -11,6 +11,9 @@ export function withBase(path?: string): string | undefined {
 	return BASE + path;
 }
 
+/** Link ra ngoài site (https://..., //...) hay trang nội bộ ("/playground/...") */
+export const isExternal = (url: string) => /^(https?:)?\/\//.test(url);
+
 /** Ước tính thời gian đọc (phút) từ nội dung Markdown thô. */
 export function readingTime(body: string): number {
 	const text = body

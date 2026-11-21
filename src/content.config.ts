@@ -11,7 +11,11 @@ const projectsCollection = defineCollection({
         role: z.string().optional(),
         date: z.coerce.date().optional(),
         github: z.string().url().optional(),
-        demo: z.string().url().optional(),
+        // Link demo: URL trang khác (https://...) hoặc trang trong site này (/playground/...)
+        demo: z.string().regex(/^(https:\/\/|\/)/, 'demo phải bắt đầu bằng https:// hoặc /').optional(),
+        // true = hiển thị demo bằng iframe ngay trong trang dự án
+        embed: z.boolean().default(false),
+        embedHeight: z.number().int().min(300).max(1600).optional(),
     }),
 });
 

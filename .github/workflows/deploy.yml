@@ -28,6 +28,10 @@ jobs:
 
       - name: Build Astro
         run: npm run build
+        env:
+          # Đặt trong Settings → Secrets and variables → Actions → Variables
+          PUBLIC_GISCUS_CATEGORY: ${{ vars.GISCUS_CATEGORY }}
+          PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.GISCUS_CATEGORY_ID }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

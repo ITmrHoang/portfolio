@@ -13,6 +13,7 @@ import CurvedMagicMenu from "../components/CurvedMagicMenu.astro";
 import AdSlot from "../components/AdSlot.astro";
 import { ClientRouter } from "astro:transitions";
 import BaseHead from "@/components/BaseHead.astro";
+import { BUILD_ID } from "../consts";
 
 const { enableRouter = false, ...seo } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -28,6 +29,10 @@ const baseJson = JSON.stringify(base);
   <body
     class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col"
   >
+  <!-- Khi trang bị nhúng trong iframe (trang dự án), ẩn header/menu/footer cho gọn -->
+  <script is:inline>
+    if (window.self !== window.top) document.documentElement.classList.add("is-embedded");
+  </script>
   <div class="progress-reading"></div>
     <!-- Navbar -->
 
@@ -82,6 +87,18 @@ const baseJson = JSON.stringify(base);
     </button>
 
     <style is:global>
+      /* Trang đang được nhúng bằng iframe */
+      html.is-embedded body > header,
+      html.is-embedded body > footer,
+      html.is-embedded .magic-nav,
+      html.is-embedded body > div > aside,
+      html.is-embedded #scroll-to-top {
+        display: none !important;
+      }
+      html.is-embedded main {
+        padding-bottom: 1rem;
+      }
+
       /* CSS Animation cho tiêu đề Gradient */
       @keyframes gradient-move {
         0% {
@@ -105,7 +122,7 @@ const baseJson = JSON.stringify(base);
       }
     </style>
 
-    <script is:inline define:vars={{ baseJson }}>
+    <script is:inline define:vars={{ baseJson, appVersion: BUILD_ID }}>
       document.addEventListener("DOMContentLoaded", () => {
         // --- TÍNH NĂNG 0: GLOBAL BASE URL FIX for markdown ---
         // Tự động prepend base URL cho tất cả link nội bộ bắt đầu bằng /
@@ -227,12 +244,58 @@ const baseJson = JSON.stringify(base);
         }
 
         // --- TÍNH NĂNG 3: REGISTER SERVICE WORKER FOR PWA & CACHING ---
+        // Mỗi lần build có mã phiên bản riêng (BUILD_ID). SW trả HTML từ cache trước,
+        // nên trang có thể là bản cũ: hỏi SW phiên bản mới nhất, nếu trang cũ hơn thì
+        // tự tải lại (khi người xem chưa thao tác gì) hoặc hiện thông báo "Tải lại".
         if ("serviceWorker" in navigator) {
           const swUrl = BASE ? `${BASE}/sw.js` : "/sw.js";
-          navigator.serviceWorker
+          const sw = navigator.serviceWorker;
+          let interacted = false;
+          ["pointerdown", "keydown", "wheel", "touchstart"].forEach((ev) =>
+            window.addEventListener(ev, () => (interacted = true), { once: true, passive: true }),
+          );
+
+          const showUpdateToast = () => {
+            if (document.getElementById("sw-update-toast")) return;
+            const toast = document.createElement("div");
+            toast.id = "sw-update-toast";
+            toast.className =
+              "fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 bg-gray-900 text-white text-sm pl-5 pr-2 py-2 rounded-full shadow-2xl";
+            toast.innerHTML =
+              '<span>Đã có phiên bản mới</span><button class="px-3 py-1.5 rounded-full bg-indigo-500 hover:bg-indigo-400 font-semibold">Tải lại</button>';
+            toast.querySelector("button").addEventListener("click", () => location.reload());
+            document.body.appendChild(toast);
+          };
+
+          const onSwVersion = (swVersion) => {
+            // Bỏ qua khi chạy dev (sw.js chưa được gắn mã) hoặc trang đã là bản mới nhất
+            if (!swVersion || swVersion.startsWith("__") || !appVersion || swVersion <= appVersion) return;
+            const key = "sw-reloaded-" + swVersion;
+            let reloadedBefore = true;
+            try {
+              reloadedBefore = !!sessionStorage.getItem(key);
+              sessionStorage.setItem(key, "1");
+            } catch (e) {}
+            // Chỉ tự tải lại 1 lần cho mỗi phiên bản để không bị lặp vô hạn
+            if (!interacted && !reloadedBefore) location.reload();
+            else showUpdateToast();
+          };
+
+          sw.addEventListener("message", (e) => {
+            if (e.data && e.data.type === "VERSION") onSwVersion(e.data.version);
+          });
+          // SW mới vừa cài xong và tiếp quản trang -> hỏi lại phiên bản
+          sw.addEventListener("controllerchange", () => sw.controller?.postMessage("GET_VERSION"));
+
+          sw
             .register(swUrl, { scope: BASE ? `${BASE}/` : "/" })
             .then((reg) => {
-              console.log("[PWA] Service Worker registered:", reg.scope);
+              console.log("[PWA] Service Worker registered:", reg.scope, "| page version:", appVersion);
+              sw.controller?.postMessage("GET_VERSION");
+              // Tab mở lâu: mỗi khi quay lại tab thì kiểm tra có bản deploy mới không
+              document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible") reg.update().catch(() => {});
+              });
             })
             .catch((err) => {
               console.error("[PWA] Service Worker registration failed:", err);

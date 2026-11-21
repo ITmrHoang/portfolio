@@ -1,4 +1,14 @@
-const CACHE_NAME = 'himo-portfolio-v1';
+// Chuỗi giữ chỗ ở VERSION được thay bằng mã build (astro.config.mjs -> swVersion) mỗi lần build.
+// sw.js đổi nội dung => trình duyệt cài SW mới => cache cũ bị xoá ở bước activate.
+const VERSION = '__BUILD_ID__';
+const CACHE_NAME = `himo-portfolio-${VERSION}`;
+
+// Trang hỏi "SW đang ở phiên bản nào?" để biết HTML mình đang xem có cũ không
+self.addEventListener('message', (event) => {
+  if (event.data === 'GET_VERSION' && event.source) {
+    event.source.postMessage({ type: 'VERSION', version: VERSION });
+  }
+});
 
 // Static resources to cache immediately on install
 const PRECACHE_ASSETS = [
@@ -93,7 +103,8 @@ self.addEventListener('fetch', (event) => {
   // Strategy 2: HTML Pages -> Stale-While-Revalidate (Lấy cache trả về NGAY TỨC THÌ, cập nhật ngầm qua network)
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request).then((networkResponse) => {
+      // no-cache: hỏi lại server (ETag) thay vì lấy HTML cũ trong HTTP cache của trình duyệt
+      const fetchPromise = fetch(request, { cache: 'no-cache' }).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));

@@ -4,7 +4,7 @@
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import FallbackImage from '../assets/images/fallback-image.png';
-import { SITE_AUTHOR, SITE_DESCRIPTION, SITE_LANG, SITE_TITLE } from '../consts';
+import { BUILD_ID, FAVICON_SCHEDULE, SITE_AUTHOR, SITE_DESCRIPTION, SITE_LANG, SITE_TITLE } from '../consts';
 import { withBase } from '../utils/site';
 
 export interface SeoProps {
@@ -31,6 +31,7 @@ const {
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const fullTitle = `${title} | ${SITE_TITLE}`;
+const faviconSchedule = FAVICON_SCHEDULE.map((s) => ({ ...s, icon: `${withBase(s.icon)}?v=${BUILD_ID}` }));
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const imageSrc = typeof image === 'string' ? withBase(image) ?? image : image.src;
 const imageURL = new URL(imageSrc, Astro.site);
@@ -39,8 +40,22 @@ const imageURL = new URL(imageSrc, Astro.site);
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="icon" type="image/png" href={`${base}/favicon.png`} />
-<link rel="icon" href={`${base}/favicon.ico`} />
+<!-- ?v=BUILD_ID: thay file icon rồi deploy là trình duyệt tải icon mới (favicon bị cache rất lâu) -->
+<link rel="icon" type="image/png" href={`${base}/favicon.png?v=${BUILD_ID}`} />
+<link rel="icon" href={`${base}/favicon.ico?v=${BUILD_ID}`} />
+<!-- Đổi favicon theo ngày — cấu hình FAVICON_SCHEDULE trong src/consts.ts -->
+<script is:inline define:vars={{ schedule: faviconSchedule }}>
+	const now = new Date();
+	const md = String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+	const hit = schedule.find((s) => (s.from <= s.to ? md >= s.from && md <= s.to : md >= s.from || md <= s.to));
+	if (hit) {
+		document.querySelectorAll('link[rel~="icon"]').forEach((l) => l.remove());
+		const link = document.createElement('link');
+		link.rel = 'icon';
+		link.href = hit.icon;
+		document.head.appendChild(link);
+	}
+</script>
 <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
 <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href={`${base}/rss.xml`} />
 <meta name="generator" content={Astro.generator} />

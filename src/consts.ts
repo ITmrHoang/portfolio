@@ -25,10 +25,25 @@ export const NOTE_LEVELS = ['Cơ bản', 'Trung cấp', 'Nâng cao', 'Chuyên s�
 
 // Bình luận Giscus (dùng GitHub Discussions).
 // Để bật: vào Settings của repo → bật Discussions → cài app https://github.com/apps/giscus
-// → lấy categoryId trên https://giscus.app rồi điền vào dưới đây. Để trống thì khung bình luận tự ẩn.
+// → lấy category + categoryId trên https://giscus.app rồi đặt vào biến môi trường:
+//   - Máy local: file .env (xem .env.example)
+//   - GitHub Actions: Settings → Secrets and variables → Actions → tab Variables
+// Biến được đọc lúc BUILD. Thiếu categoryId thì khung bình luận tự ẩn.
+const env = import.meta.env;
 export const GISCUS = {
-	repo: 'ITmrHoang/portfolio',
-	repoId: 'R_kgDORs_7CQ',
-	category: 'Announcements',
-	categoryId: '',
+	repo: env.PUBLIC_GISCUS_REPO || 'ITmrHoang/portfolio',
+	repoId: env.PUBLIC_GISCUS_REPO_ID || 'R_kgDORs_7CQ',
+	category: env.PUBLIC_GISCUS_CATEGORY || 'Announcements',
+	categoryId: env.PUBLIC_GISCUS_CATEGORY_ID || '',
 };
+
+// Mã phiên bản build (astro.config.mjs đặt vào env). Dạng YYYYMMDDHHmm[-sha].
+export const BUILD_ID: string = import.meta.env.PUBLIC_BUILD_ID || 'dev';
+
+// Đổi favicon theo ngày (MM-DD, theo giờ máy người xem). Ngoài các khoảng này dùng favicon mặc định.
+// Khoảng có thể vắt qua năm mới, vd { from: '12-28', to: '01-03' }.
+// Đặt file icon trong public/icons/. Tết âm lịch đổi ngày mỗi năm — nhớ chỉnh lại.
+export const FAVICON_SCHEDULE: { from: string; to: string; icon: string }[] = [
+	{ from: '12-15', to: '12-31', icon: '/icons/noel.svg' },
+	{ from: '01-28', to: '02-14', icon: '/icons/tet.svg' }, // Tết Đinh Mùi: 06/02/2027
+];

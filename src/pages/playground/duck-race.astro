@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import DuckRace from '../../apps/react/duck-race/DuckRace';
+import { withBase } from '../../utils/site';
+---
+
+<Layout
+  title="Đua Vịt online"
+  description="Game đua vịt nhiều người chơi, kết nối thẳng giữa các trình duyệt bằng WebRTC: ấn màn hình hoặc hét vào micro để vịt của bạn bơi nhanh hơn."
+>
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+    <a href={withBase('/playground')} class="hover:text-indigo-600 transition-colors flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Playground
+    </a>
+    <span class="text-gray-300">/</span>
+    <span class="text-gray-900 font-medium">Đua Vịt</span>
+  </nav>
+
+  <div class="max-w-xl mx-auto">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 text-center">🦆 Đua Vịt online</h1>
+
+    <!-- Game Container -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 md:p-8">
+      <DuckRace client:only="react" />
+    </div>
+
+    <!-- Info -->
+    <div class="mt-8 bg-amber-50 rounded-2xl p-6 border border-amber-100">
+      <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Cách chơi
+      </h3>
+      <ul class="text-sm text-gray-600 space-y-1.5">
+        <li>🚪 <strong>Vào phòng</strong>: nhập cùng một mã phòng với bạn bè. Người vào đầu tiên tạo phòng và làm host.</li>
+        <li>⚙️ <strong>Host</strong> đặt số người tối đa, độ dài đường đua, thời gian ước lượng, cách điều khiển và vịt máy. Phòng đủ người thì người đến sau nhận thông báo phòng đã đầy.</li>
+        <li>✅ <strong>Sẵn sàng</strong>: ván tự bắt đầu khi tất cả người trong phòng bấm sẵn sàng.</li>
+        <li>👆🎙️ <strong>Điều khiển</strong>: vịt luôn tự bơi với tốc độ mặc định. Ấn liên tục hoặc hét to vào micro để bơi nhanh hơn (tối đa ×2.5).</li>
+        <li>🤖 <strong>Vịt máy</strong> (tuỳ chọn): bơi theo nhịp ngẫu nhiên, không quá nhanh, cố gắng là thắng được.</li>
+      </ul>
+
+      <h3 class="font-bold text-gray-900 mt-5 mb-2">Hoạt động thế nào?</h3>
+      <ul class="text-sm text-gray-600 space-y-1.5">
+        <li>🔌 Các trình duyệt nối thẳng với nhau bằng <strong>WebRTC</strong>, không qua server riêng nào. Thư viện <strong>Trystero</strong> dùng các relay <strong>Nostr</strong> công cộng để các máy tìm thấy nhau (signaling).</li>
+        <li>⚖️ Mỗi máy tự tính vịt của mình rồi gửi vị trí và thời gian về đích cho cả phòng. Mọi máy xếp hạng từ cùng một bộ số liệu nên ai cũng thấy cùng kết quả, kể cả khi host rời giữa ván.</li>
+        <li>👑 Host rời phòng thì người vào sớm nhất còn lại tự động thành host mới.</li>
+        <li>⚠️ Không có TURN server nên một số mạng chặt (mạng công ty, vài nhà mạng 4G) có thể không kết nối được. Micro cần HTTPS và quyền truy cập.</li>
+      </ul>
+    </div>
+  </div>
+</Layout>

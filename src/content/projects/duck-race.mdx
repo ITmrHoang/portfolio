@@ -1,0 +1,37 @@
+---
+title: "Đua Vịt online — game nhiều người chơi P2P"
+description: "Mini-game đua vịt nhiều người chơi chạy hoàn toàn trên trình duyệt: các máy kết nối thẳng với nhau bằng WebRTC, không cần backend. Ấn màn hình hoặc hét vào micro để vịt bơi nhanh hơn."
+role: "Thiết kế & phát triển"
+date: 2026-11-20T00:00:00Z
+github: "https://github.com/ITmrHoang/portfolio"
+demo: "/playground/duck-race"
+technologies:
+  - React
+  - TypeScript
+  - WebRTC
+  - Trystero
+  - Nostr
+  - Web Audio API
+---
+
+Game đua vịt cho nhóm bạn: mở cùng một mã phòng, bấm sẵn sàng, rồi thi xem ai ấn nhanh hơn hoặc hét to hơn.
+
+## Tính năng
+
+- **Phòng theo mã**: nhập mã phòng. Chưa có ai thì bạn tạo phòng và làm host, có rồi thì vào phòng đó.
+- **Host cài luật phòng**: số người tối đa, độ dài đường đua, thời gian ước lượng ở tốc độ mặc định, cách điều khiển (ấn / hét / cả hai), số vịt máy. Phòng đủ người thì người đến sau nhận thông báo "Phòng đã đầy".
+- **Người thật thi với nhau**: vịt luôn tự bơi với tốc độ mặc định. Ấn liên tục hoặc hét vào micro (đo độ to bằng Web Audio) để bơi nhanh hơn, tối đa ×2.5.
+- **Vịt máy tuỳ chọn**: bơi theo nhịp ngẫu nhiên nhưng không quá nhanh.
+- **Bắt đầu khi mọi người sẵn sàng**, có đếm ngược 3-2-1, bục trao giải và bảng thời gian.
+
+## Kiến trúc không cần server
+
+- **WebRTC mesh**: mọi trình duyệt nối thẳng với nhau qua data channel.
+- **Signaling bằng Trystero + relay Nostr công cộng**: Trystero dùng các relay Nostr miễn phí để các máy cùng mã phòng tìm thấy nhau, nên site vẫn là trang tĩnh trên GitHub Pages.
+- **Host chỉ làm trọng tài phòng**: giữ danh sách người chơi, nhận/từ chối người mới, phát lệnh bắt đầu kèm `seed` cho vịt máy.
+- **Kết quả tất định**: mỗi máy tự mô phỏng vịt của mình, gửi vị trí và thời gian về đích. Vịt máy được tính lại từ `seed` trên mọi máy. Mọi máy xếp hạng từ cùng một bộ số liệu nên ai cũng thấy cùng kết quả, kể cả khi host rời giữa ván.
+- **Chuyển host tự động**: host rời phòng thì người vào sớm nhất còn lại thành host mới, không cần nhắn qua lại.
+
+<Callout title="Giới hạn" type="info">
+  Chưa có TURN server nên một số mạng chặt (mạng công ty, vài nhà mạng 4G) có thể không kết nối được. Micro cần HTTPS và quyền truy cập.
+</Callout>
