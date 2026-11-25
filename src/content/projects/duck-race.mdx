@@ -18,19 +18,20 @@ Game đua vịt cho nhóm bạn: mở cùng một mã phòng, bấm sẵn sàng,
 
 ## Tính năng
 
-- **Phòng theo mã**: nhập mã phòng. Chưa có ai thì bạn tạo phòng và làm host, có rồi thì vào phòng đó.
-- **Host cài luật phòng**: số người tối đa, độ dài đường đua, thời gian ước lượng ở tốc độ mặc định, cách điều khiển (ấn / hét / cả hai), số vịt máy. Phòng đủ người thì người đến sau nhận thông báo "Phòng đã đầy".
-- **Người thật thi với nhau**: vịt luôn tự bơi với tốc độ mặc định. Ấn liên tục hoặc hét vào micro (đo độ to bằng Web Audio) để bơi nhanh hơn, tối đa ×2.5.
-- **Vịt máy tuỳ chọn**: bơi theo nhịp ngẫu nhiên nhưng không quá nhanh.
-- **Bắt đầu khi mọi người sẵn sàng**, có đếm ngược 3-2-1, bục trao giải và bảng thời gian.
+- **Phòng theo mã**: nhập mã phòng. Chưa có ai thì bạn tạo phòng và làm host, có rồi thì vào phòng đó. Một phòng chứa tới 100 người.
+- **Ô đua**: host đặt số ô. Mỗi người tự vào một ô để đua hoặc chỉ xem (kể cả host). Ô còn trống thì host thêm vịt máy và đặt tên, hoặc dán danh sách tên (mỗi dòng một vịt).
+- **Người thật thi với nhau**: vịt luôn tự bơi với tốc độ mặc định. Ấn liên tục hoặc hét vào micro (đo độ to bằng Web Audio) để bơi nhanh hơn, tối đa ×2.5. Vịt máy đua cùng người thì chạy vừa phải.
+- **Toàn vịt máy để bốc thăm**: tốc độ mỗi con đổi liên tục nên thứ hạng thay đổi tới phút chót; cả phòng xem cùng một cuộc đua.
+- **Trang phục cho vịt**: màu, mũ, trang phục, kính; số và tên hiện bên cạnh.
+- **Sân đua chuyển động**: nền nhiều lớp trôi theo camera bám vịt dẫn đầu, vạch đích chỉ hiện khi gần tới, toàn màn hình. Tối đa 10 làn, đông hơn thì nhiều vịt chung một làn.
+- **Bắt đầu khi mọi người sẵn sàng**, có đếm ngược 3-2-1, bục trao giải và bảng thời gian. Người vào giữa ván vẫn xem tiếp được.
 
 ## Kiến trúc không cần server
 
-- **WebRTC mesh**: mọi trình duyệt nối thẳng với nhau qua data channel.
-- **Signaling bằng Trystero + relay Nostr công cộng**: Trystero dùng các relay Nostr miễn phí để các máy cùng mã phòng tìm thấy nhau, nên site vẫn là trang tĩnh trên GitHub Pages.
-- **Host chỉ làm trọng tài phòng**: giữ danh sách người chơi, nhận/từ chối người mới, phát lệnh bắt đầu kèm `seed` cho vịt máy.
-- **Kết quả tất định**: mỗi máy tự mô phỏng vịt của mình, gửi vị trí và thời gian về đích. Vịt máy được tính lại từ `seed` trên mọi máy. Mọi máy xếp hạng từ cùng một bộ số liệu nên ai cũng thấy cùng kết quả, kể cả khi host rời giữa ván.
-- **Chuyển host tự động**: host rời phòng thì người vào sớm nhất còn lại thành host mới, không cần nhắn qua lại.
+- **WebRTC hình sao**: host vào phòng ở chế độ active, khách ở chế độ passive của Trystero nên khách chỉ nối với host. Host gom vị trí rồi phát cho cả phòng.
+- **Signaling bằng Trystero + relay Nostr công cộng**: các máy cùng mã phòng tìm thấy nhau qua relay miễn phí, nên site vẫn là trang tĩnh trên GitHub Pages.
+- **Kết quả tất định**: mỗi máy tự mô phỏng vịt của mình; vịt máy tính lại từ cùng một `seed`. Host chốt kết quả từ thời gian về đích của từng máy.
+- **Đổi host không dừng ván**: host có thể trao quyền cho người khác; host rời phòng thì tự trao cho người vào sớm nhất; host mất mạng thì chờ 10 giây rồi người vào sớm nhất còn lại tự làm host, các khách tự nối lại.
 
 <Callout title="Giới hạn" type="info">
   Chưa có TURN server nên một số mạng chặt (mạng công ty, vài nhà mạng 4G) có thể không kết nối được. Micro cần HTTPS và quyền truy cập.

@@ -20,7 +20,7 @@ import { withBase } from '../../utils/site';
     <span class="text-gray-900 font-medium">Đua Vịt</span>
   </nav>
 
-  <div class="max-w-xl mx-auto">
+  <div class="max-w-3xl mx-auto">
     <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 text-center">🦆 Đua Vịt online</h1>
 
     <!-- Game Container -->
@@ -38,17 +38,22 @@ import { withBase } from '../../utils/site';
       </h3>
       <ul class="text-sm text-gray-600 space-y-1.5">
         <li>🚪 <strong>Vào phòng</strong>: nhập cùng một mã phòng với bạn bè. Người vào đầu tiên tạo phòng và làm host.</li>
-        <li>⚙️ <strong>Host</strong> đặt số người tối đa, độ dài đường đua, thời gian ước lượng, cách điều khiển và vịt máy. Phòng đủ người thì người đến sau nhận thông báo phòng đã đầy.</li>
-        <li>✅ <strong>Sẵn sàng</strong>: ván tự bắt đầu khi tất cả người trong phòng bấm sẵn sàng.</li>
+        <li>🔢 <strong>Ô đua</strong>: host đặt số ô. Mỗi người tự chọn vào một ô trống để đua hoặc chỉ xem (kể cả host). Ô còn trống thì host bấm "Thêm máy cho đủ" hoặc thêm từng vịt máy và đặt tên cho chúng.</li>
+        <li>⚙️ <strong>Host</strong> đặt số người tối đa trong phòng (cả người xem), độ dài đường đua, thời gian ước lượng, cách điều khiển. Phòng đủ người thì người đến sau nhận thông báo phòng đã đầy.</li>
+        <li>✅ <strong>Sẵn sàng</strong>: ván tự bắt đầu khi mọi người đang ngồi ô đều bấm sẵn sàng; host cũng có thể bấm "Bắt đầu đua". Người vào giữa ván vẫn xem tiếp được.</li>
         <li>👆🎙️ <strong>Điều khiển</strong>: vịt luôn tự bơi với tốc độ mặc định. Ấn liên tục hoặc hét to vào micro để bơi nhanh hơn (tối đa ×2.5).</li>
         <li>🤖 <strong>Vịt máy</strong> (tuỳ chọn): bơi theo nhịp ngẫu nhiên, không quá nhanh, cố gắng là thắng được.</li>
+        <li>🎲 <strong>Toàn vịt máy</strong>: không ai vào ô, host dán danh sách tên (mỗi dòng một vịt) rồi bấm bắt đầu. Vịt đổi tốc độ liên tục, cả phòng xem cùng một cuộc đua, hợp để bốc thăm.</li>
+        <li>🎩 <strong>Trang phục</strong>: chọn màu, mũ, trang phục, kính cho vịt. Số và tên hiện trên đầu mỗi con.</li>
+        <li>⛶ <strong>Toàn màn hình</strong>: bấm nút góc trên sân đua để xem cả màn hình.</li>
       </ul>
 
       <h3 class="font-bold text-gray-900 mt-5 mb-2">Hoạt động thế nào?</h3>
       <ul class="text-sm text-gray-600 space-y-1.5">
-        <li>🔌 Các trình duyệt nối thẳng với nhau bằng <strong>WebRTC</strong>, không qua server riêng nào. Thư viện <strong>Trystero</strong> dùng các relay <strong>Nostr</strong> công cộng để các máy tìm thấy nhau (signaling).</li>
-        <li>⚖️ Mỗi máy tự tính vịt của mình rồi gửi vị trí và thời gian về đích cho cả phòng. Mọi máy xếp hạng từ cùng một bộ số liệu nên ai cũng thấy cùng kết quả, kể cả khi host rời giữa ván.</li>
-        <li>👑 Host rời phòng thì người vào sớm nhất còn lại tự động thành host mới.</li>
+        <li>🔌 Kết nối thẳng giữa các trình duyệt bằng <strong>WebRTC</strong>, không qua server riêng. Thư viện <strong>Trystero</strong> dùng các relay <strong>Nostr</strong> công cộng để các máy tìm thấy nhau (signaling).</li>
+        <li>⭐ Kết nối hình sao: mỗi người chỉ nối với host, host gom vị trí rồi phát cho cả phòng, nên một phòng chứa được tới 100 người (host nên dùng máy tính, mạng ổn định).</li>
+        <li>⚖️ Mỗi máy tự tính vịt của mình, vịt máy tính lại từ cùng một seed. Host chốt kết quả từ thời gian về đích của từng máy nên ai cũng thấy cùng một bảng.</li>
+        <li>👑 Host có thể trao quyền host cho người khác. Host rời phòng thì tự trao cho người vào sớm nhất; host mất mạng thì chờ 10 giây, không quay lại thì người vào sớm nhất còn lại tự làm host. Ván đang đua vẫn chạy tiếp.</li>
         <li>⚠️ Không có TURN server nên một số mạng chặt (mạng công ty, vài nhà mạng 4G) có thể không kết nối được. Micro cần HTTPS và quyền truy cập.</li>
       </ul>
     </div>
